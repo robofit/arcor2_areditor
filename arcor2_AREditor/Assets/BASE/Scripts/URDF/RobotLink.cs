@@ -1,10 +1,8 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using Base;
+using Arcor2.ClientSdk.Communication;
 using RosSharp.RosBridgeClient;
 using RosSharp.Urdf;
-using UnityEngine;
 
 public class RobotLink {
 
@@ -14,12 +12,10 @@ public class RobotLink {
 
     public Dictionary<UrdfVisual, bool> Visuals {
         get;
-        private set;
     }
 
     public Dictionary<UrdfCollision, bool> Collisions {
         get;
-        private set;
     }
 
     public bool IsBaseLink {
@@ -61,7 +57,7 @@ public class RobotLink {
             jointReader.Read(out string name, out float position, out float velocity, out float effort);
             return Convert.ToDecimal(position);
         } else {
-            throw new RequestFailedException("Unable to read current joints angles");
+            throw new Arcor2ConnectionException("Unable to read current joints angles");
         }
     }
 

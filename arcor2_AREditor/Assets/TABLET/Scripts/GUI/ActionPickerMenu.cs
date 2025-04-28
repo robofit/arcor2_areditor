@@ -1,10 +1,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
 using Base;
 using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.UI;
+using Action = Base.Action;
+using ActionEventArgs = Base.ActionEventArgs;
+using ActionMetadata = Base.ActionMetadata;
+using ActionPoint = Base.ActionPoint;
+using Parameter = Base.Parameter;
 
 public class ActionPickerMenu : RightMenu<ActionPickerMenu> {
     public GameObject Content;
@@ -25,9 +32,9 @@ public class ActionPickerMenu : RightMenu<ActionPickerMenu> {
     private void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
         if (!IsVisible)
             return;
-        if (args.Event.State == IO.Swagger.Model.SceneStateData.StateEnum.Started ||
-            args.Event.State == IO.Swagger.Model.SceneStateData.StateEnum.Stopped) {
-            List<string> uncollapsedObjects = new List<string>();
+        if (args.Data.State == SceneStateData.StateEnum.Started ||
+            args.Data.State == SceneStateData.StateEnum.Stopped) {
+            List<string> uncollapsedObjects = new();
             CollapsableMenu[] collapsableMenus = Content.GetComponentsInChildren<CollapsableMenu>();
             foreach (CollapsableMenu menu in collapsableMenus) {
                 if (!menu.Collapsed)
@@ -64,9 +71,9 @@ public class ActionPickerMenu : RightMenu<ActionPickerMenu> {
     }
 
     private void UpdateMenu(List<string> uncollapsedObjects = null) {
-        Dictionary<IActionProvider, List<Base.ActionMetadata>> actionsMetadata = Base.ActionsManager.Instance.GetAllActions();
+        Dictionary<IActionProvider, List<ActionMetadata>> actionsMetadata = ActionsManager.Instance.GetAllActions();
 
-        foreach (KeyValuePair<IActionProvider, List<Base.ActionMetadata>> keyval in actionsMetadata) {
+        foreach (KeyValuePair<IActionProvider, List<ActionMetadata>> keyval in actionsMetadata) {
             CollapsableMenu collapsableMenu = Instantiate(CollapsablePrefab, Content.transform).GetComponent<CollapsableMenu>();
             collapsableMenu.SetLabel(keyval.Key.GetProviderName());
             if (uncollapsedObjects != null && uncollapsedObjects.Contains(keyval.Key.GetProviderName()))
@@ -74,7 +81,7 @@ public class ActionPickerMenu : RightMenu<ActionPickerMenu> {
             else
                 collapsableMenu.Collapsed = true;
 
-            foreach (Base.ActionMetadata am in keyval.Value) {
+            foreach (ActionMetadata am in keyval.Value) {
                 ActionButtonWithIcon btn = Instantiate(ButtonPrefab, collapsableMenu.Content.transform).GetComponent<ActionButtonWithIcon>();
                 ButtonWithTooltip btnTooltip = btn.GetComponent<ButtonWithTooltip>();
                 btn.transform.localScale = new Vector3(1, 1, 1);
@@ -111,9 +118,9 @@ public class ActionPickerMenu : RightMenu<ActionPickerMenu> {
         }
     }
 
-    private RequestResult CheckActionParameters(Base.ActionMetadata actionMetadata) {
+    private RequestResult CheckActionParameters(ActionMetadata actionMetadata) {
         //TODO - otestovat
-        RequestResult result = new RequestResult(true);
+        RequestResult result = new(true);
         bool poseError = false, jointsError = false, dynamicValueError = false;
         bool anyOrientation = ProjectManager.Instance.AnyOrientationInTheProject();
         bool anyJoints = ProjectManager.Instance.AnyJointsInTheProject();
@@ -173,34 +180,39 @@ public class ActionPickerMenu : RightMenu<ActionPickerMenu> {
 
 
 
-    public async void DuplicateAction(Base.Action action) {
-        string newActionName = Base.ProjectManager.Instance.GetFreeActionName(action.GetName() + "_copy");
+    public async void DuplicateAction(Action action) {
+        string newActionName = ProjectManager.Instance.GetFreeActionName(action.GetName() + "_copy");
         addedActionName = newActionName;
         Hide();
         AREditorResources.Instance.LeftMenuProject.SetActiveSubmenu(AREditorResources.Instance.LeftMenuProject.CurrentSubmenuOpened);
-        await Base.WebsocketManager.Instance.AddAction(action.ActionPoint.GetId(), action.Parameters.Values.Cast<IO.Swagger.Model.ActionParameter>().ToList(), Base.Action.BuildActionType(
-                        action.ActionProvider.GetProviderId(), action.Metadata.Name), newActionName, action.Metadata.GetFlows(newActionName));
+        await CommunicationManager.Instance.Client.AddActionAsync(
+            new AddActionRequestArgs(
+            action.ActionPoint.GetId(),
+            newActionName,
+            Action.BuildActionType(action.ActionProvider.GetProviderId(), action.Metadata.Name),
+            action.Parameters.Values.Cast<ActionParameter>().ToList(),
+            action.Metadata.GetFlows(newActionName)));
     }
 
     public async void CreateNewAction(string action_id, IActionProvider actionProvider, string newName = null) {
         try {
             ActionMetadata actionMetadata = actionProvider.GetActionMetadata(action_id);
-            List<IParameter> actionParameters = await Base.Parameter.InitActionParameters(actionProvider.GetProviderId(),
+            List<IParameter> actionParameters = await Parameter.InitActionParameters(actionProvider.GetProviderId(),
                 actionMetadata.ParametersMetadata.Values.ToList(), HiddenPlace, OnChangeParameterHandler, HiddenPlaceLayout, HiddenPlace, currentActionPoint, false, CanvasGroup);
             string newActionName;
 
             if (string.IsNullOrEmpty(newName))
-                newActionName = Base.ProjectManager.Instance.GetFreeActionName(actionMetadata.Name);
+                newActionName = ProjectManager.Instance.GetFreeActionName(actionMetadata.Name);
             else
-                newActionName = Base.ProjectManager.Instance.GetFreeActionName(newName);
-            if (Base.Parameter.CheckIfAllValuesValid(actionParameters)) {
-                List<IO.Swagger.Model.ActionParameter> parameters = new List<IO.Swagger.Model.ActionParameter>();
+                newActionName = ProjectManager.Instance.GetFreeActionName(newName);
+            if (Parameter.CheckIfAllValuesValid(actionParameters)) {
+                List<ActionParameter> parameters = new();
                 foreach (IParameter actionParameter in actionParameters) {
-                    if (!actionMetadata.ParametersMetadata.TryGetValue(actionParameter.GetName(), out Base.ParameterMetadata actionParameterMetadata)) {
-                        Base.Notifications.Instance.ShowNotification("Failed to create new action", "Failed to get metadata for action parameter: " + actionParameter.GetName());
+                    if (!actionMetadata.ParametersMetadata.TryGetValue(actionParameter.GetName(), out ParameterMetadata actionParameterMetadata)) {
+                        Notifications.Instance.ShowNotification("Failed to create new action", "Failed to get metadata for action parameter: " + actionParameter.GetName());
                         return;
                     }
-                    IO.Swagger.Model.ActionParameter ap = new IO.Swagger.Model.ActionParameter(name: actionParameter.GetName(), value: JsonConvert.SerializeObject(actionParameter.GetValue()), type: actionParameter.GetCurrentType());
+                    ActionParameter ap = new(actionParameter.GetName(), value: JsonConvert.SerializeObject(actionParameter.GetValue()), type: actionParameter.GetCurrentType());
                     parameters.Add(ap);
                 }
                 try {
@@ -208,8 +220,13 @@ public class ActionPickerMenu : RightMenu<ActionPickerMenu> {
                     Hide();
                     AREditorResources.Instance.LeftMenuProject.SetActiveSubmenu(AREditorResources.Instance.LeftMenuProject.CurrentSubmenuOpened);
 
-                    await Base.WebsocketManager.Instance.AddAction(currentActionPoint.GetId(), parameters, Base.Action.BuildActionType(
-                        actionProvider.GetProviderId(), actionMetadata.Name), newActionName, actionMetadata.GetFlows(newActionName));
+                    var response = await CommunicationManager.Instance.Client.AddActionAsync(new AddActionRequestArgs(currentActionPoint.GetId(), newActionName, Action.BuildActionType(
+                        actionProvider.GetProviderId(), actionMetadata.Name), parameters, actionMetadata.GetFlows(newActionName)));
+                    if (!response.Result) {
+                        Notifications.Instance.ShowNotification("Failed to add action", string.Join(",", response.Messages));
+                        addedActionName = null;
+                        return;
+                    }
 
                     foreach (Transform t in HiddenPlace.transform) {
                         if (!t.CompareTag("Persistent")) {
@@ -217,13 +234,13 @@ public class ActionPickerMenu : RightMenu<ActionPickerMenu> {
                         }
                     }
 
-                } catch (Base.RequestFailedException e) {
-                    Base.Notifications.Instance.ShowNotification("Failed to add action", e.Message);
+                } catch (Arcor2ConnectionException e) {
+                    Notifications.Instance.ShowNotification("Failed to add action", e.Message);
                     addedActionName = null;
                 }
             }
-        } catch (Base.RequestFailedException e) {
-            Base.Notifications.Instance.ShowNotification("Failed to add action", e.Message);
+        } catch (Arcor2ConnectionException e) {
+            Notifications.Instance.ShowNotification("Failed to add action", e.Message);
         }
     }
 

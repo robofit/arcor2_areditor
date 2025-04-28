@@ -1,14 +1,15 @@
 using System;
 using System.Threading.Tasks;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
 using Base;
-using IO.Swagger.Model;
 using UnityEngine;
-
+using ActionPoint = Base.ActionPoint;
 
 [RequireComponent(typeof(OutlineOnClick))]
 [RequireComponent(typeof(Target))]
 public class APOrientation : InteractiveObject, ISubItem {
-    public Base.ActionPoint ActionPoint;
+    public ActionPoint ActionPoint;
     public string OrientationId;
 
     [SerializeField]
@@ -41,7 +42,7 @@ public class APOrientation : InteractiveObject, ISubItem {
         }
     }
 
-    public void SetOrientation(IO.Swagger.Model.Orientation orientation) {
+    public void SetOrientation(Orientation orientation) {
         transform.localRotation = TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(orientation));
     }
 
@@ -75,31 +76,31 @@ public class APOrientation : InteractiveObject, ISubItem {
     }
 
     public override void StartManipulation() {
-        throw new System.NotImplementedException();
+        throw new NotImplementedException();
     }
 
     public async override Task<RequestResult> Removable() {
         try {
-            await WebsocketManager.Instance.RemoveActionPointOrientation(OrientationId, true);
+            await CommunicationManager.Instance.Client.RemoveActionPointOrientationAsync(new RemoveActionPointOrientationRequestArgs(OrientationId), true);
             return new RequestResult(true);
-        } catch (RequestFailedException ex) {
+        } catch (Arcor2ConnectionException ex) {
             return new RequestResult(false, ex.Message);
         }
     }
 
     public async override void Remove() {
         try {
-            await WebsocketManager.Instance.RemoveActionPointOrientation(OrientationId, false);
-        } catch (RequestFailedException ex) {
+            await CommunicationManager.Instance.Client.RemoveActionPointOrientationAsync(new RemoveActionPointOrientationRequestArgs(OrientationId), false);
+        } catch (Arcor2ConnectionException ex) {
             Notifications.Instance.ShowNotification("Failed to remove orientation", ex.Message);
         }
     }
 
     public async override Task Rename(string name) {
         try {
-            await WebsocketManager.Instance.RenameActionPointOrientation(GetId(), name);
+             await CommunicationManager.Instance.Client.RenameActionPointOrientationAsync(new RenameActionPointOrientationRequestArgs(GetId(), name));
             Notifications.Instance.ShowToastMessage("Orientation renamed");
-        } catch (RequestFailedException e) {
+        } catch (Arcor2ConnectionException e) {
             Notifications.Instance.ShowNotification("Failed to rename orientation", e.Message);
             throw;
         }
@@ -135,6 +136,6 @@ public class APOrientation : InteractiveObject, ISubItem {
     }
 
     public override void EnableVisual(bool enable) {
-        throw new System.NotImplementedException();
+        throw new NotImplementedException();
     }
 }

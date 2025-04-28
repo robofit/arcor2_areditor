@@ -1,17 +1,16 @@
 using System.Collections.Generic;
-using IO.Swagger.Model;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
 using Newtonsoft.Json;
-using UnityEngine;
 
 namespace Base {
-    public class ActionMetadata : IO.Swagger.Model.ObjectAction {
+    public class ActionMetadata : ObjectAction {
 
-        public Dictionary<string, Base.ParameterMetadata> ParametersMetadata = new Dictionary<string, Base.ParameterMetadata>();
+        public Dictionary<string, ParameterMetadata> ParametersMetadata = new();
 
-        public ActionMetadata(IO.Swagger.Model.ObjectAction metadata) :
+        public ActionMetadata(ObjectAction metadata) :
             base(parameters: metadata.Parameters, meta: metadata.Meta, name: metadata.Name, origins: metadata.Origins, returns: metadata.Returns, description: metadata.Description, problem: metadata.Problem, disabled: metadata.Disabled) {
-            foreach (IO.Swagger.Model.ParameterMeta meta in Parameters) {
-                ParametersMetadata.Add(meta.Name, new Base.ParameterMetadata(meta));
+            foreach (ParameterMeta meta in Parameters) {
+                ParametersMetadata.Add(meta.Name, new ParameterMetadata(meta));
             }
         }
 
@@ -22,8 +21,8 @@ namespace Base {
         /// </summary>
         /// <param name="name">Name of the action parameter.</param>
         /// <returns>Returns metadata of action parameter - ActionParameterMeta</returns>
-        public IO.Swagger.Model.ParameterMeta GetParamMetadata(string name) {
-            foreach (IO.Swagger.Model.ParameterMeta actionParameterMeta in Parameters) {
+        public ParameterMeta GetParamMetadata(string name) {
+            foreach (ParameterMeta actionParameterMeta in Parameters) {
                 if (actionParameterMeta.Name == name)
                     return actionParameterMeta;
             }
@@ -31,22 +30,22 @@ namespace Base {
         }
 
         public List<Flow> GetFlows(string actionName) {
-            List<string> outputs = new List<string>();
+            List<string> outputs = new();
             foreach (string output in Returns) {
                 outputs.Add(actionName + "_" + output);
             }
             return new List<Flow> {
-                new Flow(type: Flow.TypeEnum.Default, outputs: outputs)
+                new(Flow.TypeEnum.Default, outputs)
             };
         }
 
-        public List<IO.Swagger.Model.ActionParameter> GetDefaultParameters() {
-            List<IO.Swagger.Model.ActionParameter> parameters = new List<IO.Swagger.Model.ActionParameter>();
+        public List<ActionParameter> GetDefaultParameters() {
+            List<ActionParameter> parameters = new();
             foreach (ParameterMetadata actionParameterMeta in ParametersMetadata.Values) {
                 if (actionParameterMeta.DynamicValue) {
 
                 } else {
-                    parameters.Add(new ActionParameter(name: actionParameterMeta.Name, type: actionParameterMeta.Type, value: JsonConvert.SerializeObject(actionParameterMeta.GetDefaultValue())));
+                    parameters.Add(new ActionParameter(actionParameterMeta.Name, actionParameterMeta.Type, JsonConvert.SerializeObject(actionParameterMeta.GetDefaultValue())));
                 }
             }
 

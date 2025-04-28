@@ -1,11 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
 using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
+using Base;
 using UnityEngine;
 using UnityEngine.UI;
-using Michsky.UI.ModernUIPack;
-using System.Threading.Tasks;
-using Base;
 
 public class NewProjectDialog : Dialog
 {
@@ -15,11 +15,11 @@ public class NewProjectDialog : Dialog
     public ButtonWithTooltip OKBtn;
     public void Start()
     {
-        Base.GameManager.Instance.OnScenesListChanged += UpdateScenes;
+        GameManager.Instance.OnScenesListChanged += UpdateScenes;
     }
 
     public void UpdateScenes(object sender, EventArgs eventArgs) {
-        UpdateToggleGroup(TogglePrefab, ToggleGroup, Base.GameManager.Instance.Scenes);
+        UpdateToggleGroup(TogglePrefab, ToggleGroup, GameManager.Instance.Scenes);
         if (Visible)
             FieldChanged();
     }
@@ -30,12 +30,12 @@ public class NewProjectDialog : Dialog
         bool generateLogic;
         try {
             sceneName = GetSelectedValue(ToggleGroup);
-            string sceneId = Base.GameManager.Instance.GetSceneId(sceneName);
+            string sceneId = GameManager.Instance.GetSceneId(sceneName);
             generateLogic = GenerateLogicToggle.GetComponent<Toggle>().isOn;
-            await Base.GameManager.Instance.NewProject(name, sceneId, generateLogic);
+            await GameManager.Instance.NewProject(name, sceneId, generateLogic);
             Close();
-        } catch (Exception ex) when (ex is Base.ItemNotFoundException || ex is Base.RequestFailedException) { 
-            Base.Notifications.Instance.ShowNotification("Failed to create new project", ex.Message);
+        } catch (Exception ex) when (ex is ItemNotFoundException || ex is Arcor2ConnectionException) { 
+            Notifications.Instance.ShowNotification("Failed to create new project", ex.Message);
         }
 
 
@@ -43,12 +43,12 @@ public class NewProjectDialog : Dialog
     }
 
     public async void FieldChanged() {
-        Base.RequestResult result = await ValidateFields();
+        RequestResult result = await ValidateFields();
         OKBtn.SetInteractivity(result.Success, result.Message);
 
     }
 
-    public async Task<Base.RequestResult> ValidateFields() {
+    public async Task<RequestResult> ValidateFields() {
         string name = NewProjectName.GetValue()?.ToString();
         string sceneName;
         string sceneId;
@@ -58,21 +58,22 @@ public class NewProjectDialog : Dialog
         }
         try {
             sceneName = GetSelectedValue(ToggleGroup);
-            sceneId = Base.GameManager.Instance.GetSceneId(sceneName);
+            sceneId = GameManager.Instance.GetSceneId(sceneName);
             
-        } catch (Base.ItemNotFoundException ex) {
+        } catch (ItemNotFoundException ex) {
             return (false, "No scene selected");
         }
         try {
-            await Base.WebsocketManager.Instance.CreateProject(name, sceneId, "", generateLogic, true);
-        } catch (Base.RequestFailedException ex) {
+            var response = await CommunicationManager.Instance.Client.AddNewProjectAsync(new NewProjectRequestArgs(name, sceneId, "", generateLogic), true);
+            return (response.Result, response.Messages?.FirstOrDefault() ?? "");
+        } catch (Arcor2ConnectionException ex) {
             return (false, ex.Message);
         }
         return (true, "");
     }
 
     public async override void Confirm() {
-        Base.RequestResult result = await ValidateFields();
+        RequestResult result = await ValidateFields();
         if (result.Success)
             NewProject();
         else {

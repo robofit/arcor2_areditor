@@ -1,11 +1,10 @@
-using Unity;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
 using Base;
 using UnityEngine;
-using System.Collections.Generic;
-using System;
-using System.Threading.Tasks;
-using System.Collections;
-
 
 public abstract class InteractiveObject : Clickable {
 
@@ -17,17 +16,18 @@ public abstract class InteractiveObject : Clickable {
     public bool IsLockedByMe => IsLocked && LockOwner == LandingScreen.Instance.GetUsername();
     public bool IsLockedByOtherUser => IsLocked && LockOwner != LandingScreen.Instance.GetUsername();
 
-    public bool Blocklisted => blocklisted;
-
-    public SelectorItem SelectorItem;
-    public List<Collider> Colliders = new List<Collider>();
-
-    protected Target offscreenIndicator;
-
     /// <summary>
     /// Indicates that object is on blacklist and should not be listed in aim menu and object visibility should be 0
     /// </summary>
-    private bool blocklisted;
+    public bool Blocklisted {
+        get;
+        private set;
+    }
+
+    public SelectorItem SelectorItem;
+    public List<Collider> Colliders = new();
+
+    protected Target offscreenIndicator;
 
     protected virtual void Start() {
         LockingEventsCache.Instance.OnObjectLockingEvent += OnObjectLockingEvent;
@@ -94,15 +94,15 @@ public abstract class InteractiveObject : Clickable {
         Debug.Assert(!(putOnBlocklist && removeFromBlocklist));
         Debug.Assert(!(putOnBlocklist && enable));
 
-        if (blocklisted && !removeFromBlocklist) 
+        if (Blocklisted && !removeFromBlocklist) 
             return;
         if (putOnBlocklist) {
-            blocklisted = true;
+            Blocklisted = true;
             SelectorMenu.Instance.PutOnBlocklist(SelectorItem);
             PlayerPrefsHelper.SaveBool($"ActionObject/{GetId()}/blocklisted", true);
         }
         if (removeFromBlocklist) {
-            blocklisted = false;
+            Blocklisted = false;
             SelectorMenu.Instance.RemoveFromBlacklist(SelectorItem);
 
             PlayerPrefsHelper.SaveBool($"ActionObject/{GetId()}/blocklisted", false);
@@ -114,7 +114,7 @@ public abstract class InteractiveObject : Clickable {
             collider.enabled = enable;
         }
         if (SelectorItem != null)
-            SelectorItem.gameObject.SetActive(enable || blocklisted);
+            SelectorItem.gameObject.SetActive(enable || Blocklisted);
         if (!enable && SelectorMenu.Instance.GetSelectedObject() == this) {
             SelectorMenu.Instance.DeselectObject(true);
         }
@@ -142,10 +142,14 @@ public abstract class InteractiveObject : Clickable {
         }
 
         try {
-            await WebsocketManager.Instance.WriteLock(GetId(), lockTree);
+            var response = await CommunicationManager.Instance.Client.WriteLockAsync(new WriteLockRequestArgs(GetId(), lockTree));
+            if (!response.Result) {
+                Debug.LogError(string.Join(",", response.Messages));
+                return false;
+            }
             lockedTree = lockTree;
             return true;
-        } catch (RequestFailedException ex) {
+        } catch (Arcor2ConnectionException ex) {
             Notifications.Instance.ShowNotification("Failed to lock " + GetName(), ex.Message);
             return false;
         }
@@ -162,20 +166,29 @@ public abstract class InteractiveObject : Clickable {
         }
 
         try {
-            await WebsocketManager.Instance.WriteUnlock(GetId());
+            var response = await CommunicationManager.Instance.Client.WriteUnlockAsync(new WriteUnlockRequestArgs(GetId()));
+            if (!response.Result) {
+                Debug.LogError(string.Join(",", response.Messages));
+                return false;
+            }
+
             IsLocked = false;
             return true;
-        } catch (RequestFailedException ex) {
+        } catch (Arcor2ConnectionException ex) {
             Debug.LogError(ex.Message);
             return false;
         }
     }
 
-    public virtual async Task<bool> UpdateLock(IO.Swagger.Model.UpdateLockRequestArgs.NewTypeEnum newType) {
+    public virtual async Task<bool> UpdateLock(UpdateLockRequestArgs.NewTypeEnum newType) {
         try {
-            await WebsocketManager.Instance.UpdateLock(GetId(), newType);
+            var response = await CommunicationManager.Instance.Client.UpdateLockAsync(new UpdateLockRequestArgs(GetId(), newType));
+            if (!response.Result) {
+                Debug.LogError(string.Join(",", response.Messages));
+                return false;
+            }
             return true;
-        } catch (RequestFailedException ex) {
+        } catch (Arcor2ConnectionException ex) {
             Debug.LogError("failed to update lock");
             return false;
         }

@@ -1,24 +1,28 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using Michsky.UI.ModernUIPack;
-using UnityEngine.UI;
 using System;
+using System.Collections.Generic;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
+using Base;
+using Michsky.UI.ModernUIPack;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
 
 public abstract class Dialog : MonoBehaviour
 {
     protected ModalWindowManager windowManager;
 
-    private bool visible;
-    public bool Visible => visible;
+    public bool Visible {
+        get;
+        private set;
+    }
 
     public virtual void Awake() {
         windowManager = GetComponent<ModalWindowManager>();
     }
 
-    protected virtual void UpdateToggleGroup(GameObject togglePrefab, GameObject toggleGroup, List<IO.Swagger.Model.ListScenesResponseData> scenes) {
-        List<string> items = new List<string>();
-        foreach (IO.Swagger.Model.ListScenesResponseData scene in scenes) {
+    protected virtual void UpdateToggleGroup(GameObject togglePrefab, GameObject toggleGroup, List<ListScenesResponseData> scenes) {
+        List<string> items = new();
+        foreach (ListScenesResponseData scene in scenes) {
             items.Add(scene.Name);
         }
         UpdateToggleGroup(togglePrefab, toggleGroup, items);
@@ -33,7 +37,7 @@ public abstract class Dialog : MonoBehaviour
         foreach (string item in items) {
 
             GameObject toggle = Instantiate(togglePrefab, toggleGroup.transform);
-            foreach (TMPro.TextMeshProUGUI text in toggle.GetComponentsInChildren<TMPro.TextMeshProUGUI>()) {
+            foreach (TextMeshProUGUI text in toggle.GetComponentsInChildren<TextMeshProUGUI>()) {
                 text.text = item;
             }
             toggle.GetComponent<Toggle>().group = toggleGroup.GetComponent<ToggleGroup>();
@@ -44,25 +48,25 @@ public abstract class Dialog : MonoBehaviour
     protected virtual string GetSelectedValue(GameObject toggleGroup) {
         foreach (Toggle toggle in toggleGroup.GetComponentsInChildren<Toggle>()) {
             if (toggle.isOn) {
-                return toggle.GetComponentInChildren<TMPro.TextMeshProUGUI>().text;
+                return toggle.GetComponentInChildren<TextMeshProUGUI>().text;
             }
         }
-        throw new Base.ItemNotFoundException("Nothing selected");
+        throw new ItemNotFoundException("Nothing selected");
     }
 
     protected virtual void SetSelectedValue(GameObject toggleGroup, string name) {
         foreach (Toggle toggle in toggleGroup.GetComponentsInChildren<Toggle>()) {
-            TMPro.TextMeshProUGUI text = toggle.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+            TextMeshProUGUI text = toggle.GetComponentInChildren<TextMeshProUGUI>();
             if (text.text == name) {
                 toggle.isOn = true;
                 return;
             }
         }
-        throw new Base.ItemNotFoundException("Nothing selected");
+        throw new ItemNotFoundException("Nothing selected");
     }
 
     public virtual void Close() {
-        visible = false;
+        Visible = false;
         InputHandler.Instance.OnEscPressed -= OnEscPressed;
         InputHandler.Instance.OnEnterPressed -= OnEnterPressed;
         windowManager.CloseWindow();
@@ -70,7 +74,7 @@ public abstract class Dialog : MonoBehaviour
     }
 
     public virtual void Open() {
-        visible = true;
+        Visible = true;
         InputHandler.Instance.OnEscPressed += OnEscPressed;
         InputHandler.Instance.OnEnterPressed += OnEnterPressed;
         windowManager.OpenWindow();

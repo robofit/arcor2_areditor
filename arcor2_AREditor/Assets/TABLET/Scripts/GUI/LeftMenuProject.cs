@@ -1,13 +1,15 @@
 using System;
-using UnityEngine.UI;
-using Base;
-using IO.Swagger.Model;
-using UnityEngine;
-using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json;
+using System.Threading.Tasks;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
+using Base;
+using DanielLochner.Assets.SimpleSideMenu;
+using UnityEngine;
+using UnityEngine.UI;
 using static Base.GameManager;
+using Action = Base.Action;
 
 public class LeftMenuProject : LeftMenu {
 
@@ -47,8 +49,8 @@ public class LeftMenuProject : LeftMenu {
         AddActionPointButton.SetInteractivity(true);
         AddActionPointButton2.SetInteractivity(true);
 #endif
-        Base.ProjectManager.Instance.OnProjectSavedSatusChanged += OnProjectSavedStatusChanged;
-        Base.GameManager.Instance.OnOpenProjectEditor += OnOpenProjectEditor;
+        ProjectManager.Instance.OnProjectSavedSatusChanged += OnProjectSavedStatusChanged;
+        GameManager.Instance.OnOpenProjectEditor += OnOpenProjectEditor;
 
         SceneManager.Instance.OnSceneStateEvent += OnSceneStateEvent;
 
@@ -74,7 +76,7 @@ public class LeftMenuProject : LeftMenu {
     }
 
     protected override void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
-        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor) {
+        if (GameManager.Instance.GetGameState() == GameStateEnum.ProjectEditor) {
             base.OnSceneStateEvent(sender, args);
             UpdateBtns();
         }
@@ -155,13 +157,14 @@ public class LeftMenuProject : LeftMenu {
                     AddActionButton.SetInteractivity(ProjectManager.Instance.AnyAvailableAction, $"{ADD_ACTION_LABEL}\n(no actions available)");
                     AddActionButton2.SetInteractivity(ProjectManager.Instance.AnyAvailableAction, $"{ADD_ACTION_LABEL}\n(no actions available)");
                     CopyButton.SetInteractivity(false, $"{COPY_LABEL}\n(checking...)");
-                    WebsocketManager.Instance.CopyActionPoint(obj.GetId(), null, obj.GetName(), CopyActionPointDryRunCallback, true);
+                    CommunicationManager.Instance.Client
+                        .DuplicateActionPointAsync(new CopyActionPointRequestArgs(obj.GetId(), null), true).ContinueWith(CopyActionPointCallback, TaskScheduler.FromCurrentSynchronizationContext());
                     RunDebugButton.SetInteractivity(true);
                     RunDebugButton.SetDescription(ap.BreakPoint ? TRIGGER_BREAKPOINT_OFF_LABEL : TRIGGER_BREAKPOINT_ON_LABEL);
                 } else {
                     AddActionButton.SetInteractivity(false, $"{ADD_ACTION_LABEL}\n(selected object is not action point)");
                     AddActionButton2.SetInteractivity(false, $"{ADD_ACTION_LABEL}\n(selected object is not action point)");
-                    CopyButton.SetInteractivity(obj is Base.Action && !(obj is StartEndAction), $"{COPY_LABEL}\n(selected object cannot be duplicated)");
+                    CopyButton.SetInteractivity(obj is Action && !(obj is StartEndAction), $"{COPY_LABEL}\n(selected object cannot be duplicated)");
                 }
 
                 ActionPointAimingMenuButton.SetInteractivity(obj is ActionPoint3D || obj is APOrientation, $"{ACTION_POINT_AIMING_LABEL}\n(selected object is not action point or orientation)");
@@ -178,7 +181,7 @@ public class LeftMenuProject : LeftMenu {
                     AddConnectionButton.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(connections are hidden)");
                     AddConnectionButton2.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(connections are hidden)");
                 } else {
-                    if (obj is Base.Action) {
+                    if (obj is Action) {
                         if (obj is EndAction) {
                             AddConnectionButton.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(end action could not be connected to anything else)");
                         } else {
@@ -233,6 +236,15 @@ public class LeftMenuProject : LeftMenu {
         }
     }
 
+    private void CopyActionPointCallback(Task<CopyActionPointResponse> task) {
+        CopyActionPointResponse response = task.Result;
+        if (response.Result) {
+            CopyButton.SetInteractivity(true);
+        } else {
+            CopyButton.SetInteractivity(false, response.Messages.FirstOrDefault());
+        }
+    }
+
     public override void DeactivateAllSubmenus() {
         base.DeactivateAllSubmenus();
 
@@ -252,18 +264,17 @@ public class LeftMenuProject : LeftMenu {
     }
 
 
-
     public void SaveProject() {
         SaveButton.SetInteractivity(false, "Saving project...");
-        Base.GameManager.Instance.SaveProject();
+        GameManager.Instance.SaveProject();
     }
 
     public async void BuildPackage(string name) {
         try {
-            await Base.GameManager.Instance.BuildPackage(name);
+            await GameManager.Instance.BuildPackage(name);
             InputDialog.Close();
             Notifications.Instance.ShowToastMessage("Package was built sucessfully.");
-        } catch (Base.RequestFailedException ex) {
+        } catch (Arcor2ConnectionException ex) {
 
         }
 
@@ -273,10 +284,17 @@ public class LeftMenuProject : LeftMenu {
     public async void RunProject() {
         GameManager.Instance.ShowLoadingScreen("Running project", true);
         try {
-            await Base.WebsocketManager.Instance.TemporaryPackage(new List<string>());
+            var response = await CommunicationManager.Instance.Client.RunTemporaryPackageAsync(new TemporaryPackageRequestArgs(breakpoints:new List<string>()));
+            if (!response.Result) {
+                Notifications.Instance.ShowNotification("Failed to run temporary package", string.Join(',', response.Messages));
+                Debug.LogError(string.Join(',', response.Messages));
+                GameManager.Instance.HideLoadingScreen(true);
+                return;
+            }
+
             MainMenu.Instance.Close();
-        } catch (RequestFailedException ex) {
-            Base.Notifications.Instance.ShowNotification("Failed to run temporary package", ex.Message);
+        } catch (Arcor2ConnectionException ex) {
+            Notifications.Instance.ShowNotification("Failed to run temporary package", ex.Message);
             Debug.LogError(ex);
             GameManager.Instance.HideLoadingScreen(true);
         }
@@ -286,7 +304,7 @@ public class LeftMenuProject : LeftMenu {
         InputDialog.Open("Build package",
                          "",
                          "Package name",
-                         Base.ProjectManager.Instance.ProjectMeta.Name + DateTime.Now.ToString("yyyy-dd-M--HH-mm-ss"),
+                         ProjectManager.Instance.ProjectMeta.Name + DateTime.Now.ToString("yyyy-dd-M--HH-mm-ss"),
                          () => BuildPackage(InputDialog.GetValue()),
                          () => InputDialog.Close());
     }
@@ -298,7 +316,7 @@ public class LeftMenuProject : LeftMenu {
 
 
     public override async void UpdateBuildAndSaveBtns() {
-        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor)
+        if (GameManager.Instance.GetGameState() != GameStateEnum.ProjectEditor)
             return;
         if (CurrentSubmenuOpened != LeftMenuSelection.Home)
             return;
@@ -307,7 +325,14 @@ public class LeftMenuProject : LeftMenu {
         SaveButton.SetInteractivity(false, "Save project\n(checking...)");
         CloseButton.SetInteractivity(false, "Close project\n(checking...)");
         if (SceneManager.Instance.SceneStarted) {
-            WebsocketManager.Instance.StopScene(true, StopSceneCallback);
+            CommunicationManager.Instance.Client.StopSceneAsync(true).ContinueWith(task => {
+                StopSceneResponse response = task.Result;
+                if (response.Messages != null) {
+                    CloseButton.SetInteractivity(response.Result, response.Messages.FirstOrDefault());
+                } else {
+                    CloseButton.SetInteractivity(response.Result);
+                }
+            }, TaskScheduler.FromCurrentSynchronizationContext());
         } else {
             CloseButton.SetInteractivity(true);
         }
@@ -316,36 +341,17 @@ public class LeftMenuProject : LeftMenu {
             BuildPackageButton.SetInteractivity(true);
             SaveButton.SetInteractivity(false, "Save project\n(there are no unsaved changes)");
         } else {
-            WebsocketManager.Instance.SaveProject(true, SaveProjectCallback);
+            CommunicationManager.Instance.Client.SaveProjectAsync(true).ContinueWith(task => {
+                SaveProjectResponse response = task.Result;
+                if (response.Messages != null) {
+                    SaveButton.SetInteractivity(response.Result, response.Messages.FirstOrDefault());
+                } else {
+                    SaveButton.SetInteractivity(response.Result);
+                }
+            }, TaskScheduler.FromCurrentSynchronizationContext());
             BuildPackageButton.SetInteractivity(false, "Build package\n(there are unsaved changes on project)");
             //RunButton.SetInteractivity(false, "There are unsaved changes on project");
             //RunButton2.SetInteractivity(false, "There are unsaved changes on project");
-        }
-    }
-
-    private void StopSceneCallback(string _, string data) {
-        CloseProjectResponse response = JsonConvert.DeserializeObject<CloseProjectResponse>(data);
-        if (response.Messages != null) {
-            CloseButton.SetInteractivity(response.Result, response.Messages.FirstOrDefault());
-        } else {
-            CloseButton.SetInteractivity(response.Result);
-        }
-    }
-
-    protected void SaveProjectCallback(string _, string data) {
-        SaveProjectResponse response = JsonConvert.DeserializeObject<SaveProjectResponse>(data);
-        if (response.Messages != null) {
-            SaveButton.SetInteractivity(response.Result, response.Messages.FirstOrDefault());
-        } else {
-            SaveButton.SetInteractivity(response.Result);
-        }
-    }
-    private void CopyActionPointDryRunCallback(string _, string data) {
-        CopyActionPointResponse response = JsonConvert.DeserializeObject<CopyActionPointResponse>(data);
-        if (response.Result) {
-            CopyButton.SetInteractivity(true);
-        } else {
-            CopyButton.SetInteractivity(false, response.Messages.FirstOrDefault());
         }
     }
 
@@ -365,23 +371,24 @@ public class LeftMenuProject : LeftMenu {
             return;
         if (selectedObject.GetType() == typeof(ActionPoint3D)) {
             selectAPNameWhenCreated = selectedObject.GetName() + "_copy";
-            WebsocketManager.Instance.CopyActionPoint(selectedObject.GetId(), null, selectedObject.GetName(), CopyActionPointCallback);
-        } else if (selectedObject is Base.Action action) {
+            CommunicationManager.Instance.Client.DuplicateActionPointAsync(new CopyActionPointRequestArgs(selectedObject.GetId(), null!)).ContinueWith(
+                (task) => {
+                    CopyActionPointResponse response = task.Result;
+                    if (response.Result) {
+                        Notifications.Instance.ShowToastMessage($"Action point {selectedObject.name} was duplicated");
+                    } else {
+                        Notifications.Instance.ShowNotification("Failed to duplicate action point", response.Messages.FirstOrDefault());
+                    }
+                });
+
+        } else if (selectedObject is Action action) {
             ActionPickerMenu.Instance.DuplicateAction(action);
         }
     }
 
-    private void CopyActionPointCallback(string actionPointName, string data) {
-        CopyActionPointResponse response = JsonConvert.DeserializeObject<CopyActionPointResponse>(data);
-        if (response.Result) {
-            Notifications.Instance.ShowToastMessage($"Action point {actionPointName} was duplicated");
-        } else {
-            Notifications.Instance.ShowNotification("Failed to duplicate action point", response.Messages.FirstOrDefault());
-        }
-    }
 
     public async void AddConnectionClick() {
-        if (SelectorMenu.Instance.GetSelectedObject() is Base.Action action) {
+        if (SelectorMenu.Instance.GetSelectedObject() is Action action) {
             action.AddConnection();
         }
     }
@@ -423,7 +430,7 @@ public class LeftMenuProject : LeftMenu {
     }
 
     public async void AddActionPointUsingRobotClick() {
-        string armId = null;        
+        string armId = null;
 
         // if any robot is targeted by the cursor, automatically select its end effector
         InteractiveObject selectedObject = SelectorMenu.Instance.GetSelectedObject();
@@ -476,19 +483,18 @@ public class LeftMenuProject : LeftMenu {
 
         GameManager.Instance.ShowLoadingScreen("Adding AP...");
 
-        WebsocketManager.Instance.AddActionPointUsingRobot(name, eeId, robotId, false, AddActionPointUsingRobotCallback, armId);
+        CommunicationManager.Instance.Client.AddActionPointUsingRobotAsync(
+            new AddApUsingRobotRequestArgs(robotId, eeId, name, armId)).ContinueWith((task) => {
+            AddApUsingRobotResponse response = task.Result;
+            GameManager.Instance.HideLoadingScreen();
+            if (response.Result) {
+                Notifications.Instance.ShowToastMessage("Action point created");
+            } else {
+                Notifications.Instance.ShowNotification("Failed to add action point",
+                    response.Messages.FirstOrDefault());
+            }
+        }, TaskScheduler.FromCurrentSynchronizationContext());
         selectAPNameWhenCreated = name;
-    }
-
-
-    protected void AddActionPointUsingRobotCallback(string nothing, string data) {
-        AddApUsingRobotResponse response = JsonConvert.DeserializeObject<AddApUsingRobotResponse>(data);
-        GameManager.Instance.HideLoadingScreen();
-        if (response.Result) {
-            Notifications.Instance.ShowToastMessage("Action point created");
-        } else {
-            Notifications.Instance.ShowNotification("Failed to add action point", response.Messages.FirstOrDefault());
-        }
     }
 
     public async void ActionPointAimingClick() {
@@ -521,8 +527,8 @@ public class LeftMenuProject : LeftMenu {
 
 
     public override void UpdateVisibility() {
-        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor &&
-            MainMenu.Instance.CurrentState() == DanielLochner.Assets.SimpleSideMenu.SimpleSideMenu.State.Closed) {
+        if (GameManager.Instance.GetGameState() == GameStateEnum.ProjectEditor &&
+            MainMenu.Instance.CurrentState() == SimpleSideMenu.State.Closed) {
             UpdateVisibility(true);
         } else {
             UpdateVisibility(false);
@@ -536,7 +542,7 @@ public class LeftMenuProject : LeftMenu {
     }
 
     public async void ShowCloseProjectDialog() {
-        (bool success, _) = await Base.GameManager.Instance.CloseProject(false);
+        (bool success, _) = await GameManager.Instance.CloseProject(false);
         if (!success) {
             string message = "Are you sure you want to close current project? ";
             if (ProjectManager.Instance.ProjectChanged) {
@@ -559,7 +565,7 @@ public class LeftMenuProject : LeftMenu {
 
     public async void CloseProject() {
         if (SceneManager.Instance.SceneStarted)
-            WebsocketManager.Instance.StopScene(false, null);
+            await CommunicationManager.Instance.Client.StopSceneAsync();
         GameManager.Instance.ShowLoadingScreen("Closing project..");
         _ = await GameManager.Instance.CloseProject(true);
         ConfirmationDialog.Close();
@@ -576,14 +582,18 @@ public class LeftMenuProject : LeftMenu {
                 RunProject();
             } else if (selectedObject is Action3D action) {
                 action.ActionBeingExecuted = true;
-                await WebsocketManager.Instance.ExecuteAction(selectedObject.GetId(), false);
+                var response = await CommunicationManager.Instance.Client.ExecuteActionAsync(new ExecuteActionRequestArgs(selectedObject.GetId()));
+                if (!response.Result) {
+                    Notifications.Instance.ShowNotification("Failed to execute action", string.Join(',', response.Messages));
+                    return;
+                }
                 // TODO: enable stop execution (_ = GameManager.Instance.CancelExecution();)
                 action.ActionBeingExecuted = false;
             } else if (selectedObject.GetType() == typeof(APOrientation)) {
 
                 //await WebsocketManager.Instance.MoveToActionPointOrientation(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetId(), 0.5m, selectedObject.GetId(), false);
             }
-        } catch (RequestFailedException ex) {
+        } catch (Arcor2ConnectionException ex) {
             Notifications.Instance.ShowNotification("Failed to execute action", ex.Message);
             return;
         }
@@ -604,8 +614,12 @@ public class LeftMenuProject : LeftMenu {
         try {
             ConfirmationDialog.Close();
             GameManager.Instance.ShowLoadingScreen("Starting...");
-            await WebsocketManager.Instance.TemporaryPackage(ProjectManager.Instance.GetAllBreakpoints(), pause);
-        } catch (RequestFailedException ex) {
+            var response = await CommunicationManager.Instance.Client.RunTemporaryPackageAsync(new TemporaryPackageRequestArgs(pause, ProjectManager.Instance.GetAllBreakpoints()));
+            if (!response.Result) {
+                Notifications.Instance.ShowNotification("Failed to debug project", string.Join(',', response.Messages));
+                GameManager.Instance.HideLoadingScreen();
+            }
+        } catch (Arcor2ConnectionException ex) {
             Notifications.Instance.ShowNotification("Failed to debug project", ex.Message);
             GameManager.Instance.HideLoadingScreen();
         }

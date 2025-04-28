@@ -1,6 +1,7 @@
 using System;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
 using Base;
-using IO.Swagger.Model;
 using UnityEngine;
 
 public class ActionObjectNoPose : ActionObject {
@@ -26,11 +27,11 @@ public class ActionObjectNoPose : ActionObject {
     }
 
     public override Quaternion GetSceneOrientation() {
-        throw new RequestFailedException("This object has no pose");
+        throw new Arcor2ConnectionException("This object has no pose");
     }
 
     public override Vector3 GetScenePosition() {
-        throw new RequestFailedException("This object has no pose");
+        throw new Arcor2ConnectionException("This object has no pose");
     }
 
     public override bool HasMenu() {
@@ -59,11 +60,11 @@ public class ActionObjectNoPose : ActionObject {
     }
 
     public override void SetSceneOrientation(Quaternion orientation) {
-        throw new RequestFailedException("This object has no pose");
+        throw new Arcor2ConnectionException("This object has no pose");
     }
 
     public override void SetScenePosition(Vector3 position) {
-        throw new RequestFailedException("This object has no pose");
+        throw new Arcor2ConnectionException("This object has no pose");
     }
 
     public override void Show() {
@@ -71,7 +72,7 @@ public class ActionObjectNoPose : ActionObject {
     }
 
     public override void StartManipulation() {
-        throw new RequestFailedException("This object has no pose");
+        throw new Arcor2ConnectionException("This object has no pose");
     }
 
     public override void UpdateColor() {

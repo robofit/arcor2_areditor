@@ -1,11 +1,14 @@
-using Newtonsoft.Json;
-using RestSharp.Extensions;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
+using ARServer.Models;
+using Newtonsoft.Json;
+using RestSharp.Extensions;
 using UnityEngine;
 
 namespace Base {
-    public class ParameterMetadata : IO.Swagger.Model.ParameterMeta {
+    public class ParameterMetadata : ParameterMeta {
 
         public const string INT = "integer";
         public const string DOUBLE = "double";
@@ -18,35 +21,41 @@ namespace Base {
         public const string POSE = "pose";
         public const string POSITION = "position";
 
-        public ARServer.Models.BaseParameterExtra ParameterExtra = null;
+        public BaseParameterExtra ParameterExtra = null;
 
-        public ParameterMetadata(IO.Swagger.Model.ParameterMeta actionParameterMeta): base(defaultValue: actionParameterMeta.DefaultValue, description: actionParameterMeta.Description, dynamicValue: actionParameterMeta.DynamicValue,
+        public ParameterMetadata(ParameterMeta actionParameterMeta): base(defaultValue: actionParameterMeta.DefaultValue, description: actionParameterMeta.Description, dynamicValue: actionParameterMeta.DynamicValue,
             dynamicValueParents: actionParameterMeta.DynamicValueParents, extra: actionParameterMeta.Extra, name: actionParameterMeta.Name, type: actionParameterMeta.Type) {
             if (Extra != null && Extra != "{}") {// TODO solve better than with test of brackets
 
                 switch (Type) {
                     case STR_ENUM:
-                        ParameterExtra = JsonConvert.DeserializeObject<ARServer.Models.StringEnumParameterExtra>(Extra);
+                        ParameterExtra = JsonConvert.DeserializeObject<StringEnumParameterExtra>(Extra);
                         break;
                     case INT_ENUM:
-                        ParameterExtra = JsonConvert.DeserializeObject<ARServer.Models.IntegerEnumParameterExtra>(Extra);
+                        ParameterExtra = JsonConvert.DeserializeObject<IntegerEnumParameterExtra>(Extra);
                         break;
                     case INT:
-                        ParameterExtra = JsonConvert.DeserializeObject<ARServer.Models.IntParameterExtra>(Extra);
+                        ParameterExtra = JsonConvert.DeserializeObject<IntParameterExtra>(Extra);
                         break;
                     case DOUBLE:
-                        ParameterExtra = JsonConvert.DeserializeObject<ARServer.Models.DoubleParameterExtra>(Extra);
+                        ParameterExtra = JsonConvert.DeserializeObject<DoubleParameterExtra>(Extra);
                         break;
                 }
             }
             
         }
 
-        public async Task<List<string>> LoadDynamicValues(string actionProviderId, List<IO.Swagger.Model.IdValue> parentParams) {
+        public async Task<List<string>> LoadDynamicValues(string actionProviderId, List<IdValue> parentParams) {
             if (!DynamicValue) {
                 return new List<string>();
             }
-            return await WebsocketManager.Instance.GetActionParamValues(actionProviderId, Name, parentParams);
+
+            try {
+                return (await CommunicationManager.Instance.Client.GetActionParameterValuesAsync(
+                    new ActionParamValuesRequestArgs(actionProviderId, Name, parentParams))).Data;
+            } catch {
+                return new List<string>();
+            }
         }
 
         public T GetDefaultValue<T>() {
@@ -54,9 +63,9 @@ namespace Base {
                 if (ParameterExtra != null) {
                     switch (Type) {
                         case INT:
-                            return (T) ((ARServer.Models.IntParameterExtra) ParameterExtra).Minimum.ChangeType(typeof(T));
+                            return (T) ((IntParameterExtra) ParameterExtra).Minimum.ChangeType(typeof(T));
                         case DOUBLE:
-                            return (T) ((ARServer.Models.DoubleParameterExtra) ParameterExtra).Minimum.ChangeType(typeof(T));
+                            return (T) ((DoubleParameterExtra) ParameterExtra).Minimum.ChangeType(typeof(T));
                     }
                 } else {
                     return default;
@@ -96,7 +105,7 @@ namespace Base {
                     }
                 default:
                     Debug.LogError($"Trying to use unsupported parameter type: {Type}");
-                    throw new RequestFailedException("Unknown type");
+                    throw new Arcor2ConnectionException("Unknown type");
 
             }
         }

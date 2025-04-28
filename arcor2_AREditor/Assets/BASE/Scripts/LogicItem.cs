@@ -1,46 +1,42 @@
-using System;
 using Base;
-using UnityEngine;
 
 public class LogicItem 
 {
-    public IO.Swagger.Model.LogicItem Data;
+    public Arcor2.ClientSdk.Communication.OpenApi.Models.LogicItem Data;
 
     private Connection connection;
 
-    private InputOutput input;
-    private PuckOutput output;
-
     public InputOutput Input {
-        get => input;
-        set => input = value;
-    }
-    public PuckOutput Output {
-        get => output;
-        set => output = value;
+        get;
+        set;
     }
 
-    public LogicItem(IO.Swagger.Model.LogicItem logicItem) {
+    public PuckOutput Output {
+        get;
+        set;
+    }
+
+    public LogicItem(Arcor2.ClientSdk.Communication.OpenApi.Models.LogicItem logicItem) {
         Data = logicItem;
         UpdateConnection(logicItem);
     }
 
     public void Remove() {
-        input.RemoveLogicItem(Data.Id);
-        output.RemoveLogicItem(Data.Id);
+        Input.RemoveLogicItem(Data.Id);
+        Output.RemoveLogicItem(Data.Id);
         ConnectionManagerArcoro.Instance.DestroyConnection(connection);
         connection = null;
     }
 
-    public void UpdateConnection(IO.Swagger.Model.LogicItem logicItem) {
+    public void UpdateConnection(Arcor2.ClientSdk.Communication.OpenApi.Models.LogicItem logicItem) {
         if (connection != null) {
             Remove();
         }
-        input = ProjectManager.Instance.GetAction(logicItem.End).Input;
-        output = ProjectManager.Instance.GetAction(logicItem.Start).Output;
-        input.AddLogicItem(Data.Id);
-        output.AddLogicItem(Data.Id);        
-        connection = ConnectionManagerArcoro.Instance.CreateConnection(input.gameObject, output.gameObject);
+        Input = ProjectManager.Instance.GetAction(logicItem.End).Input;
+        Output = ProjectManager.Instance.GetAction(logicItem.Start).Output;
+        Input.AddLogicItem(Data.Id);
+        Output.AddLogicItem(Data.Id);        
+        connection = ConnectionManagerArcoro.Instance.CreateConnection(Input.gameObject, Output.gameObject);
         //output.Action.UpdateRotation(input.Action);
     }
 

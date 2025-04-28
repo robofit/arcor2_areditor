@@ -3,9 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using IO.Swagger.Model;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
 using UnityEngine;
-using WebSocketSharp;
+using UnityEngine.Events;
 
 namespace Base {
 
@@ -48,7 +49,7 @@ namespace Base {
         /// <summary>
         /// Holds all action objects in scene
         /// </summary>
-        public Dictionary<string, ActionObject> ActionObjects = new Dictionary<string, ActionObject>();
+        public Dictionary<string, ActionObject> ActionObjects = new();
         /// <summary>
         /// Spawn point for new action objects. Typically scene origin.
         /// </summary>
@@ -118,23 +119,15 @@ namespace Base {
         private bool loadResources = false;
 
         /// <summary>
-        /// Defines if scene was started on server - e.g. if all robots and other action objects
-        /// are instantioned and are ready
-        /// </summary>
-        private bool sceneStarted = false;
-
-        /// <summary>
         /// Flag which indicates whether scene update event should be trigered during update
         /// </summary>
         private bool updateScene = false;
 
-        public event AREditorEventArgs.SceneStateHandler OnSceneStateEvent;
+        public event EventHandler<SceneStateEventArgs> OnSceneStateEvent;
 
         public IRobot SelectedRobot;
 
         public string SelectedArmId;
-
-        private RobotEE selectedEndEffector;
 
         public string SelectCreatedActionObject;
         public bool OpenTransformMenuOnCreatedObject;
@@ -161,13 +154,18 @@ namespace Base {
             }
         }
 
+        /// <summary>
+        /// Defines if scene was started on server - e.g. if all robots and other action objects
+        /// are instantioned and are ready
+        /// </summary>
         public bool SceneStarted {
-            get => sceneStarted;
-            private set => sceneStarted = value;
-        }
+            get;
+            private set;
+        } = false;
+
         public RobotEE SelectedEndEffector {
-            get => selectedEndEffector;
-            set => selectedEndEffector = value;
+            get;
+            set;
         }
 
         /// <summary>
@@ -178,7 +176,7 @@ namespace Base {
         /// <param name="customCollisionModels">Allows to override collision models with different ones. Usable e.g. for
         /// project running screen.</param>
         /// <returns>True if scene successfully created, false otherwise</returns>
-        public async Task<bool> CreateScene(IO.Swagger.Model.Scene scene, bool loadResources, CollisionModels customCollisionModels = null) {
+        public async Task<bool> CreateScene(Scene scene, bool loadResources, CollisionModels customCollisionModels = null) {
             Debug.Assert(ActionsManager.Instance.ActionsReady);
             if (SceneMeta != null)
                 return false;
@@ -189,9 +187,9 @@ namespace Base {
 
             UpdateActionObjects(scene, customCollisionModels);
 
-            if (scene.Modified == System.DateTime.MinValue) { //new scene, never saved
+            if (scene.Modified == DateTime.MinValue) { //new scene, never saved
                 sceneChanged = true;
-            } else if (scene.IntModified == System.DateTime.MinValue) {
+            } else if (scene.IntModified == DateTime.MinValue) {
                 sceneChanged = false;
             } else {
                 sceneChanged = scene.IntModified > scene.Modified;
@@ -233,7 +231,7 @@ namespace Base {
         /// Gets scene metadata.
         /// </summary>
         /// <returns></returns>
-        public IO.Swagger.Model.Scene GetScene() {
+        public Scene GetScene() {
             if (SceneMeta == null)
                 return null;
             Scene scene = SceneMeta;
@@ -257,21 +255,20 @@ namespace Base {
         /// Initialization of scene manager
         /// </summary>
         private void Start() {
-            WebsocketManager.Instance.OnRobotEefUpdated += RobotEefUpdated;
-            WebsocketManager.Instance.OnRobotJointsUpdated += RobotJointsUpdated;
-            WebsocketManager.Instance.OnSceneBaseUpdated += OnSceneBaseUpdated;
-            WebsocketManager.Instance.OnSceneStateEvent += OnSceneState;
+            CommunicationManager.Instance.Client.RobotEndEffectorUpdated += CommunicationManager.SafeEventHandler<RobotEndEffectorUpdatedEventArgs>(RobotEefUpdated);
+            CommunicationManager.Instance.Client.RobotJointsUpdated += CommunicationManager.SafeEventHandler<RobotJointsUpdatedEventArgs>(RobotJointsUpdated);
+            CommunicationManager.Instance.Client.SceneBaseUpdated += CommunicationManager.SafeEventHandler<BareSceneEventArgs>(OnSceneBaseUpdated);
+            CommunicationManager.Instance.Client.SceneState += CommunicationManager.SafeEventHandler<SceneStateEventArgs>(OnSceneState);
 
-            WebsocketManager.Instance.OnOverrideAdded += OnOverrideAddedOrUpdated;
-            WebsocketManager.Instance.OnOverrideUpdated += OnOverrideAddedOrUpdated;
-            WebsocketManager.Instance.OnOverrideBaseUpdated += OnOverrideAddedOrUpdated;
-            WebsocketManager.Instance.OnOverrideRemoved += OnOverrideRemoved;
+            CommunicationManager.Instance.Client.ProjectOverrideAdded += CommunicationManager.SafeEventHandler<ParameterEventArgs>(OnOverrideAddedOrUpdated);
+            CommunicationManager.Instance.Client.ProjectOverrideUpdated += CommunicationManager.SafeEventHandler<ParameterEventArgs>(OnOverrideAddedOrUpdated);
+            CommunicationManager.Instance.Client.ProjectOverrideRemoved += CommunicationManager.SafeEventHandler<ParameterEventArgs>(OnOverrideRemoved);
         }
 
         private void OnOverrideRemoved(object sender, ParameterEventArgs args) {
             try {
-                ActionObject actionObject = GetActionObject(args.ObjectId);
-                actionObject.Overrides.Remove(args.Parameter.Name);
+                ActionObject actionObject = GetActionObject(args.ParentId);
+                actionObject.Overrides.Remove(args.Data.Name);
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
 
@@ -281,10 +278,10 @@ namespace Base {
         private void OnOverrideAddedOrUpdated(object sender, ParameterEventArgs args) {
 
             try {
-                ActionObject actionObject = GetActionObject(args.ObjectId);
-                if (actionObject.TryGetParameterMetadata(args.Parameter.Name, out ParameterMeta parameterMeta)) {
-                    Parameter p = new Parameter(parameterMeta, args.Parameter.Value);
-                    actionObject.Overrides[args.Parameter.Name] = p;
+                ActionObject actionObject = GetActionObject(args.ParentId);
+                if (actionObject.TryGetParameterMetadata(args.Data.Name, out ParameterMeta parameterMeta)) {
+                    Parameter p = new(parameterMeta, args.Data.Value);
+                    actionObject.Overrides[args.Data.Name] = p;
                 }
 
             } catch (KeyNotFoundException ex) {
@@ -295,7 +292,7 @@ namespace Base {
         }
 
         private async void OnSceneState(object sender, SceneStateEventArgs args) {
-            switch (args.Event.State) {
+            switch (args.Data.State) {
                 case SceneStateData.StateEnum.Starting:
                     GameManager.Instance.ShowLoadingScreen("Going online...");
                     OnSceneStateEvent?.Invoke(this, args); // needs to be rethrown to ensure all subscribers has updated data
@@ -303,8 +300,8 @@ namespace Base {
                 case SceneStateData.StateEnum.Stopping:
                     SceneStarted = false;
                     GameManager.Instance.ShowLoadingScreen("Going offline...");
-                    if (!args.Event.Message.IsNullOrEmpty()) {
-                        Notifications.Instance.ShowNotification("Scene service failed", args.Event.Message);
+                    if (!string.IsNullOrEmpty(args.Data.Message)) {
+                        Notifications.Instance.ShowNotification("Scene service failed", args.Data.Message);
                     }
                     OnSceneStateEvent?.Invoke(this, args); // needs to be rethrown to ensure all subscribers has updated data
                     break;
@@ -324,7 +321,7 @@ namespace Base {
             }
         }
 
-        private IEnumerator WaitUntillSceneValid(UnityEngine.Events.UnityAction callback) {
+        private IEnumerator WaitUntillSceneValid(UnityAction callback) {
             yield return new WaitUntil(() => Valid);
             callback();
         }
@@ -348,7 +345,7 @@ namespace Base {
                     IRobot robot = GetRobot(robotId);
                     if (!string.IsNullOrEmpty(eeId)) {
                         try {
-                            SelectRobotAndEE(await (robot.GetEE(eeId, armId)));
+                            SelectRobotAndEE(await robot.GetEE(eeId, armId));
                         } catch (ItemNotFoundException ex) {
                             PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedEndEffectorId", null);
                             PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedRobotArmId", null);
@@ -405,13 +402,13 @@ namespace Base {
         /// <param name="what">Pose of end effectors or joints</param>
         public void RegisterRobotsForEvent(bool send, RegisterForRobotEventRequestArgs.WhatEnum what) {
             foreach (IRobot robot in GetRobots()) {
-                WebsocketManager.Instance.RegisterForRobotEvent(robot.GetId(), send, what);
+                CommunicationManager.Instance.Client.RegisterForRobotEventAsync(new RegisterForRobotEventRequestArgs(robot.GetId(), what, send));
             }
         }
 
         private void OnSceneBaseUpdated(object sender, BareSceneEventArgs args) {
             if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) {
-                SetSceneMeta(args.Scene);
+                SetSceneMeta(args.Data);
                 updateScene = true;
             }
         }
@@ -439,7 +436,7 @@ namespace Base {
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args">Robot ee data</param>
-        public async void RobotEefUpdated(object sender, RobotEefUpdatedEventArgs args) {
+        public async void RobotEefUpdated(object sender, RobotEndEffectorUpdatedEventArgs args) {
             if (!RobotsEEVisible || !Valid) {
                 return;
             }
@@ -495,7 +492,7 @@ namespace Base {
         /// Loads selected setings from player prefs
         /// </summary>
         internal void LoadSettings() {
-            ActionObjectsVisibility = PlayerPrefsHelper.LoadFloat("AOVisibility" + (VRModeManager.Instance.VRModeON ? "VR" : "AR"), (VRModeManager.Instance.VRModeON ? 1f : 0f));
+            ActionObjectsVisibility = PlayerPrefsHelper.LoadFloat("AOVisibility" + (VRModeManager.Instance.VRModeON ? "VR" : "AR"), VRModeManager.Instance.VRModeON ? 1f : 0f);
             ActionObjectsInteractive = PlayerPrefsHelper.LoadBool("scene/" + SceneMeta.Id + "/AOInteractivity", true);
             RobotsEEVisible = PlayerPrefsHelper.LoadBool("scene/" + SceneMeta.Id + "/RobotsEEVisibility", true);
         }
@@ -542,7 +539,7 @@ namespace Base {
         /// <param name="orientation">Orientation of box where no collision is allowed</param>
         /// <returns>Offset from original transform in world coordinates (relative to scene origin)</returns>
         public Vector3 GetCollisionFreePointAbove(Transform transform, Vector3 bbSize, Quaternion orientation) {
-            GameObject tmpGo = new GameObject();
+            GameObject tmpGo = new();
             tmpGo.transform.parent = transform;
             tmpGo.transform.localPosition = Vector3.zero;
             tmpGo.transform.localRotation = Quaternion.identity;
@@ -571,7 +568,7 @@ namespace Base {
         /// <param name="type">Action object type</param>
         /// <param name="customCollisionModels">Allows to override collision model of spawned action objects</param>
         /// <returns>Spawned action object</returns>
-        public ActionObject SpawnActionObject(IO.Swagger.Model.SceneObject sceneObject, CollisionModels customCollisionModels = null) {
+        public ActionObject SpawnActionObject(SceneObject sceneObject, CollisionModels customCollisionModels = null) {
             if (!ActionsManager.Instance.ActionObjectsMetadata.TryGetValue(sceneObject.Type, out ActionObjectMetadata aom)) {
                 return null;
             }
@@ -651,7 +648,7 @@ namespace Base {
                     GameManager.Instance.GetSceneId(freeName);
                     hasFreeName = false;
                     freeName = sceneName + "_" + i++.ToString();
-                } catch (RequestFailedException) {
+                } catch (Arcor2ConnectionException) {
 
                 }
 
@@ -665,7 +662,7 @@ namespace Base {
         /// </summary>
         /// <returns></returns>
         public List<IRobot> GetRobots() {
-            List<IRobot> robots = new List<IRobot>();
+            List<IRobot> robots = new();
             foreach (ActionObject actionObject in ActionObjects.Values) {
                 if (actionObject.IsRobot()) {
                     robots.Add((RobotActionObject) actionObject);
@@ -675,7 +672,7 @@ namespace Base {
         }
 
         public List<ActionObject> GetCameras() {
-            List<ActionObject> cameras = new List<ActionObject>();
+            List<ActionObject> cameras = new();
             foreach (ActionObject actionObject in ActionObjects.Values) {
                 if (actionObject.IsCamera()) {
                     cameras.Add(actionObject);
@@ -685,7 +682,7 @@ namespace Base {
         }
 
         public List<string> GetCamerasIds() {
-            List<string> cameraIds = new List<string>();
+            List<string> cameraIds = new();
             foreach (ActionObject actionObject in ActionObjects.Values) {
                 if (actionObject.IsCamera()) {
                     cameraIds.Add(actionObject.Data.Id);
@@ -695,7 +692,7 @@ namespace Base {
         }
 
         public List<string> GetCamerasNames() {
-            List<string> camerasNames = new List<string>();
+            List<string> camerasNames = new();
             foreach (ActionObject actionObject in ActionObjects.Values) {
                 if (actionObject.IsCamera()) {
                     camerasNames.Add(actionObject.Data.Name);
@@ -811,8 +808,8 @@ namespace Base {
         /// <param name="customCollisionModels">Allows to override action object collision model</param>
         /// <returns></returns>
         public void UpdateActionObjects(Scene scene, CollisionModels customCollisionModels = null) {
-            List<string> currentAO = new List<string>();
-            foreach (IO.Swagger.Model.SceneObject aoSwagger in scene.Objects) {
+            List<string> currentAO = new();
+            foreach (SceneObject aoSwagger in scene.Objects) {
                 ActionObject actionObject = SpawnActionObject(aoSwagger, customCollisionModels);
                 actionObject.ActionObjectUpdate(aoSwagger);
                 currentAO.Add(aoSwagger.Id);
@@ -844,7 +841,7 @@ namespace Base {
         /// Invoked when scene was saved
         /// </summary>
         internal void SceneSaved() {
-            Base.Notifications.Instance.ShowToastMessage("Scene saved successfully.");
+            Notifications.Instance.ShowToastMessage("Scene saved successfully.");
             OnSceneSaved?.Invoke(this, EventArgs.Empty);
             SceneChanged = false;
         }
@@ -930,7 +927,7 @@ namespace Base {
         /// <param name="id"></param>
         /// <returns></returns>
         public ActionObject GetActionObject(string id) {
-            if (ActionObjects.TryGetValue(id, out Base.ActionObject actionObject))
+            if (ActionObjects.TryGetValue(id, out ActionObject actionObject))
                 return actionObject;
             throw new KeyNotFoundException("Action object not found");
         }
@@ -985,7 +982,7 @@ namespace Base {
         }
 
         public List<ActionObject> GetAllActionObjectsWithoutPose() {
-            List<ActionObject> objects = new List<ActionObject>();
+            List<ActionObject> objects = new();
             foreach (ActionObject actionObject in ActionObjects.Values) {
                 if (!actionObject.ActionObjectMetadata.HasPose && actionObject.gameObject.activeSelf) {
                     objects.Add(actionObject);
@@ -995,7 +992,7 @@ namespace Base {
         }
 
         public async Task<List<RobotEE>> GetAllRobotsEEs() {
-            List<RobotEE> eeList = new List<RobotEE>();
+            List<RobotEE> eeList = new();
             foreach (ActionObject ao in ActionObjects.Values) {
                 if (ao.IsRobot())
                     eeList.AddRange(await ((IRobot) ao).GetAllEE());

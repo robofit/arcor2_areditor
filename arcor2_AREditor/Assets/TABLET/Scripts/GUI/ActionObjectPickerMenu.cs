@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
 using Base;
-using IO.Swagger.Model;
-using Newtonsoft.Json;
 using UnityEngine;
 
 public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu> {
@@ -38,20 +39,20 @@ public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu> {
         SceneManager.Instance.OnSceneChanged += OnSceneChanged;
     }
 
-    private void OnSceneChanged(object sender, System.EventArgs e) {
+    private void OnSceneChanged(object sender, EventArgs e) {
         if (CanvasGroup.alpha > 0)
             UpdateRemoveBtns();
     }
 
-    private void OnObjectTypesRemoved(object sender, StringListEventArgs args) {
+    private void OnObjectTypesRemoved(object sender, ObjectTypesEventArgs args) {
         foreach (ActionButtonWithIconRemovable btn in Content.GetComponentsInChildren<ActionButtonWithIconRemovable>()) {
-            if (args.Data.Contains(btn.GetLabel()))
+            if (args.Data.Select(s => s.Type).Contains(btn.GetLabel()))
                 Destroy(btn.gameObject);
         }
     }
 
-    private void OnObjectTypesAdded(object sender, StringListEventArgs args) {
-        foreach (string objectTypeName in args.Data) {
+    private void OnObjectTypesAdded(object sender, ObjectTypesEventArgs args) {
+        foreach (string objectTypeName in args.Data.Select(s => s.Type)) {
             if (ActionsManager.Instance.ActionObjectsMetadata.TryGetValue(objectTypeName, out ActionObjectMetadata actionObjectMetadata) &&
                 !actionObjectMetadata.Abstract && !actionObjectMetadata.CollisionObject) {
 
@@ -114,8 +115,12 @@ public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu> {
 
     public async void RemoveActionObject(string type) {
         try {
-            await WebsocketManager.Instance.DeleteObjectType(type);
-        } catch (RequestFailedException ex) {
+            var response = await CommunicationManager.Instance.Client.RemoveObjectTypeAsync(type);
+            if (!response.Result) {
+                Notifications.Instance.ShowNotification("Failed to remove object type.", string.Join(',', response.Messages));
+                Debug.LogError(string.Join(',', response.Messages));
+            }
+        } catch (Arcor2ConnectionException ex) {
             Notifications.Instance.ShowNotification("Failed to remove object type.", ex.Message);
             Debug.LogError(ex);
         } finally {
@@ -125,10 +130,10 @@ public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu> {
 
 
     private void AddObjectToScene(string type) {
-        if (Base.ActionsManager.Instance.ActionObjectsMetadata.TryGetValue(type, out Base.ActionObjectMetadata actionObjectMetadata)) {
+        if (ActionsManager.Instance.ActionObjectsMetadata.TryGetValue(type, out ActionObjectMetadata actionObjectMetadata)) {
             ShowAddObjectDialog(type);
         } else {
-            Base.NotificationsModernUI.Instance.ShowNotification("Failed to add object", "Object type " + type + " does not exist!");
+            NotificationsModernUI.Instance.ShowNotification("Failed to add object", "Object type " + type + " does not exist!");
         }
 
     }
@@ -138,21 +143,20 @@ public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu> {
         if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor) {
             return;
         }
-        List<string> types = new List<string>();
+        List<string> types = new();
         foreach (ActionButtonWithIconRemovable b in Content.GetComponentsInChildren<ActionButtonWithIconRemovable>()) {
             if (b == null || b.RemoveBtn == null)
                 return;
             types.Add(b.GetLabel());
         }
-        WebsocketManager.Instance.DeleteObjectTypeDryRun(types, UpdateRemoveBtnCallback);
+        CommunicationManager.Instance.Client.RemoveObjectTypesAsync(types, true)
+            .ContinueWith(UpdateRemoveBtnCallback, TaskScheduler.FromCurrentSynchronizationContext());
     }
 
-    public void UpdateRemoveBtnCallback(string _, string data) {
-        IO.Swagger.Model.DeleteObjectTypesResponse deleteObjectTypeResponse =
-            JsonConvert.DeserializeObject<IO.Swagger.Model.DeleteObjectTypesResponse>(data);
-        Dictionary<string, string> problems = new Dictionary<string, string>();
-        if (deleteObjectTypeResponse.Data != null) {
-            foreach (DeleteObjectTypesResponseData d in deleteObjectTypeResponse.Data) {
+    public void UpdateRemoveBtnCallback(Task<DeleteObjectTypesResponse> response) {
+        Dictionary<string, string> problems = new();
+        if (response.Result.Data != null) {
+            foreach (DeleteObjectTypesResponseData d in response.Result.Data) {
                 problems[d.Id] = d.Error;
             }
         }
@@ -210,27 +214,33 @@ public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu> {
         ObjectTypeMeta newObjectType = CreateObjectTypeMeta(CollisionObjectType.Cube);
         SceneManager.Instance.SelectCreatedActionObject = newObjectType.Type;
         SceneManager.Instance.OpenTransformMenuOnCreatedObject = true;
-        await WebsocketManager.Instance.AddVirtualCollisionObjectToScene(newObjectType.Type, newObjectType.ObjectModel, Sight.Instance.CreatePoseInTheView(), AddVirtualCollisionObjectResponseCallback);
+        await CommunicationManager.Instance.Client.AddVirtualCollisionObjectToSceneAsync(
+            new AddVirtualCollisionObjectToSceneRequestArgs(newObjectType.Type, Sight.Instance.CreatePoseInTheView(), newObjectType.ObjectModel))
+            .ContinueWith(task => AddVirtualCollisionObjectResponseCallback(task, newObjectType.Type), TaskScheduler.FromCurrentSynchronizationContext());
     }
 
     public async void CreateCylinder() {
         ObjectTypeMeta newObjectType = CreateObjectTypeMeta(CollisionObjectType.Cylinder);
         SceneManager.Instance.SelectCreatedActionObject = newObjectType.Type;
         SceneManager.Instance.OpenTransformMenuOnCreatedObject = true;
-        await WebsocketManager.Instance.AddVirtualCollisionObjectToScene(newObjectType.Type, newObjectType.ObjectModel, Sight.Instance.CreatePoseInTheView(), AddVirtualCollisionObjectResponseCallback);
+        await CommunicationManager.Instance.Client.AddVirtualCollisionObjectToSceneAsync(
+                new AddVirtualCollisionObjectToSceneRequestArgs(newObjectType.Type, Sight.Instance.CreatePoseInTheView(), newObjectType.ObjectModel))
+            .ContinueWith(task => AddVirtualCollisionObjectResponseCallback(task, newObjectType.Type), TaskScheduler.FromCurrentSynchronizationContext());
     }
 
     public async void CreateSphere() {
         ObjectTypeMeta newObjectType = CreateObjectTypeMeta(CollisionObjectType.Sphere);
         SceneManager.Instance.SelectCreatedActionObject = newObjectType.Type;
         SceneManager.Instance.OpenTransformMenuOnCreatedObject = true;
-        await WebsocketManager.Instance.AddVirtualCollisionObjectToScene(newObjectType.Type, newObjectType.ObjectModel, Sight.Instance.CreatePoseInTheView(), AddVirtualCollisionObjectResponseCallback);
+        await CommunicationManager.Instance.Client.AddVirtualCollisionObjectToSceneAsync(
+                new AddVirtualCollisionObjectToSceneRequestArgs(newObjectType.Type, Sight.Instance.CreatePoseInTheView(), newObjectType.ObjectModel))
+            .ContinueWith(task => AddVirtualCollisionObjectResponseCallback(task, newObjectType.Type), TaskScheduler.FromCurrentSynchronizationContext());
     }
 
 
 
-    private void AddVirtualCollisionObjectResponseCallback(string objectType, string data) {
-        AddVirtualCollisionObjectToSceneResponse response = JsonConvert.DeserializeObject<AddVirtualCollisionObjectToSceneResponse>(data);
+    private void AddVirtualCollisionObjectResponseCallback(Task<AddVirtualCollisionObjectToSceneResponse> task, string objectType) {
+        AddVirtualCollisionObjectToSceneResponse response = task.Result;
         if (response == null || !response.Result) {
             Notifications.Instance.ShowNotification($"Failed to add {objectType}", response.Messages.FirstOrDefault());
         } else {
@@ -238,42 +248,42 @@ public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu> {
         }
     }
 
-    public IO.Swagger.Model.ObjectTypeMeta CreateObjectTypeMeta(CollisionObjectType collisionObjectType) {
+    public ObjectTypeMeta CreateObjectTypeMeta(CollisionObjectType collisionObjectType) {
         string name;
-        IO.Swagger.Model.ObjectModel objectModel = new IO.Swagger.Model.ObjectModel();
-        IO.Swagger.Model.ObjectTypeMeta objectTypeMeta;
-        IO.Swagger.Model.ObjectModel.TypeEnum modelType = new IO.Swagger.Model.ObjectModel.TypeEnum();
+        ObjectModel objectModel = new();
+        ObjectTypeMeta objectTypeMeta;
+        ObjectModel.TypeEnum modelType = new();
         switch (collisionObjectType) {
             case CollisionObjectType.Cube:
                 name = SceneManager.Instance.GetFreeObjectTypeName("Cube");
-                modelType = IO.Swagger.Model.ObjectModel.TypeEnum.Box;
+                modelType = ObjectModel.TypeEnum.Box;
                 decimal sizeX = 0.1m;
                 decimal sizeY = 0.1m;
                 decimal sizeZ = 0.1m;
-                IO.Swagger.Model.Box box = new IO.Swagger.Model.Box(name, sizeX, sizeY, sizeZ);
+               Box box = new(name, sizeX, sizeY, sizeZ);
                 objectModel.Box = box;
                 break;
             case CollisionObjectType.Sphere:
                 name = SceneManager.Instance.GetFreeObjectTypeName("Sphere");
-                modelType = IO.Swagger.Model.ObjectModel.TypeEnum.Sphere;
+                modelType = ObjectModel.TypeEnum.Sphere;
                 decimal radius = 0.1m;
-                IO.Swagger.Model.Sphere sphere = new IO.Swagger.Model.Sphere(name, radius);
+                Sphere sphere = new(name, radius);
                 objectModel.Sphere = sphere;
                 break;
             case CollisionObjectType.Cylinder:
                 name = SceneManager.Instance.GetFreeObjectTypeName("Cylinder");
-                modelType = IO.Swagger.Model.ObjectModel.TypeEnum.Cylinder;
+                modelType = ObjectModel.TypeEnum.Cylinder;
                 decimal cylinderRadius = 0.1m;
                 decimal cylinderHeight = 0.1m;
-                IO.Swagger.Model.Cylinder cylinder = new IO.Swagger.Model.Cylinder(name, cylinderHeight, cylinderRadius);
+                Cylinder cylinder = new (name, cylinderHeight, cylinderRadius);
                 objectModel.Cylinder = cylinder;
                 break;
             default:
                 throw new NotImplementedException();
         }
         objectModel.Type = modelType;
-        objectTypeMeta = new IO.Swagger.Model.ObjectTypeMeta(builtIn: false, description: "", type: name, objectModel: objectModel,
-            _base: "CollisionObject", hasPose: true, modified: DateTime.Now);
+        objectTypeMeta = new ObjectTypeMeta(builtIn: false, description: "", type: name, objectModel: objectModel,
+            varBase: "CollisionObject", hasPose: true, modified: DateTime.Now);
 
 
         return objectTypeMeta;

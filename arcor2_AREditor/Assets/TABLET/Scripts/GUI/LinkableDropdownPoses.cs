@@ -1,8 +1,11 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
 using Base;
 using UnityEngine;
 using UnityEngine.UI;
+using ActionPoint = Base.ActionPoint;
+using Parameter = Base.Parameter;
 
 public class LinkableDropdownPoses : LinkableDropdown {
     private ActionPoint selectedAP = null;
@@ -18,7 +21,7 @@ public class LinkableDropdownPoses : LinkableDropdown {
         Parameter.OnChangeParameterHandlerDelegate onChangeParameterHandler, CanvasGroup windowToHideWhenRequestingObj, ActionPoint actionPoint, bool linkable = true) {
         base.Init(parameterMetadata, type, value, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, linkable);
         canvasGroupToHide = windowToHideWhenRequestingObj;
-        List<string> options = new List<string>();
+        List<string> options = new();
         parentActionPoint = actionPoint;
 
     }
@@ -116,7 +119,7 @@ public class LinkableDropdownPoses : LinkableDropdown {
     }
 
     protected override object GetDefaultValue() {
-        List<IO.Swagger.Model.NamedOrientation> orientations = parentActionPoint.GetNamedOrientations();
+        List<NamedOrientation> orientations = parentActionPoint.GetNamedOrientations();
         if (orientations.Count > 0)
             return orientations[0].Id;
         else

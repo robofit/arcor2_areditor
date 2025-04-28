@@ -1,10 +1,8 @@
-using UnityEngine;
 using System.Collections;
-using System.Diagnostics.Tracing;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
 using Base;
-using TMPro;
-using RuntimeInspectorNamespace;
 using DanielLochner.Assets.SimpleSideMenu;
+using UnityEngine;
 
 namespace TrilleonAutomation
 {
@@ -104,7 +102,7 @@ namespace TrilleonAutomation
             yield return StartCoroutine(Q.driver.Click(saveSceneBtn, "Click on save scene button"));
             yield return StartCoroutine(Q.driver.Click(closeSceneBtn, "Click on close scene button"));
             bool sceneExist = false;
-            foreach (IO.Swagger.Model.ListScenesResponseData scene in Base.GameManager.Instance.Scenes) {
+            foreach (ListScenesResponseData scene in GameManager.Instance.Scenes) {
                 if (scene.Name == "test scene")
                     sceneExist = true;
             }
@@ -120,12 +118,12 @@ namespace TrilleonAutomation
             newProjectDialog.NewProjectName.SetValue("test project");
             yield return StartCoroutine(Q.driver.Click(newProjectDialogOKButton, "Click on Got it button"));
             // not working.. solve better
-            _ = WebsocketManager.Instance.AddActionPoint("asdf", null, new IO.Swagger.Model.Position());
+            _ = CommunicationManager.Instance.Client.AddActionPointAsync(new AddActionPointRequestArgs("asdf", new Position()));
             yield return new WaitForSeconds(2);
             yield return StartCoroutine(Q.driver.Click(saveProjectBtn, "Click on save project button"));
             yield return StartCoroutine(Q.driver.Click(closeProjectBtn, "Click on close project button"));
             bool projectExists = false;
-            foreach (IO.Swagger.Model.ListProjectsResponseData project in Base.GameManager.Instance.Projects) {
+            foreach (ListProjectsResponseData project in GameManager.Instance.Projects) {
                 if (project.Name == "test project")
                     projectExists = true;
             }
@@ -148,7 +146,7 @@ namespace TrilleonAutomation
             sceneTile = MainScreen.Instance.GetSceneTile("test scene renamed");
             yield return StartCoroutine(Q.assert.IsTrue(sceneTile != null, "Scene not found!"));
             bool sceneExist = false;
-            foreach (IO.Swagger.Model.ListScenesResponseData scene in Base.GameManager.Instance.Scenes) {
+            foreach (ListScenesResponseData scene in GameManager.Instance.Scenes) {
                 if (scene.Name == "test scene renamed")
                     sceneExist = true;
             }
@@ -174,7 +172,7 @@ namespace TrilleonAutomation
             }            
             yield return StartCoroutine(Q.assert.IsTrue(sceneTile != null, "Scene should exists!"));
             bool sceneExist = false;
-            foreach (IO.Swagger.Model.ListScenesResponseData scene in Base.GameManager.Instance.Scenes) {
+            foreach (ListScenesResponseData scene in GameManager.Instance.Scenes) {
                 if (scene.Name == "test scene renamed")
                     sceneExist = true;
             }
@@ -204,7 +202,7 @@ namespace TrilleonAutomation
             projectTile = MainScreen.Instance.GetProjectTile("test project renamed");
             yield return StartCoroutine(Q.assert.IsTrue(projectTile != null, "Project not found!"));
             bool projectExists = false;
-            foreach (IO.Swagger.Model.ListProjectsResponseData project in Base.GameManager.Instance.Projects) {
+            foreach (ListProjectsResponseData project in GameManager.Instance.Projects) {
                 if (project.Name == "test project renamed")
                     projectExists = true;
             }
@@ -230,7 +228,7 @@ namespace TrilleonAutomation
             }
             yield return StartCoroutine(Q.assert.IsTrue(projectTile == null, "Project should be removed but it is not!"));
             bool projectExists = false;
-            foreach (IO.Swagger.Model.ListProjectsResponseData project in Base.GameManager.Instance.Projects) {
+            foreach (ListProjectsResponseData project in GameManager.Instance.Projects) {
                 if (project.Name == "test scene renamed")
                     projectExists = true;
             }
@@ -256,7 +254,7 @@ namespace TrilleonAutomation
             }
             yield return StartCoroutine(Q.assert.IsTrue(sceneTile == null, "Scene should be removed but it is not!"));
             bool sceneExist = false;
-            foreach (IO.Swagger.Model.ListScenesResponseData scene in Base.GameManager.Instance.Scenes) {
+            foreach (ListScenesResponseData scene in GameManager.Instance.Scenes) {
                 if (scene.Name == "test scene renamed")
                     sceneExist = true;
             }

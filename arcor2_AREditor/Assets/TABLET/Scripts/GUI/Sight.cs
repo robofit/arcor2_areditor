@@ -2,22 +2,19 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Linq;
-using RuntimeInspectorNamespace;
-using System.Diagnostics;
 using Debug = UnityEngine.Debug;
-using UnityEngine.Events;
+using Pose = Arcor2.ClientSdk.Communication.OpenApi.Models.Pose;
 
 namespace Base {
 
    public class Sight : Singleton<Sight> {
         public GameObject CurrentObject;
 
-        public System.DateTime HoverStartTime;
+        public DateTime HoverStartTime;
 
         private bool endingHover = false;
 
-        public AREditorEventArgs.GizmoAxisEventHandler SelectedGizmoAxis;
+        public EventHandler<GizmoAxisEventArgs> SelectedGizmoAxis;
 
 
         private void Awake() {
@@ -44,7 +41,7 @@ namespace Base {
             Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
             if (SelectorMenu.Instance.CanvasGroup.alpha > 0 && SelectorMenu.Instance.gameObject.activeSelf) {
 
-                RaycastHit hitinfo = new RaycastHit();
+                RaycastHit hitinfo = new();
                 bool anyHit = false, directHit = false;
                 if (Physics.Raycast(ray, out RaycastHit hit)) {
                     hitinfo = hit;
@@ -75,7 +72,7 @@ namespace Base {
 
                     float dotP = Vector3.Dot(lhs, ray.direction.normalized);
                     Vector3 point = ray.origin + ray.direction.normalized * dotP;
-                    List<Tuple<float, InteractiveObject>> items = new List<Tuple<float, InteractiveObject>>();
+                    List<Tuple<float, InteractiveObject>> items = new();
                     bool h = false;
                     foreach (SelectorItem item in SelectorMenu.Instance.SelectorItems.Values) {
                         if (!item.InteractiveObject.Enabled)
@@ -150,16 +147,16 @@ namespace Base {
             return false;
         }
 
-        public IO.Swagger.Model.Pose CreatePoseInTheView(float distance = 0.3f) {
+        public Pose CreatePoseInTheView(float distance = 0.3f) {
             Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
             Vector3 point = TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(ray.GetPoint(distance)));
-            return new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(point), orientation: DataHelper.QuaternionToOrientation(Quaternion.identity));
+            return new Pose(DataHelper.Vector3ToPosition(point), DataHelper.QuaternionToOrientation(Quaternion.identity));
 
         }
 
         private IEnumerator HoverEnd() {
             endingHover = true;
-            yield return new WaitForSeconds((float) (0.5d - (System.DateTime.UtcNow - HoverStartTime).TotalSeconds));
+            yield return new WaitForSeconds((float) (0.5d - (DateTime.UtcNow - HoverStartTime).TotalSeconds));
             if (CurrentObject != null) {
                 CurrentObject.SendMessage("OnHoverEnd");
                 CurrentObject = null;

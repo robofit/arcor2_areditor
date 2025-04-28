@@ -1,15 +1,20 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using System.Threading.Tasks;
-using UnityEngine.UI;
-using IO.Swagger.Model;
-using UnityEngine.XR.ARFoundation;
-using UnityEngine.Events;
 using System.Collections;
-using Newtonsoft.Json;
-using MiniJSON;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.Design;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
+using TMPro;
+using TrilleonAutomation;
+using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.UI;
+using UnityEngine.XR.ARFoundation;
+using Debug = UnityEngine.Debug;
 
 namespace Base {
     /// <summary>
@@ -30,7 +35,7 @@ namespace Base {
         /// <summary>
         /// Called when package is running. Contains id and name of package 
         /// </summary>
-        public event AREditorEventArgs.ProjectMetaEventHandler OnRunPackage;
+        public event EventHandler<ProjectMetaEventArgs> OnRunPackage;
         /// <summary>
         /// Called when package is stopped
         /// </summary>
@@ -38,11 +43,11 @@ namespace Base {
         /// <summary>
         /// Called when package is paused. Contains id and name of package 
         /// </summary>
-        public event AREditorEventArgs.ProjectMetaEventHandler OnPausePackage;
+        public event EventHandler<ProjectMetaEventArgs> OnPausePackage;
         /// <summary>
         /// Called when package is resumed. Contains id and name of package
         /// </summary>
-        public event AREditorEventArgs.ProjectMetaEventHandler OnResumePackage;
+        public event EventHandler<ProjectMetaEventArgs> OnResumePackage;
         /// <summary>
         /// Called when project is closed
         /// </summary>
@@ -66,11 +71,11 @@ namespace Base {
         /// <summary>
         /// Called when editor connected to server. Contains server URI
         /// </summary>
-        public event AREditorEventArgs.StringEventHandler OnConnectedToServer;
+        public event EventHandler<StringEventArgs> OnConnectedToServer;
         /// <summary>
         /// Called when editor is trying to connect to server. Contains server URI
         /// </summary>
-        public event AREditorEventArgs.StringEventHandler OnConnectingToServer;
+        public event EventHandler<StringEventArgs> OnConnectingToServer;
         /// <summary>
         /// Called when disconected from server
         /// </summary>
@@ -94,11 +99,11 @@ namespace Base {
         /// <summary>
         /// Invoked when game state changed. Contains new state
         /// </summary>
-        public event AREditorEventArgs.GameStateEventHandler OnGameStateChanged;
+        public event EventHandler<GameStateEventArgs> OnGameStateChanged;
         /// <summary>
         /// Invoked when editor state changed. Contains new state
         /// </summary>
-        public event AREditorEventArgs.EditorStateEventHandler OnEditorStateChanged;
+        public event EventHandler<EditorStateEventArgs> OnEditorStateChanged;
         /// <summary>
         /// Invoked when project editor is opened
         /// </summary>
@@ -114,7 +119,7 @@ namespace Base {
         /// <summary>
         /// Invoked upon action execution. Contains ID of executed action
         /// </summary>
-        public event AREditorEventArgs.StringEventHandler OnActionExecution;
+        public event EventHandler<ActionExecutionEventArgs> OnActionExecution;
         /// <summary>
         /// Invoked when action execution finished
         /// </summary>
@@ -163,15 +168,15 @@ namespace Base {
         /// <summary>
         /// Text component of tooltip
         /// </summary>
-        public TMPro.TextMeshProUGUI Text;
+        public TextMeshProUGUI Text;
         /// <summary>
         /// Temp storage for delayed project
         /// </summary>
-        private IO.Swagger.Model.Project newProject;
+        private Project newProject;
         /// <summary>
         /// Temp storage for delayed scene
         /// </summary>
-        private IO.Swagger.Model.Scene newScene;
+        private Scene newScene;
         /// <summary>
         /// Temp storage for delayed package
         /// </summary>
@@ -205,27 +210,27 @@ namespace Base {
         /// <summary>
         /// List of projects metadata
         /// </summary>
-        public List<IO.Swagger.Model.ListProjectsResponseData> Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
+        public List<ListProjectsResponseData> Projects = new();
         /// <summary>
         /// List of packages metadata
         /// </summary>
-        public List<IO.Swagger.Model.PackageSummary> Packages = new List<IO.Swagger.Model.PackageSummary>();
+        public List<PackageSummary> Packages = new();
         /// <summary>
         /// List of scenes metadata
         /// </summary>
-        public List<IO.Swagger.Model.ListScenesResponseData> Scenes = new List<IO.Swagger.Model.ListScenesResponseData>();
+        public List<ListScenesResponseData> Scenes = new();
         /// <summary>
         /// 
         /// </summary>
-        public TMPro.TMP_Text MessageBox;
+        public TMP_Text MessageBox;
         /// <summary>
         /// Connection info component in main menu
         /// </summary>
-        public TMPro.TMP_Text ConnectionInfo;
+        public TMP_Text ConnectionInfo;
         /// <summary>
         /// Server version info component in main menu
         /// </summary>
-        public TMPro.TMP_Text ServerVersion;
+        public TMP_Text ServerVersion;
 
         /// <summary>
         /// GameObject which is currently manipulated by gizmo
@@ -251,7 +256,7 @@ namespace Base {
         /// <summary>
         /// Holds info about server (version, supported RPCs, supported parameters etc.)
         /// </summary>
-        public IO.Swagger.Model.SystemInfoResponseData SystemInfo;
+        public SystemInfoResponseData SystemInfo;
         /// <summary>
         /// Holds info about currently running package
         /// </summary>
@@ -316,8 +321,6 @@ namespace Base {
         public enum ConnectionStatusEnum {
             Connected, Disconnected, Connecting
         }
-
-        private bool updatingPackageState;
 
         /// <summary>
         /// Enum specifying aplication states
@@ -438,11 +441,11 @@ namespace Base {
                 // request for delayed openning of package to allow loading of action objects and their actions
             } else if (openPackage) {
                 openPackage = false;
-                updatingPackageState = true;
+                UpdatingPackageState = true;
                 UpdatePackageState(newPackageState);
             }
-            if (nextPackageState != null && !updatingPackageState && (GameManager.Instance.GetGameState() == GameStateEnum.PackageRunning || GameManager.Instance.GetGameState() == GameStateEnum.LoadingPackage || GameManager.Instance.GetGameState() == GameStateEnum.ClosingPackage)) {
-                updatingPackageState = true;
+            if (nextPackageState != null && !UpdatingPackageState && (Instance.GetGameState() == GameStateEnum.PackageRunning || Instance.GetGameState() == GameStateEnum.LoadingPackage || Instance.GetGameState() == GameStateEnum.ClosingPackage)) {
+                UpdatingPackageState = true;
                 UpdatePackageState(nextPackageState);
                 nextPackageState = null;
             }
@@ -469,8 +472,10 @@ namespace Base {
             }
         }
 
-        public bool UpdatingPackageState => updatingPackageState;        
-
+        public bool UpdatingPackageState {
+            get;
+            private set;
+        }
 
         //TODO: use onvalidate in all scripts to check if everything sets correctly - it allows to check in editor
         private void OnValidate() {
@@ -715,32 +720,33 @@ namespace Base {
         /// </summary>
         private void Start() {
             SetDefaultFramerate();
-            updatingPackageState = false;
+            UpdatingPackageState = false;
             nextPackageState = null;
 #if (UNITY_ANDROID || UNITY_IOS) && AR_ON
             ARSession.enabled = false;
 #endif
             Scene.SetActive(false);
             if (Application.isEditor || Debug.isDebugBuild) {
-                TrilleonAutomation.AutomationMaster.Initialize();
+                AutomationMaster.Initialize();
             }
             ActionsManager.Instance.OnActionsLoaded += OnActionsLoaded;
-            WebsocketManager.Instance.OnConnectedEvent += OnConnected;
-            WebsocketManager.Instance.OnDisconnectEvent += OnDisconnected;
-            WebsocketManager.Instance.OnShowMainScreen += OnShowMainScreen;
-            WebsocketManager.Instance.OnProjectRemoved += OnProjectRemoved;
-            WebsocketManager.Instance.OnProjectBaseUpdated += OnProjectBaseUpdated;
-            WebsocketManager.Instance.OnSceneRemoved += OnSceneRemoved;
-            WebsocketManager.Instance.OnSceneBaseUpdated += OnSceneBaseUpdated;
+            CommunicationManager.Instance.Client.ConnectionOpened += CommunicationManager.SafeEventHandler(OnConnected);
+            CommunicationManager.Instance.Client.ConnectionClosed += CommunicationManager.SafeEventHandler<WebSocketCloseEventArgs>(OnDisconnected);
+            CommunicationManager.Instance.Client.ShowMainScreen += CommunicationManager.SafeEventHandler<ShowMainScreenEventArgs>(OnShowMainScreen);
+            CommunicationManager.Instance.Client.ProjectRemoved += CommunicationManager.SafeEventHandler<BareProjectEventArgs>(OnProjectRemoved);
+            CommunicationManager.Instance.Client.ProjectBaseUpdated += CommunicationManager.SafeEventHandler<BareProjectEventArgs>(OnProjectBaseUpdated);
+            CommunicationManager.Instance.Client.SceneRemoved += CommunicationManager.SafeEventHandler<BareSceneEventArgs>(OnSceneRemoved);
+            CommunicationManager.Instance.Client.SceneBaseUpdated +=
+                CommunicationManager.SafeEventHandler<BareSceneEventArgs>(OnSceneBaseUpdated);
         }
 
         /// <summary>
-        /// Waits until websocket is null and calls callback method (because after application pause disconnecting isn't finished completely)
+        /// Waits until websocket is disconnected and calls callback method (because after application pause disconnecting isn't finished completely)
         /// </summary>
         /// <param name="callback"></param>
         /// <returns></returns>
         private IEnumerator WaitUntilWebsocketFullyDisconnected(UnityAction callback) {
-            yield return new WaitWhile(() => !WebsocketManager.Instance.IsWebsocketNull());
+            yield return new WaitWhile(() => CommunicationManager.Instance.Client.ConnectionState != WebSocketState.Closed);
             callback();
         }
 
@@ -753,7 +759,7 @@ namespace Base {
         private void OnApplicationPause(bool pause) {
             if (pause) {
                 if (connectionStatus == ConnectionStatusEnum.Connected) {
-                    WebsocketManager.Instance.DisconnectFromSever();
+                    CommunicationManager.Instance.Client.CloseAsync();
                 }
             } else { //automatically connect again
                 StartCoroutine(WaitUntilWebsocketFullyDisconnected(() => LandingScreen.Instance.ConnectToServer(false)));
@@ -761,22 +767,22 @@ namespace Base {
         }
 #endif
 
-        
+
         private void OnSceneBaseUpdated(object sender, BareSceneEventArgs args) {
             foreach (ListScenesResponseData s in Scenes) {
-                if (s.Id == args.Scene.Id) {
-                    s.Name = args.Scene.Name;
-                    s.Modified = args.Scene.Modified;
+                if (s.Id == args.Data.Id) {
+                    s.Name = args.Data.Name;
+                    s.Modified = args.Data.Modified;
                     break;
                 }
             }
         }
 
 
-        private void OnSceneRemoved(object sender, StringEventArgs args) {
+        private void OnSceneRemoved(object sender, BareSceneEventArgs args) {
             int i = 0;
             foreach (ListScenesResponseData s in Scenes) {
-                if (s.Id == args.Data) {
+                if (s.Id == args.Data.Id) {
                     Scenes.RemoveAt(i);
                     break;
                 }
@@ -787,9 +793,9 @@ namespace Base {
 
         private void OnProjectBaseUpdated(object sender, BareProjectEventArgs args) {
             foreach (ListProjectsResponseData p in Projects) {
-                if (p.Id == args.Project.Id) {
-                    p.Name = args.Project.Name;
-                    p.Modified = args.Project.Modified;
+                if (p.Id == args.Data.Id) {
+                    p.Name = args.Data.Name;
+                    p.Modified = args.Data.Modified;
                     break;
                 }
             }            
@@ -800,10 +806,10 @@ namespace Base {
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args">ID of removed object</param>
-        private void OnProjectRemoved(object sender, StringEventArgs args) {
+        private void OnProjectRemoved(object sender, BareProjectEventArgs args) {
             int i = 0;
             foreach (ListProjectsResponseData p in Projects) {
-                if (p.Id == args.Data) {
+                if (p.Id == args.Data.Id) {
                     Projects.RemoveAt(i);
                     break;
                 }
@@ -816,7 +822,7 @@ namespace Base {
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private async void OnShowMainScreen(object sender, ShowMainScreenEventArgs args) {
+        public async void OnShowMainScreen(object sender, ShowMainScreenEventArgs args) {
             if (ActionsManager.Instance.ActionsReady)
                 await OpenMainScreen(args.Data.What, args.Data.Highlight);
             else {
@@ -843,7 +849,7 @@ namespace Base {
         private void OnConnected(object sender, EventArgs args) {
             // initialize when connected to the server
             ExecutingAction = null;
-            ConnectionStatus = GameManager.ConnectionStatusEnum.Connected;
+            ConnectionStatus = ConnectionStatusEnum.Connected;
         }
 
         /// <summary>
@@ -854,11 +860,11 @@ namespace Base {
         private async void OnConnectionStatusChanged(ConnectionStatusEnum newState) {
             switch (newState) {
                 case ConnectionStatusEnum.Connected:
-                    IO.Swagger.Model.SystemInfoResponseData systemInfo;
+                    SystemInfoResponseData systemInfo;
                     try {
-                        systemInfo = await WebsocketManager.Instance.GetSystemInfo();
-                        await WebsocketManager.Instance.RegisterUser(LandingScreen.Instance.Username.text);
-                    } catch (RequestFailedException ex) {
+                        systemInfo = (await CommunicationManager.Instance.Client.GetSystemInfoAsync()).Data;
+                        await CommunicationManager.Instance.Client.RegisterUserAsync(new RegisterUserRequestArgs(LandingScreen.Instance.Username.text));
+                    } catch (Arcor2ConnectionException ex) {
                         DisconnectFromSever();
                         Notifications.Instance.ShowNotification("Connection failed", ex.Message);
                         return;
@@ -870,12 +876,12 @@ namespace Base {
 
                     SystemInfo = systemInfo;
                     ServerVersion.text = "Editor version: " + Application.version +
-                        "\nServer version: " + systemInfo._Version;
-                    ConnectionInfo.text = WebsocketManager.Instance.APIDomainWS;
+                        "\nServer version: " + systemInfo.VarVersion;
+                    ConnectionInfo.text = CommunicationManager.Instance.Client.Uri!.ToString();
                     MainMenu.Instance.gameObject.SetActive(false);
 
 
-                    OnConnectedToServer?.Invoke(this, new StringEventArgs(WebsocketManager.Instance.APIDomainWS));
+                    OnConnectedToServer?.Invoke(this, new StringEventArgs(CommunicationManager.Instance.Client.Uri!.ToString()));
 
                     await UpdateActionObjects();
                     await UpdateRobotsMeta();
@@ -894,8 +900,8 @@ namespace Base {
                     connectionStatus = ConnectionStatusEnum.Disconnected;
                     OpenDisconnectedScreen();
                     OnDisconnectedFromServer?.Invoke(this, EventArgs.Empty);
-                    Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
-                    Scenes = new List<IO.Swagger.Model.ListScenesResponseData>();
+                    Projects = new List<ListProjectsResponseData>();
+                    Scenes = new List<ListScenesResponseData>();
 
                     ProjectManager.Instance.DestroyProject();
                     SceneManager.Instance.DestroyScene();
@@ -935,9 +941,21 @@ namespace Base {
         /// <param name="domain">hostname or IP address</param>
         /// <param name="port">Port of ARServer</param>
         public async void ConnectToSever(string domain, int port) {
+            CommunicationManager.Instance.ReloadClient();
+            Instance.ConnectionStatus = ConnectionStatusEnum.Connecting;
             ShowLoadingScreen("Connecting to server");
-            OnConnectingToServer?.Invoke(this, new StringEventArgs(WebsocketManager.Instance.GetWSURI(domain, port)));
-            WebsocketManager.Instance.ConnectToServer(domain, port);
+            OnConnectingToServer?.Invoke(this, new StringEventArgs($"ws://{domain}:{port}"));
+            try {
+                await CommunicationManager.Instance.Client.ConnectAsync(domain, Convert.ToUInt16(port));
+            } catch (UriFormatException ex) {
+                Notifications.Instance.ShowNotification("Failed to parse domain", ex.Message);
+                Instance.ConnectionStatus = ConnectionStatusEnum.Disconnected;
+                Instance.HideLoadingScreen(true);
+            } catch (Exception ex) { // 99% bad connection related
+                Notifications.Instance.ShowNotification("Error while connecting:", ex.Message);
+                Instance.ConnectionStatus = ConnectionStatusEnum.Disconnected;
+                Instance.HideLoadingScreen(true);
+            }
         }
 
         /// <summary>
@@ -945,7 +963,7 @@ namespace Base {
         /// </summary>
         public void DisconnectFromSever() {
             ConnectionStatus = ConnectionStatusEnum.Disconnected;
-            WebsocketManager.Instance.DisconnectFromSever();
+            CommunicationManager.Instance.Client.CloseAsync().GetAwaiter().GetResult();
         }
 
         /// <summary>
@@ -965,12 +983,17 @@ namespace Base {
         /// <returns></returns>
         public async Task UpdateActionObjects() {
             try {
-                List<IO.Swagger.Model.ObjectTypeMeta> objectTypeMetas = await WebsocketManager.Instance.GetObjectTypes();
-                ActionsManager.Instance.UpdateObjects(objectTypeMetas);
-            } catch (RequestFailedException ex) {
+                var result = await CommunicationManager.Instance.Client.GetObjectTypesAsync();
+                if (!result.Result) {
+                    Notifications.Instance.SaveLogs("Failed to update action objects");
+                    Instance.DisconnectFromSever();
+                    return;
+                }
+                ActionsManager.Instance.UpdateObjects(result.Data);
+            } catch (Arcor2ConnectionException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.SaveLogs("Failed to update action objects");
-                GameManager.Instance.DisconnectFromSever();
+                Instance.DisconnectFromSever();
             }
             
         }
@@ -980,7 +1003,7 @@ namespace Base {
         /// </summary>
         /// <returns></returns>
         private async Task UpdateRobotsMeta() {
-            ActionsManager.Instance.UpdateRobotsMetadata(await WebsocketManager.Instance.GetRobotMeta());
+            ActionsManager.Instance.UpdateRobotsMetadata((await CommunicationManager.Instance.Client.GetRobotMetaAsync()).Data);
         }
 
       
@@ -1040,7 +1063,7 @@ namespace Base {
         /// <param name="actionId"></param>
         internal void HandleActionExecution(string actionId) {
             ExecutingAction = actionId;
-            OnActionExecution?.Invoke(this, new StringEventArgs(ExecutingAction));
+            OnActionExecution?.Invoke(this, new ActionExecutionEventArgs(new ActionExecutionData(ExecutingAction)));
             Action puck = ProjectManager.Instance.GetAction(actionId);
             if (puck == null)
                 return;
@@ -1123,17 +1146,17 @@ namespace Base {
         /// - running - the package is runnnig
         /// - paused - the package was paused
         /// - stopped - the package was stopped</param>
-        public void PackageStateUpdated(IO.Swagger.Model.PackageStateData state) {
-            if (!updatingPackageState) {
+        public void PackageStateUpdated(PackageStateData state) {
+            if (!UpdatingPackageState) {
                 nextPackageState = null;
-                updatingPackageState = true;
+                UpdatingPackageState = true;
                 UpdatePackageState(state);
             }
             else
                 nextPackageState = state;
         }
 
-        public async void UpdatePackageState(IO.Swagger.Model.PackageStateData state) {
+        public async void UpdatePackageState(PackageStateData state) {
 
             if (state.State == PackageStateData.StateEnum.Running ||
                 state.State == PackageStateData.StateEnum.Paused) {
@@ -1148,23 +1171,23 @@ namespace Base {
                         SetGameState(GameStateEnum.LoadingPackage);
                         WaitUntilPackageReady(5000);
                         if (PackageInfo == null) {
-                            updatingPackageState = false;
+                            UpdatingPackageState = false;
                             return;
                         }
                         if (!await SceneManager.Instance.CreateScene(PackageInfo.Scene, false, PackageInfo.CollisionModels)) {
                             Notifications.Instance.SaveLogs(PackageInfo.Scene, PackageInfo.Project, "Failed to initialize scene");
-                            updatingPackageState = false;
+                            UpdatingPackageState = false;
                             return;
                         }
                         if (PackageInfo == null) {
-                            updatingPackageState = false;
+                            UpdatingPackageState = false;
                             return;
                         }
                         if (!await ProjectManager.Instance.CreateProject(PackageInfo.Project, false)) {
                             Notifications.Instance.SaveLogs(PackageInfo.Scene, PackageInfo.Project, "Failed to initialize project");
                         }
                         if (PackageInfo == null) {
-                            updatingPackageState = false;
+                            UpdatingPackageState = false;
                             return;
                         }
                         Debug.LogError("done");
@@ -1190,36 +1213,36 @@ namespace Base {
                         Debug.LogError(ex);
                         Notifications.Instance.SaveLogs(null, null, "Failed to initialize project");
                     } finally {
-                        updatingPackageState = false;
+                        UpdatingPackageState = false;
                     }
                 } else if (state.State == PackageStateData.StateEnum.Paused) {
                     OnPausePackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, PackageInfo.PackageName));
                     HideLoadingScreen();
-                    updatingPackageState = false;
+                    UpdatingPackageState = false;
                 } else if (state.State == PackageStateData.StateEnum.Running) {
                     OnResumePackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, PackageInfo.PackageName));
                     HideLoadingScreen();
-                    updatingPackageState = false;
+                    UpdatingPackageState = false;
                 }
 
 
             } else if (state.State == PackageStateData.StateEnum.Stopping) {
 
-                updatingPackageState = false;
+                UpdatingPackageState = false;
             } else if (state.State == PackageStateData.StateEnum.Stopped) {
                 SetGameState(GameStateEnum.ClosingPackage);
                 PackageInfo = null;
                 ShowLoadingScreen("Stopping package...");
                 ProjectManager.Instance.DestroyProject();
                 SceneManager.Instance.DestroyScene();
-                updatingPackageState = false;
+                UpdatingPackageState = false;
                 OnStopPackage?.Invoke(this, new EventArgs());
-                updatingPackageState = false;
+                UpdatingPackageState = false;
                 SetGameState(GameStateEnum.None);
                 Debug.LogError("stopped");
             }
 
-            updatingPackageState = false;
+            UpdatingPackageState = false;
         }
 
         /// <summary>
@@ -1255,7 +1278,7 @@ namespace Base {
                 if (name == scene.Name)
                     return scene.Id;
             }
-            throw new RequestFailedException("No scene with name: " + name);
+            throw new Arcor2ConnectionException("No scene with name: " + name);
         }
 
         /// <summary>
@@ -1268,7 +1291,7 @@ namespace Base {
                 if (name == project.Name)
                     return project.Id;
             }
-            throw new RequestFailedException("No project with name: " + name);
+            throw new Arcor2ConnectionException("No project with name: " + name);
         }
 
         public void InvokeScenesListChanged() {
@@ -1300,9 +1323,9 @@ namespace Base {
         /// Asks server to save scene
         /// </summary>
         /// <returns></returns>
-        public async Task<IO.Swagger.Model.SaveSceneResponse> SaveScene() {
+        public async Task<SaveSceneResponse> SaveScene() {
             ShowLoadingScreen("Saving scene...");
-            IO.Swagger.Model.SaveSceneResponse response = await WebsocketManager.Instance.SaveScene();
+            SaveSceneResponse response = await CommunicationManager.Instance.Client.SaveSceneAsync();
             HideLoadingScreen();
             return response;
         }
@@ -1311,28 +1334,19 @@ namespace Base {
         /// Asks server to save project
         /// </summary>
         /// <returns></returns>
-        public void SaveProject() {
+        public async Task SaveProject() {
             ShowLoadingScreen("Saving project...");
-            WebsocketManager.Instance.SaveProject(false, SaveProjectCallback);
-        }
-
-        /// <summary>
-        /// Callback triggered when save project is done
-        /// </summary>
-        /// <param name="_"></param>
-        /// <param name="response"></param>
-        public void SaveProjectCallback(string _, string response) {
-            SaveProjectResponse saveProjectResponse = JsonConvert.DeserializeObject<SaveProjectResponse>(response);
+            var response = await CommunicationManager.Instance.Client.SaveProjectAsync();
             HideLoadingScreen();
-            if (saveProjectResponse.Result) {
+            if (response.Result) {
                 OnSaveProject?.Invoke(this, EventArgs.Empty);
             } else {
-                saveProjectResponse.Messages.ForEach(Debug.LogError);
-                Base.Notifications.Instance.ShowNotification("Failed to save project", (saveProjectResponse.Messages.Count > 0 ? saveProjectResponse.Messages[0] : ""));
+                response.Messages.ForEach(Debug.LogError);
+                Notifications.Instance.ShowNotification("Failed to save project", response.Messages.Count > 0 ? response.Messages[0] : "");
                 return;
             }
         }
-            
+
         /// <summary>
         /// Asks server to open project
         /// </summary>
@@ -1340,9 +1354,9 @@ namespace Base {
         public async void OpenProject(string id) {
             ShowLoadingScreen();
             try {
-                await WebsocketManager.Instance.OpenProject(id);
+                await CommunicationManager.Instance.Client.OpenProjectAsync(new IdArgs(id));
                 await Task.Run(() => WaitForProjectReady(5000));
-            } catch (RequestFailedException ex) {
+            } catch (Arcor2ConnectionException ex) {
                 Notifications.Instance.ShowNotification("Failed to open project", ex.Message);
                 HideLoadingScreen();
             } catch (TimeoutException e) {
@@ -1358,8 +1372,8 @@ namespace Base {
         public async Task OpenScene(string id) {
             ShowLoadingScreen();
             try {
-                await WebsocketManager.Instance.OpenScene(id);
-            } catch (RequestFailedException e) {
+                await CommunicationManager.Instance.Client.OpenSceneAsync(new IdArgs(id));
+            } catch (Arcor2ConnectionException e) {
                 Notifications.Instance.ShowNotification("Open scene failed", e.Message);
                 HideLoadingScreen();
                 return;
@@ -1381,9 +1395,9 @@ namespace Base {
         public async Task<bool> RunPackage(string packageId) {
             ShowLoadingScreen();
             try {
-                await WebsocketManager.Instance.RunPackage(packageId);
+                await CommunicationManager.Instance.Client.RunPackageAsync(new RunPackageRequestArgs(packageId));
                 return true;
-            } catch (RequestFailedException ex) {
+            } catch (Arcor2ConnectionException ex) {
                 Notifications.Instance.ShowNotification("Failed to run project", ex.Message);
                 HideLoadingScreen();
                 return false;
@@ -1397,15 +1411,20 @@ namespace Base {
         /// <returns></returns>
         public async Task<string> BuildPackage(string name) {
             ShowLoadingScreen();
-            Debug.Assert(Base.ProjectManager.Instance.ProjectMeta != null);
+            Debug.Assert(ProjectManager.Instance.ProjectMeta != null);
             if (ProjectManager.Instance.ProjectChanged) {
                 Notifications.Instance.ShowNotification("Unsaved changes", "There are some unsaved changes in project. Save it before build the package.");
                 HideLoadingScreen();
-                throw new RequestFailedException("Unsaved changes");
+                throw new Arcor2ConnectionException("Unsaved changes");
             }
             try {
-                return await WebsocketManager.Instance.BuildPackage(Base.ProjectManager.Instance.ProjectMeta.Id, name);
-            } catch (RequestFailedException ex) {
+                var response = await CommunicationManager.Instance.Client.BuildProjectAsync(new BuildProjectRequestArgs(ProjectManager.Instance.ProjectMeta!.Id, name));
+                if (!response.Result) {
+                    Notifications.Instance.ShowNotification("Failed to build package", string.Join(',', response.Messages));
+                    throw new Arcor2ConnectionException();
+                }
+                return response.Data.PackageId;
+            } catch (Arcor2ConnectionException ex) {
                 Notifications.Instance.ShowNotification("Failed to build package", ex.Message);
                 throw;
             } finally {
@@ -1421,9 +1440,15 @@ namespace Base {
         public async Task<bool> PausePackage() {
             ShowLoadingScreen();
             try {
-                await WebsocketManager.Instance.PausePackage();
+                var response = await CommunicationManager.Instance.Client.PausePackageAsync();
+                if (!response.Result) {
+                    Notifications.Instance.ShowNotification("Failed to pause project", string.Join(',', response.Messages));
+                    HideLoadingScreen();
+                    return false;
+                }
+
                 return true;
-            } catch (RequestFailedException ex) {
+            } catch (Arcor2ConnectionException ex) {
                 Notifications.Instance.ShowNotification("Failed to pause project", ex.Message);
                 HideLoadingScreen();
                 return false;
@@ -1437,9 +1462,15 @@ namespace Base {
         public async Task<bool> ResumePackage() {
             ShowLoadingScreen();
             try {
-                await WebsocketManager.Instance.ResumePackage();
+                var response = await CommunicationManager.Instance.Client.ResumePackageAsync();
+                if (!response.Result) {
+                    Notifications.Instance.ShowNotification("Failed to resume project", string.Join(',', response.Messages));
+                    HideLoadingScreen();
+                    return false;
+                }
+
                 return true;
-            } catch (RequestFailedException ex) {
+            } catch (Arcor2ConnectionException ex) {
                 Notifications.Instance.ShowNotification("Failed to resume project", ex.Message);
                 HideLoadingScreen();
                 return false;
@@ -1451,12 +1482,17 @@ namespace Base {
         /// </summary>
         /// <param name="objectType">Description of object type</param>
         /// <returns></returns>
-        public async Task<bool> CreateNewObjectType(IO.Swagger.Model.ObjectTypeMeta objectType) {
+        public async Task<bool> CreateNewObjectType(ObjectTypeMeta objectType) {
             ShowLoadingScreen();
             try {
-                await WebsocketManager.Instance.CreateNewObjectType(objectType, false);
+                var response = await CommunicationManager.Instance.Client.AddNewObjectTypeAsync(objectType, false);
+                if (!response.Result) {
+                    Notifications.Instance.ShowNotification("Failed to create new object type", string.Join(',', response.Messages));
+                    return false;
+                }
+
                 return true;
-            } catch (RequestFailedException ex) {
+            } catch (Arcor2ConnectionException ex) {
                 Notifications.Instance.ShowNotification("Failed to create new object type", ex.Message);
                 return false;
             } finally {
@@ -1472,8 +1508,12 @@ namespace Base {
         public async void UpdateActionPointPositionUsingRobot(string actionPointId, string robotId, string arm_id, string endEffectorId) {
 
             try {
-                await WebsocketManager.Instance.UpdateActionPointUsingRobot(actionPointId, robotId, endEffectorId, arm_id);
-            } catch (RequestFailedException ex) {
+                var response = await CommunicationManager.Instance.Client.UpdateActionPointUsingRobotAsync(new UpdateActionPointUsingRobotRequestArgs(actionPointId, new RobotArg(robotId, endEffectorId, arm_id)));
+                if (!response.Result) {
+                    Notifications.Instance.ShowNotification("Failed to update action point", string.Join(',', response.Messages));
+                }
+
+            } catch (Arcor2ConnectionException ex) {
                 Notifications.Instance.ShowNotification("Failed to update action point", ex.Message);
             }
         }
@@ -1492,8 +1532,13 @@ namespace Base {
             Debug.Assert(name != null && name != "");
             
             try {
-                await WebsocketManager.Instance.CreateProject(name, sceneId, "", hasLogic, false);
-            } catch (RequestFailedException e) {
+                var response = await CommunicationManager.Instance.Client.AddNewProjectAsync(new NewProjectRequestArgs(sceneId, name, "", hasLogic), false);
+                if (!response.Result) {
+                    Notifications.Instance.ShowNotification("Failed to create project", string.Join(',', response.Messages));
+                    HideLoadingScreen();
+                }
+
+            } catch (Arcor2ConnectionException e) {
                 Notifications.Instance.ShowNotification("Failed to create project", e.Message);
                 HideLoadingScreen();
             } finally {
@@ -1514,8 +1559,12 @@ namespace Base {
                 return false;
             }
             try {
-                await WebsocketManager.Instance.CreateScene(name, "");
-            } catch (RequestFailedException e) {
+                var response = await CommunicationManager.Instance.Client.AddNewSceneAsync(new NewSceneRequestArgs(name, ""));
+                if (!response.Result) {
+                    Notifications.Instance.ShowNotification("Failed to create new scene", string.Join(',', response.Messages));
+                    HideLoadingScreen();
+                }
+            } catch (Arcor2ConnectionException e) {
                 Notifications.Instance.ShowNotification("Failed to create new scene", e.Message);
                 HideLoadingScreen();
             }
@@ -1531,9 +1580,14 @@ namespace Base {
             if (!dryRun)
                 ShowLoadingScreen();
             try {
-                await WebsocketManager.Instance.CloseScene(force, dryRun);
+                var response = await CommunicationManager.Instance.Client.CloseSceneAsync(new CloseSceneRequestArgs(force), dryRun);
+                if (!response.Result) {
+                    Notifications.Instance.ShowNotification("Failed to close scene", string.Join(',', response.Messages));
+                    HideLoadingScreen();
+                    return (false, string.Join(',', response.Messages));
+                }
                 return (true, "");
-            } catch (RequestFailedException ex) {
+            } catch (Arcor2ConnectionException ex) {
                 if (!dryRun && force) {
                     Notifications.Instance.ShowNotification("Failed to close scene", ex.Message);
                     HideLoadingScreen();                   
@@ -1553,9 +1607,14 @@ namespace Base {
             if (!dryRun)
                 ShowLoadingScreen("Closing project");
             try {
-                await WebsocketManager.Instance.CloseProject(force, dryRun: dryRun);
+                var response = await CommunicationManager.Instance.Client.CloseProjectAsync(new CloseProjectRequestArgs(force), dryRun);
+                if (!response.Result) {
+                    Notifications.Instance.ShowNotification("Failed to close project", string.Join(',', response.Messages));
+                    HideLoadingScreen();
+                    return (false, string.Join(',', response.Messages));
+                }
                 return (true, "");
-            } catch (RequestFailedException ex) {
+            } catch (Arcor2ConnectionException ex) {
                 if (!dryRun && force) {
                     Notifications.Instance.ShowNotification("Failed to close project", ex.Message);
                     HideLoadingScreen();
@@ -1571,8 +1630,12 @@ namespace Base {
         /// <returns>True if request successfull</returns>
         public async Task<bool> CancelExecution() {
             try {
-                await WebsocketManager.Instance.CancelExecution();
-            } catch (RequestFailedException ex) {
+                var response = await CommunicationManager.Instance.Client.CancelActionAsync();
+                if (!response.Result) {
+                    Notifications.Instance.ShowNotification("Failed to cancel action", string.Join(',', response.Messages));
+                    return false;
+                }
+            } catch (Arcor2ConnectionException ex) {
                 Notifications.Instance.ShowNotification("Failed to cancel action", ex.Message);
                 return false;
             }
@@ -1612,7 +1675,7 @@ namespace Base {
         /// <param name="versionString">Version string in format 0.0.0 (major.minor.patch)</param>
         /// <returns>List of components of the version string</returns>
         public List<string> SplitVersionString(string versionString) {
-            List<string> version = versionString.Split('.').ToList<string>();
+            List<string> version = Enumerable.ToList<string>(versionString.Split('.'));
             Debug.Assert(version.Count == 3, versionString);
             return version;
         }
@@ -1622,13 +1685,13 @@ namespace Base {
         /// </summary>
         /// <param name="systemInfo">Version string in format 0.0.0 (major.minor.patch)</param>
         /// <returns>True if versions are compatibile</returns>
-        public bool CheckApiVersion(IO.Swagger.Model.SystemInfoResponseData systemInfo) {
+        public bool CheckApiVersion(SystemInfoResponseData systemInfo) {
             
             if (systemInfo.ApiVersion == ApiVersion)
                 return true;
 
             if (GetMajorVersion(systemInfo.ApiVersion) != GetMajorVersion(ApiVersion) ||
-                (GetMajorVersion(systemInfo.ApiVersion) == 0 && (GetMinorVersion(systemInfo.ApiVersion) != GetMinorVersion(ApiVersion)))) {
+                (GetMajorVersion(systemInfo.ApiVersion) == 0 && GetMinorVersion(systemInfo.ApiVersion) != GetMinorVersion(ApiVersion))) {
                 Notifications.Instance.ShowNotification("Incompatibile api versions", "Editor API version: " + ApiVersion + ", server API version: " + systemInfo.ApiVersion);
                 return false;
             }
@@ -1642,12 +1705,12 @@ namespace Base {
         /// </summary>
         /// <param name="timeout">TimeoutException is thrown after timeout ms when scene is not loaded</param>
         public void WaitForSceneReady(int timeout) {
-            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+            Stopwatch sw = new();
             sw.Start();
             while (SceneManager.Instance.SceneMeta == null) {
                 if (sw.ElapsedMilliseconds > timeout)
                     throw new TimeoutException();
-                System.Threading.Thread.Sleep(100);
+                Thread.Sleep(100);
             }
             return;
         }
@@ -1657,12 +1720,12 @@ namespace Base {
         /// </summary>
         /// <param name="timeout">TimeoutException is thrown after timeout ms when project is not loaded</param>
         public void WaitForProjectReady(int timeout) {
-            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+            Stopwatch sw = new();
             sw.Start();
-            while (Base.ProjectManager.Instance.ProjectMeta == null) {
+            while (ProjectManager.Instance.ProjectMeta == null) {
                 if (sw.ElapsedMilliseconds > timeout)
                     throw new TimeoutException();
-                System.Threading.Thread.Sleep(100);
+                Thread.Sleep(100);
             }
             return;
         }
@@ -1776,12 +1839,12 @@ namespace Base {
         /// </summary>
         /// <param name="timeout">TimeoutException is thrown after timeout ms when package is not loaded</param>
         public void WaitUntilPackageReady(int timeout) {
-            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+            Stopwatch sw = new();
             sw.Start();
             while (PackageInfo == null) {
                 if (sw.ElapsedMilliseconds > timeout)
                     throw new TimeoutException();
-                System.Threading.Thread.Sleep(100);
+                Thread.Sleep(100);
             }
         }
 
@@ -1813,10 +1876,10 @@ namespace Base {
         /// <param name="label">Label of the button</param>
         /// <returns>Created button</returns>
         public Button CreateButton(Transform parent, string label) {
-            GameObject btnGO = Instantiate(Base.GameManager.Instance.ButtonPrefab, parent);
+            GameObject btnGO = Instantiate(Instance.ButtonPrefab, parent);
             btnGO.transform.localScale = new Vector3(1, 1, 1);
             Button btn = btnGO.GetComponent<Button>();
-            btn.GetComponentInChildren<TMPro.TMP_Text>().text = label;
+            btn.GetComponentInChildren<TMP_Text>().text = label;
             return btn;
         }
 
@@ -1836,11 +1899,14 @@ namespace Base {
                     point = TransformConvertor.UnityToROS(parent.GetTransform().InverseTransformPoint(ray.GetPoint(0.5f)));
                 }                
                 Position position = DataHelper.Vector3ToPosition(point);
-                await WebsocketManager.Instance.AddActionPoint(name, parent == null ? "" : parent.GetId(), position);
-                
-                
+                var response = await CommunicationManager.Instance.Client.AddActionPointAsync(new AddActionPointRequestArgs(name, position, parent == null ? "" : parent.GetId()));
+                if (!response.Result) {
+                    Notifications.Instance.ShowNotification("Failed to add action point", string.Join(',', response.Messages));
+                    return false;
+                }
+
                 return true;
-            } catch (RequestFailedException e) {
+            } catch (Arcor2ConnectionException e) {
                 Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
                 return false;
             }
@@ -1854,9 +1920,14 @@ namespace Base {
         /// <returns>True if renamed, false otherwise</returns>
         public async Task<bool> UpdateActionPointParent(ActionPoint actionPoint, string parentId) {
             try {
-                await WebsocketManager.Instance.UpdateActionPointParent(actionPoint.Data.Id, parentId);
+                var response = await CommunicationManager.Instance.Client.UpdateActionPointParentAsync(new UpdateActionPointParentRequestArgs(actionPoint.Data.Id, parentId));
+                if (!response.Result) {
+                    Notifications.Instance.ShowNotification("Failed to update action point parent", string.Join(',', response.Messages));
+                    return false;
+                }
+
                 return true;
-            } catch (RequestFailedException e) {
+            } catch (Arcor2ConnectionException e) {
                 Notifications.Instance.ShowNotification("Failed to update action point parent", e.Message);
                 return false;
             }
@@ -1908,13 +1979,13 @@ namespace Base {
         public string Message;
 
         public RequestResult(bool success, string message) {
-            this.Success = success;
-            this.Message = message;
+            Success = success;
+            Message = message;
         }
 
         public RequestResult(bool success) {
-            this.Success = success;
-            this.Message = "";
+            Success = success;
+            Message = "";
         }
 
         public override bool Equals(object obj) {

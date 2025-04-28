@@ -1,14 +1,16 @@
-using System.Collections;
 using System.Collections.Generic;
 using RosSharp;
 using RosSharp.RosBridgeClient;
 using RosSharp.Urdf;
 using UnityEngine;
+using Joint = Arcor2.ClientSdk.Communication.OpenApi.Models.Joint;
 
 public class RobotModel {
 
-    public string RobotType { get; private set; }
-    public GameObject RobotModelGameObject { get; private set; }
+    public string RobotType { get;
+    }
+    public GameObject RobotModelGameObject { get;
+    }
 
     public bool IsBeingUsed { get; set; }
 
@@ -16,14 +18,14 @@ public class RobotModel {
     /// Dictionary in format (linkName, RobotLink) - e.g. (magician_link_1, RobotLink)
     /// For quick search of robot Links using link IDs.
     /// </summary>
-    public Dictionary<string, RobotLink> Links = new Dictionary<string, RobotLink>();
+    public Dictionary<string, RobotLink> Links = new();
 
     /// <summary>
     /// Help dictionary in format (jointName, linkName) - e.g. (magician_joint_1, magician_link_1)
     /// For quick search of robot Links using joint IDs.
     /// To get the RobotLink, search this dictionary for corresponding linkName and use the linkName to search the Links dictionary.
     /// </summary>
-    public Dictionary<string, string> Joints = new Dictionary<string, string>();
+    public Dictionary<string, string> Joints = new();
 
     public bool RobotLoaded { get; set; }
 
@@ -45,15 +47,15 @@ public class RobotModel {
 
             // Get all UrdfVisuals of each UrdfLink
             GameObject visualsGameObject = link.gameObject.GetComponentInChildren<UrdfVisuals>().gameObject;
-            Dictionary<UrdfVisual, bool> visuals = new Dictionary<UrdfVisual, bool>();
+            Dictionary<UrdfVisual, bool> visuals = new();
 
             float scale = 1f;
             // Traverse each UrdfVisual and set a boolean indicating whether its visual is already loaded (is of some basic type - box, cylinder, capsule)
             // or is going to be loaded by ColladaImporter (in case its type of mesh)
             foreach (UrdfVisual visual in visualsGameObject.GetComponentsInChildren<UrdfVisual>()) {
-                visuals.Add(visual, copyOfRobotModel ? true : (visual.GeometryType == GeometryTypes.Mesh ? false : true));
+                visuals.Add(visual, copyOfRobotModel ? true : visual.GeometryType == GeometryTypes.Mesh ? false : true);
                 // hide visual if it is mesh.. mesh will be displayed when fully loaded
-                visual.gameObject.SetActive(copyOfRobotModel ? true : (visual.GeometryType == GeometryTypes.Mesh ? false : true));
+                visual.gameObject.SetActive(copyOfRobotModel ? true : visual.GeometryType == GeometryTypes.Mesh ? false : true);
 
                 // get scale of urdfVisual and each of its child
                 foreach (Transform child in visual.GetComponentsInChildren<Transform>()) {
@@ -71,7 +73,7 @@ public class RobotModel {
                 }
                 jointReader = urdfJoint.transform.AddComponentIfNotExists<JointStateReader>();
             }
-            Links.Add(link.gameObject.name, new RobotLink(link.gameObject.name, urdfJoint, jointWriter, jointReader, visuals_gameObject:visuals, is_base_link: link.IsBaseLink, scale:scale));
+            Links.Add(link.gameObject.name, new RobotLink(link.gameObject.name, urdfJoint, jointWriter, jointReader, visuals, is_base_link: link.IsBaseLink, scale:scale));
         }
     }
 
@@ -192,12 +194,12 @@ public class RobotModel {
         }
     }
 
-    public List<IO.Swagger.Model.Joint> GetJoints() {
-        List<IO.Swagger.Model.Joint> joints = new List<IO.Swagger.Model.Joint>();
+    public List<Joint> GetJoints() {
+        List<Joint> joints = new();
         foreach (KeyValuePair<string, string> joint in Joints) {
             Links.TryGetValue(joint.Value, out RobotLink link);
             if (link != null) {
-                joints.Add(new IO.Swagger.Model.Joint(joint.Key, link.GetJointAngle()));
+                joints.Add(new Joint(joint.Key, link.GetJointAngle()));
             }
         }
         return joints;

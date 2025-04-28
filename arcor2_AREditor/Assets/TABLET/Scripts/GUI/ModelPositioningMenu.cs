@@ -2,21 +2,23 @@
  * ModelPositioningMenu
  * Author: Timotej Halenár
  * Login: xhalen00
- * Bachelor's Thesis 
+ * Bachelor's Thesis
  * VUT FIT 2024
- * 
+ *
  * */
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
 using Base;
-using IO.Swagger.Model;
 using TMPro;
-using Unity.Mathematics;
-using UnityEditor;
 using UnityEngine;
+using UnityEngine.UI;
+using Joint = Arcor2.ClientSdk.Communication.OpenApi.Models.Joint;
+using Pose = Arcor2.ClientSdk.Communication.OpenApi.Models.Pose;
 
 public class ModelPositioningMenu : RightMenu<ModelPositioningMenu> {
     private RobotActionObject robot;
@@ -45,9 +47,9 @@ public class ModelPositioningMenu : RightMenu<ModelPositioningMenu> {
     public GameObject CoordsToggleDisable;
     public GameObject LockButton;
     public GameObject ImpossiblePoseNotification;
-    public UnityEngine.UI.Slider SensitivitySlider;
-    public UnityEngine.UI.Slider UpDownSensitivitySlider;
-    public UnityEngine.UI.Button SelectButton;
+    public Slider SensitivitySlider;
+    public Slider UpDownSensitivitySlider;
+    public Button SelectButton;
     public GameObject XYPlaneMesh;
     public GameObject XZPlaneMesh;
     public GameObject YZPlaneMesh;
@@ -72,7 +74,7 @@ public class ModelPositioningMenu : RightMenu<ModelPositioningMenu> {
 
     private Vector3 pointPosition;
 
-    private Dictionary<string, Vector3> pointPositions = new Dictionary<string, Vector3>();
+    private Dictionary<string, Vector3> pointPositions = new();
 
     private Vector3 lastValidPosition;
 
@@ -110,7 +112,9 @@ public class ModelPositioningMenu : RightMenu<ModelPositioningMenu> {
 
     private bool isWaiting = false;
     private bool cameraCoord = false;
-    
+    private EventHandler<RobotEndEffectorUpdatedEventArgs> onRobotEndEffectorUpdated;
+    private EventHandler<RobotJointsUpdatedEventArgs> onRobotJointsUpdated;
+
     private void Start() {
         SensitivitySlider.onValueChanged.AddListener(UpdateSensitivity);
         UpDownSensitivitySlider.onValueChanged.AddListener(UpdateUpDownSensitivity);
@@ -132,8 +136,8 @@ public class ModelPositioningMenu : RightMenu<ModelPositioningMenu> {
 
         dummy = new GameObject();
 
-        WebsocketManager.Instance.OnRobotEefUpdated -= SceneManager.Instance.RobotEefUpdated;
-        WebsocketManager.Instance.OnRobotJointsUpdated -= SceneManager.Instance.RobotJointsUpdated;
+        CommunicationManager.Instance.Client.RobotEndEffectorUpdated -= onRobotEndEffectorUpdated;
+        CommunicationManager.Instance.Client.RobotJointsUpdated -= onRobotJointsUpdated;
 
         List<string> EEIDs = await robot.GetEndEffectorIds();
         string EEID = EEIDs[0];
@@ -218,8 +222,8 @@ public class ModelPositioningMenu : RightMenu<ModelPositioningMenu> {
         Destroy(dummy);
         Destroy(lastValidTransform);
 
-        WebsocketManager.Instance.OnRobotEefUpdated += SceneManager.Instance.RobotEefUpdated;
-        WebsocketManager.Instance.OnRobotJointsUpdated += SceneManager.Instance.RobotJointsUpdated;
+        CommunicationManager.Instance.Client.RobotEndEffectorUpdated += onRobotEndEffectorUpdated;
+        CommunicationManager.Instance.Client.RobotJointsUpdated += onRobotJointsUpdated;
         gameObject.SetActive(false);
     }
 
@@ -227,7 +231,7 @@ public class ModelPositioningMenu : RightMenu<ModelPositioningMenu> {
         //user-space gizmo rotation
         //https://discussions.unity.com/t/lookat-to-only-rotate-on-y-axis-how/10895/3
         if (cameraCoord && !isMoving) {
-            Vector3 targetPosition = new Vector3(
+            Vector3 targetPosition = new(
                 Camera.main.transform.position.x,
                 pointInstance.transform.position.y,
                 Camera.main.transform.position.z);
@@ -533,28 +537,34 @@ public class ModelPositioningMenu : RightMenu<ModelPositioningMenu> {
     }
 
     private async void MoveHereModel(Vector3 position, Transform dummyTransform, bool avoid_collision = true) {
-        List<IO.Swagger.Model.Joint> modelJoints; //joints to move the model to
+        List<Joint> modelJoints; //joints to move the model to
 
-        Orientation orientation = new Orientation(w: (decimal) 0.0, x: (decimal) 0.0, y: (decimal) 1.0, z: (decimal) 0.0);
+        Orientation orientation = new(w: (decimal) 0.0, x: (decimal) 0.0, y: (decimal) 1.0, z: (decimal) 0.0);
 
         try {
-            IO.Swagger.Model.Pose pose = new IO.Swagger.Model.Pose(orientation: orientation, position: DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(position)));
-            List<IO.Swagger.Model.Joint> startJoints = SceneManager.Instance.SelectedRobot.GetJoints();
+            Pose pose = new(orientation: orientation, position: DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(position)));
+            List<Joint> startJoints = SceneManager.Instance.SelectedRobot.GetJoints();
 
-            modelJoints = await WebsocketManager.Instance.InverseKinematics(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), true, pose, startJoints);
-            
+            var response = await CommunicationManager.Instance.Client.InverseKinematicsAsync(new InverseKinematicsRequestArgs(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), pose, startJoints, true));
+            if (!response.Result) {
+                isWaiting = false;
+                ImpossiblePoseNotify(true, false);
+                return;
+            }
+
+            modelJoints = response.Data;
         } catch (ItemNotFoundException ex) {
             ImpossiblePoseNotify(true, false);
             isWaiting = false;
             return;
 
-        } catch (RequestFailedException ex) {
+        } catch (Arcor2ConnectionException ex) {
             isWaiting = false;
             ImpossiblePoseNotify(true, false);
             return;
         }
         
-        foreach (IO.Swagger.Model.Joint joint in modelJoints) {
+        foreach (Joint joint in modelJoints) {
             SceneManager.Instance.SelectedRobot.SetJointValue(joint.Name, (float) joint.Value);
         }
 
@@ -776,14 +786,14 @@ public class ModelPositioningMenu : RightMenu<ModelPositioningMenu> {
     #region CONFIRM DIALOG
     public async void OnConfirmButtonClick() {
         Position position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(SceneManager.Instance.SceneOrigin.transform.parent.InverseTransformPoint(pointInstance.transform.position)));
-        Orientation orientation = new Orientation(w: (decimal) 0.0, x: (decimal) 0.0, y: (decimal) 1.0, z: (decimal) 0.0);
+        Orientation orientation = new(w: (decimal) 0.0, x: (decimal) 0.0, y: (decimal) 1.0, z: (decimal) 0.0);
 
-        await WebsocketManager.Instance.MoveToPose(
-            robotId: SceneManager.Instance.SelectedRobot.GetId(),
-            endEffectorId: endEffector.EEId,
-            speed: (decimal) 0.5,
-            position: position,
-            orientation: orientation);
+        await CommunicationManager.Instance.Client.MoveToPoseAsync(new MoveToPoseRequestArgs(
+            SceneManager.Instance.SelectedRobot.GetId(),
+            endEffector.EEId,
+            (decimal) 0.5,
+            position,
+            orientation));
 
         endEffector.transform.position = pointInstance.transform.position;
 

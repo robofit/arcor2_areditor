@@ -1,14 +1,15 @@
-using System.Collections;
-using System.Collections.Generic;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
 using Base;
-using Newtonsoft.Json;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Parameter = Base.Parameter;
 
 public class ActionObjectParameterOverride : MonoBehaviour
 {
     [SerializeField]
-    private TMPro.TMP_Text Name, Value;
+    private TMP_Text Name, Value;
 
     [SerializeField]
     private ButtonWithTooltip ModifyBtn, RestoreBtn, SaveBtn, CancelBtn;
@@ -60,9 +61,16 @@ public class ActionObjectParameterOverride : MonoBehaviour
 
     public async void Restore() {
         try {
-            await WebsocketManager.Instance.DeleteOverride(objectId, new IO.Swagger.Model.Parameter(parameterMetadata.Name, parameterMetadata.Type, Value.text), false);
+            var response = await CommunicationManager.Instance.Client.RemoveOverrideAsync(
+                new DeleteOverrideRequestArgs(objectId, new Arcor2.ClientSdk.Communication.OpenApi.Models.Parameter(parameterMetadata.Name, parameterMetadata.Type, Value.text)), false);
+            if (!response.Result) {
+                Notifications.Instance.ShowNotification("Failed to delete parameter",
+                    string.Join(',', response.Messages));
+                return;
+            }
+
             RestoreBtn.gameObject.SetActive(false);
-        } catch (RequestFailedException ex) {
+        } catch (Arcor2ConnectionException ex) {
             Debug.LogError(ex);
         }
     }
@@ -77,19 +85,34 @@ public class ActionObjectParameterOverride : MonoBehaviour
     }
 
     public async void Save() {
-        Parameter parameter = new Parameter(parameterMetadata, Input.GetValue());
+        Parameter parameter = new(parameterMetadata, Input.GetValue());
         try {
-            if (overridden)
-                await WebsocketManager.Instance.UpdateOverride(objectId, DataHelper.ActionParameterToParameter(parameter), false);
-            else
-                await WebsocketManager.Instance.AddOverride(objectId, DataHelper.ActionParameterToParameter(parameter), false);
+            if (overridden) {
+                var response = await CommunicationManager.Instance.Client.UpdateOverrideAsync(
+                    new UpdateOverrideRequestArgs(objectId, DataHelper.ActionParameterToParameter(parameter)),
+                    false);
+                if (!response.Result) {
+                    Notifications.Instance.ShowNotification("Failed to override parameter",
+                        string.Join(',', response.Messages));
+                    return;
+                }
+            } else {
+                var response = await CommunicationManager.Instance.Client.AddOverrideAsync(
+                    new AddOverrideRequestArgs(objectId, DataHelper.ActionParameterToParameter(parameter)), false);
+                if (!response.Result) {
+                    Notifications.Instance.ShowNotification("Failed to override parameter",
+                        string.Join(',', response.Messages));
+                    return;
+                }
+            }
+
             Destroy(Input.GetTransform().gameObject);
             Value.gameObject.SetActive(true);
             SaveBtn.gameObject.SetActive(false);
             ModifyBtn.gameObject.SetActive(true);
             RestoreBtn.gameObject.SetActive(true);
             CancelBtn.gameObject.SetActive(false);
-        } catch (RequestFailedException ex) {
+        } catch (Arcor2ConnectionException ex) {
             Debug.LogError(ex);
             Notifications.Instance.ShowNotification("Failed to override parameter", ex.Message);
         }

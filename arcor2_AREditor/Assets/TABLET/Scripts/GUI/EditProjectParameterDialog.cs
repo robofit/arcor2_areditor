@@ -1,15 +1,18 @@
-using UnityEngine;
-using UnityEngine.UI;
-using Newtonsoft.Json;
-using Base;
-using System.Threading.Tasks;
 using System;
-using UnityEngine.Events;
-using IO.Swagger.Model;
+using System.Threading.Tasks;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
+using Base;
 using Michsky.UI.ModernUIPack;
+using Newtonsoft.Json;
+using TMPro;
+using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.UI;
+using Action = System.Action;
 
 public class EditProjectParameterDialog : Dialog {
-    public TMPro.TMP_Text Title;
+    public TMP_Text Title;
 
     [SerializeField]
     private LabeledInput nameInput, valueInput;
@@ -24,15 +27,15 @@ public class EditProjectParameterDialog : Dialog {
     private bool isNewConstant, booleanValue;
     private ProjectParameterTypes selectedType;
     public ButtonWithTooltip CloseBtn, ConfirmButton;
-    private System.Action<string> onCloseCallback;
-    private System.Action onCancelCallback;
+    private Action<string> onCloseCallback;
+    private Action onCancelCallback;
     private bool cancelCallbackInvoked; //flag: only cancel callback should be invoked if canceled
 
     /// <summary>
     /// 
     /// </summary>
     /// <param name="projectParameter"></param>
-    public async Task<bool> Init(System.Action<string> onCloseCallback, System.Action onCancelCallback, ProjectParameter projectParameter = null, string ofType = null) {
+    public async Task<bool> Init(Action<string> onCloseCallback, Action onCancelCallback, ProjectParameter projectParameter = null, string ofType = null) {
         this.projectParameter = projectParameter;
         isNewConstant = projectParameter == null;
         this.onCloseCallback = onCloseCallback;
@@ -41,7 +44,7 @@ public class EditProjectParameterDialog : Dialog {
 
         dropdown.Dropdown.dropdownItems.Clear();
         foreach (string type in Enum.GetNames(typeof(ProjectParameterTypes))) {
-            CustomDropdown.Item item = new CustomDropdown.Item {
+            CustomDropdown.Item item = new() {
                 itemName = type,
                 OnItemSelection = new UnityEvent()
             };
@@ -62,7 +65,12 @@ public class EditProjectParameterDialog : Dialog {
 
         } else { //editing constant
             try {
-                await WebsocketManager.Instance.WriteLock(projectParameter.Id, false);
+                var response = await CommunicationManager.Instance.Client.WriteLockAsync(new WriteLockRequestArgs(projectParameter.Id, false));
+                if (!response.Result) {
+                    Notifications.Instance.ShowNotification("Failed to lock " + projectParameter.Name, string.Join(',', response.Messages));
+                    this.projectParameter = null;
+                    return false;
+                }
                 Title.text = "Edit project parameter";
                 removeButton.SetActive(true);
                 nameInput.SetValue(projectParameter.Name);
@@ -78,7 +86,7 @@ public class EditProjectParameterDialog : Dialog {
                     valueInput.SetValue(value);
                 }
 
-            } catch (RequestFailedException e) {
+            } catch (Arcor2ConnectionException e) {
                 Notifications.Instance.ShowNotification("Failed to lock " + projectParameter.Name, e.Message);
                 this.projectParameter = null;
                 return false;
@@ -137,7 +145,7 @@ public class EditProjectParameterDialog : Dialog {
         }
 
         if (!isNewConstant) {
-            if (((string) nameInput.GetValue()) == projectParameter.Name && valueInput.Input.text == projectParameter.Value) { //known bug: always false when parameter's type is double or boolean
+            if ((string) nameInput.GetValue() == projectParameter.Name && valueInput.Input.text == projectParameter.Value) { //known bug: always false when parameter's type is double or boolean
                 ConfirmButton.SetInteractivity(false, "Project parameter unchanged");
                 valid = false;
             }
@@ -149,7 +157,7 @@ public class EditProjectParameterDialog : Dialog {
         try {
             await Confirm(true);
             ConfirmButton.SetInteractivity(true);
-        } catch (RequestFailedException e) {
+        } catch (Arcor2ConnectionException e) {
             ConfirmButton.SetInteractivity(false, e.Message);
         }
     }
@@ -168,14 +176,24 @@ public class EditProjectParameterDialog : Dialog {
         }
         try {
             if (isNewConstant) {
-                await WebsocketManager.Instance.AddProjectParameter(name, selectedType.ToString("g"), value, dryRun);
+                var response = await CommunicationManager.Instance.Client.AddProjectParameterAsync(new AddProjectParameterRequestArgs(name, selectedType.ToString("g"), value), dryRun);
+                if (!response.Result) {
+                    Notifications.Instance.ShowNotification("Failed to " + (isNewConstant ? "add " : "update ") + "project parameter",
+                        string.Join(',', response.Messages));
+                    return;
+                }
             } else {
-                await WebsocketManager.Instance.UpdateProjectParameter(projectParameter.Id, name, value, dryRun);
+                var response = await CommunicationManager.Instance.Client.UpdateProjectParameterAsync(new UpdateProjectParameterRequestArgs(selectedType.ToString("g"), name, value), dryRun);
+                if (!response.Result) {
+                    Notifications.Instance.ShowNotification("Failed to " + (isNewConstant ? "add " : "update ") + "project parameter",
+                        string.Join(',', response.Messages));
+                    return;
+                }
             }
             //after updating, constant is unlocked automatically by server
             if (!dryRun)
                 Close();
-        } catch (RequestFailedException e) {
+        } catch (Arcor2ConnectionException e) {
             if (dryRun)
                 throw e;
             else
@@ -201,8 +219,11 @@ public class EditProjectParameterDialog : Dialog {
         }
 
         try {
-            await WebsocketManager.Instance.WriteUnlock(projectParameter.Id);
-        } catch (RequestFailedException e) {
+            var response = await CommunicationManager.Instance.Client.WriteUnlockAsync(new WriteUnlockRequestArgs(projectParameter.Id));
+            if (!response.Result) {
+                Notifications.Instance.ShowNotification("Failed to unlock " + projectParameter.Name, string.Join(",", response.Messages));
+            }
+        } catch (Arcor2ConnectionException e) {
             Notifications.Instance.ShowNotification("Failed to unlock " + projectParameter.Name, e.Message);
         }
         Close();
@@ -211,9 +232,13 @@ public class EditProjectParameterDialog : Dialog {
 
     public async void Remove() {
         try {
-            await WebsocketManager.Instance.RemoveProjectParameter(projectParameter.Id);
+            var response = await CommunicationManager.Instance.Client.RemoveProjectParameterAsync(new RemoveProjectParameterRequestArgs(projectParameter.Id));
+            if (!response.Result) {
+                Notifications.Instance.ShowNotification("Failed to remove project parameter", string.Join(",", response.Messages));
+                return;
+            }
             Close();
-        } catch (RequestFailedException e) {
+        } catch (Arcor2ConnectionException e) {
             Notifications.Instance.ShowNotification("Failed to remove project parameter", e.Message);
         }
     }

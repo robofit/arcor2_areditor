@@ -1,16 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using Base;
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using static Base.GameManager;
-using TMPro;
-using UnityEngine.Events;
 using System.Threading.Tasks;
-using TriLibCore.Extensions;
-using RuntimeInspectorNamespace;
-using System.Diagnostics;
+using Arcor2.ClientSdk.Communication;
+using Base;
+using UnityEngine;
+using static Base.GameManager;
 using Debug = UnityEngine.Debug;
 
 [RequireComponent(typeof(CanvasGroup))]
@@ -20,12 +15,12 @@ public class SelectorMenu : Singleton<SelectorMenu> {
 
     public CanvasGroup CanvasGroup;
     public GameObject ContentAim, ContentAlphabet, ContentNoPose, ContentBlocklisted, ContainerAlphabet, ContainerAim, ContainerNoPose, ContainerBlocklisted;
-    private List<SelectorItem> selectorItemsAimMenu = new List<SelectorItem>();
-    private List<SelectorItem> selectorItemsNoPoseMenu = new List<SelectorItem>();
-    public event AREditorEventArgs.InteractiveObjectEventHandler OnObjectSelectedChangedEvent;
+    private List<SelectorItem> selectorItemsAimMenu = new();
+    private List<SelectorItem> selectorItemsNoPoseMenu = new();
+    public event EventHandler<InteractiveObjectEventArgs> OnObjectSelectedChangedEvent;
     public ToggleGroupIconButtons BottomButtons;
 
-    public Dictionary<string, SelectorItem> SelectorItems = new Dictionary<string, SelectorItem>();
+    public Dictionary<string, SelectorItem> SelectorItems = new();
 
 
     public bool ManuallySelected {
@@ -91,7 +86,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         }
     }
 
-    private void OnCloseProjectScene(object sender, System.EventArgs e) {
+    private void OnCloseProjectScene(object sender, EventArgs e) {
         foreach (SelectorItem selectorItem in SelectorItems.Values) {
             Destroy(selectorItem.gameObject);
         }
@@ -114,8 +109,8 @@ public class SelectorMenu : Singleton<SelectorMenu> {
 
 
     private void Update() {
-        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.MainScreen ||
-            GameManager.Instance.GetGameState() == GameManager.GameStateEnum.Disconnected) {
+        if (GameManager.Instance.GetGameState() == GameStateEnum.MainScreen ||
+            GameManager.Instance.GetGameState() == GameStateEnum.Disconnected) {
             CanvasGroup.interactable = false;
             CanvasGroup.blocksRaycasts = false;
             CanvasGroup.alpha = 0;
@@ -127,11 +122,11 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         
     }
 
-    private void OnProjectChanged(object sender, System.EventArgs e) {
+    private void OnProjectChanged(object sender, EventArgs e) {
         UpdateNoPoseMenu();
     }
 
-    private void OnSceneChanged(object sender, System.EventArgs e) {
+    private void OnSceneChanged(object sender, EventArgs e) {
         UpdateNoPoseMenu();
     }
 
@@ -173,7 +168,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
                     continue;
                 }
 
-                SelectorItem selectorItem = selectorItemsAimMenu.Find(x => (x.InteractiveObject.GetId() == item.Item2.GetId()));
+                SelectorItem selectorItem = selectorItemsAimMenu.Find(x => x.InteractiveObject.GetId() == item.Item2.GetId());
                 if (selectorItem == null) {
                     selectorItem = item.Item2.SelectorItem;                    
                     selectorItemsAimMenu.Add(selectorItem);
@@ -183,7 +178,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
             ++iteration;
             
             selectorItemsAimMenu.Sort(new SelectorItemComparer());
-            HashSet<string> newItems = new HashSet<string>();
+            HashSet<string> newItems = new();
             int index = 0;
             bool selectedAdded = false;
 
@@ -256,7 +251,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     }
 
     private HashSet<string> GetAncestors(InteractiveObject interactiveObject) {
-        HashSet<string> ancestors = new HashSet<string>();
+        HashSet<string> ancestors = new();
         if (interactiveObject is ISubItem subItem && subItem.GetParentObject() != null) {
             ancestors.Add(subItem.GetParentObject().GetId());
             ancestors.UnionWith(GetAncestors(subItem.GetParentObject()));
@@ -291,7 +286,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     }
 
     private bool IsRootItem(SelectorItem selectorItem) {
-        return (!(selectorItem.InteractiveObject is ISubItem)) || (selectorItem.InteractiveObject is ISubItem subItem && subItem.GetParentObject() == null);
+        return !(selectorItem.InteractiveObject is ISubItem) || (selectorItem.InteractiveObject is ISubItem subItem && subItem.GetParentObject() == null);
     }
 
     private void RemoveItem(int index, List<SelectorItem> selectorItems) {
@@ -360,7 +355,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
                 selectorItem.transform.SetParent(parent.SelectorItem.SublistContent.transform);
                 parent.SelectorItem.AddChild(selectorItem);
             } else {
-                throw new RequestFailedException("Trying to create subitem without parent item in list. This should not had happened, please report");
+                throw new Arcor2ConnectionException("Trying to create subitem without parent item in list. This should not had happened, please report");
             }
         } else {
             selectorItem.transform.SetParent(ContentAlphabet.transform);

@@ -1,13 +1,16 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
+using Base;
+using DanielLochner.Assets.SimpleSideMenu;
 using UnityEngine;
 using UnityEngine.UI;
-using Base;
 using static Base.GameManager;
-using System.Threading.Tasks;
-using System.Linq;
-using Newtonsoft.Json;
-using IO.Swagger.Model;
-using System.Collections.Generic;
+using Parameter = Base.Parameter;
+using Pose = Arcor2.ClientSdk.Communication.OpenApi.Models.Pose;
 
 public class LeftMenuScene : LeftMenu {
 
@@ -25,7 +28,7 @@ public class LeftMenuScene : LeftMenu {
 
     protected override void Awake() {
         base.Awake();
-        Base.SceneManager.Instance.OnSceneSavedStatusChanged += OnSceneSavedStatusChanged;
+        SceneManager.Instance.OnSceneSavedStatusChanged += OnSceneSavedStatusChanged;
 
         SceneManager.Instance.OnSceneStateEvent += OnSceneStateEvent;
 
@@ -41,7 +44,7 @@ public class LeftMenuScene : LeftMenu {
     }
 
     protected override void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
-        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor)
+        if (GameManager.Instance.GetGameState() == GameStateEnum.SceneEditor)
             base.OnSceneStateEvent(sender, args);
 
     }
@@ -125,12 +128,17 @@ public class LeftMenuScene : LeftMenu {
 
     private async void CancelObjectAiming() {
         try {
-            await WebsocketManager.Instance.CancelObjectAiming();
+            var response = await CommunicationManager.Instance.Client.ObjectAimingCancelAsync();
+            if (!response.Result) {
+                Notifications.Instance.ShowNotification("Failed to cancel object aiming", string.Join(",", response.Messages));
+                return;
+            }
+
             ActionObjectAimingMenu.Instance.AimingInProgress = false;
             ActionObjectAimingMenu.Instance.Highlight(true);
             DeactivateAllSubmenus();
             ConfirmationDialog.Close();
-        } catch (RequestFailedException ex) {
+        } catch (Arcor2ConnectionException ex) {
             Notifications.Instance.ShowNotification("Failed to cancel object aiming", ex.Message);
         }
 
@@ -155,8 +163,8 @@ public class LeftMenuScene : LeftMenu {
 
     public override void UpdateVisibility() {
 
-        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor &&
-            MainMenu.Instance.CurrentState() == DanielLochner.Assets.SimpleSideMenu.SimpleSideMenu.State.Closed) {
+        if (GameManager.Instance.GetGameState() == GameStateEnum.SceneEditor &&
+            MainMenu.Instance.CurrentState() == SimpleSideMenu.State.Closed) {
             UpdateVisibility(true);
         } else {
             UpdateVisibility(false);
@@ -172,7 +180,7 @@ public class LeftMenuScene : LeftMenu {
 
     public async void SaveScene() {
         SaveButton.SetInteractivity(false, "Saving scene...");
-        IO.Swagger.Model.SaveSceneResponse saveSceneResponse = await Base.GameManager.Instance.SaveScene();
+        SaveSceneResponse saveSceneResponse = await GameManager.Instance.SaveScene();
         if (!saveSceneResponse.Result) {
             saveSceneResponse.Messages.ForEach(Debug.LogError);
             Notifications.Instance.ShowNotification("Scene save failed", saveSceneResponse.Messages.Count > 0 ? saveSceneResponse.Messages[0] : "Failed to save scene");
@@ -184,7 +192,7 @@ public class LeftMenuScene : LeftMenu {
     }
 
     public override async void UpdateBuildAndSaveBtns() {
-        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor)
+        if (GameManager.Instance.GetGameState() != GameStateEnum.SceneEditor)
             return;
         if (CurrentSubmenuOpened != LeftMenuSelection.Home)
             return;
@@ -193,7 +201,12 @@ public class LeftMenuScene : LeftMenu {
         CloseButton.SetInteractivity(false, "Loading...");
         //WebsocketManager.Instance.CloseScene(true, true, CloseSceneCallback);
         if (SceneManager.Instance.SceneStarted) {
-            WebsocketManager.Instance.StopScene(true, StopSceneCallback);
+            var response = await CommunicationManager.Instance.Client.StopSceneAsync(true);
+            if (response.Messages != null) {
+                SaveButton.SetInteractivity(response.Result, response.Messages.FirstOrDefault());
+            } else {
+                SaveButton.SetInteractivity(response.Result);
+            }
         } else {
             CloseButton.SetInteractivity(true);
         }
@@ -201,25 +214,12 @@ public class LeftMenuScene : LeftMenu {
         if (!SceneManager.Instance.SceneChanged) {
             SaveButton.SetInteractivity(false, "There are no unsaved changes");
         } else {
-            WebsocketManager.Instance.SaveScene(true, SaveSceneCallback);
-        }
-    }
-
-    private void StopSceneCallback(string _, string data) {
-        CloseProjectResponse response = JsonConvert.DeserializeObject<CloseProjectResponse>(data);
-        if (response.Messages != null) {
-            CloseButton.SetInteractivity(response.Result, response.Messages.FirstOrDefault());
-        } else {
-            CloseButton.SetInteractivity(response.Result);
-        }
-    }
-
-    protected void SaveSceneCallback(string nothing, string data) {
-        SaveSceneResponse response = JsonConvert.DeserializeObject<SaveSceneResponse>(data);
-        if (response.Messages != null) {
-            SaveButton.SetInteractivity(response.Result, response.Messages.FirstOrDefault());
-        } else {
-            SaveButton.SetInteractivity(response.Result);
+            var response = await CommunicationManager.Instance.Client.SaveSceneAsync();
+            if (response.Messages != null) {
+                SaveButton.SetInteractivity(response.Result, response.Messages.FirstOrDefault());
+            } else {
+                SaveButton.SetInteractivity(response.Result);
+            }
         }
     }
     /*
@@ -242,14 +242,14 @@ public class LeftMenuScene : LeftMenu {
             validateInput: ValidateProjectName);
     }
 
-    private async Task<Base.RequestResult> ValidateProjectName(string name) {
+    private async Task<RequestResult> ValidateProjectName(string name) {
         try {
-            await WebsocketManager.Instance.CreateProject(name,
-            SceneManager.Instance.SceneMeta.Id,
-            "",
-            InputDialogWithToggle.GetToggleValue(),
-            true);
-        } catch (RequestFailedException ex) {
+            await CommunicationManager.Instance.Client.AddNewProjectAsync(new NewProjectRequestArgs(
+                       SceneManager.Instance.SceneMeta.Id,
+                       name,
+                       "",
+                       InputDialogWithToggle.GetToggleValue()), true);
+        } catch (Arcor2ConnectionException ex) {
             return new RequestResult(false, ex.Message);
         }
         return new RequestResult(true, "");
@@ -265,12 +265,12 @@ public class LeftMenuScene : LeftMenu {
             return;
         }
         try {
-            await WebsocketManager.Instance.CreateProject(nameOfNewProject,
+            await CommunicationManager.Instance.Client.AddNewProjectAsync(new NewProjectRequestArgs(
             SceneManager.Instance.SceneMeta.Id,
+            nameOfNewProject,
             "",
-            InputDialogWithToggle.GetToggleValue(),
-            false);
-        } catch (RequestFailedException ex) {
+            InputDialogWithToggle.GetToggleValue()));
+        } catch (Arcor2ConnectionException ex) {
             Notifications.Instance.ShowNotification("Failed to create new project", ex.Message);
             GameManager.Instance.HideLoadingScreen(true);
         }
@@ -279,7 +279,7 @@ public class LeftMenuScene : LeftMenu {
 
 
     public async void ShowCloseSceneDialog() {
-        (bool success, _) = await Base.GameManager.Instance.CloseScene(false);
+        (bool success, _) = await GameManager.Instance.CloseScene(false);
         if (!success) {
             GameManager.Instance.HideLoadingScreen();
             string message = "Are you sure you want to close current scene? ";
@@ -303,8 +303,8 @@ public class LeftMenuScene : LeftMenu {
 
     public async void CloseScene() {
         if (SceneManager.Instance.SceneStarted)
-            WebsocketManager.Instance.StopScene(false, null);
-        (bool success, string message) = await Base.GameManager.Instance.CloseScene(true);
+            await CommunicationManager.Instance.Client.StopSceneAsync();
+        (bool success, string message) = await GameManager.Instance.CloseScene(true);
         if (success) {
 
             ConfirmationDialog.Close();
@@ -371,17 +371,17 @@ public class LeftMenuScene : LeftMenu {
 
     public async override void CopyObjectClick() {
         if (selectedObject is ActionObject actionObject) {
-            List<IO.Swagger.Model.Parameter> parameters = new List<IO.Swagger.Model.Parameter>();
-            foreach (Base.Parameter p in actionObject.ObjectParameters.Values) {
+            List<Arcor2.ClientSdk.Communication.OpenApi.Models.Parameter> parameters = new();
+            foreach (Parameter p in actionObject.ObjectParameters.Values) {
                 parameters.Add(DataHelper.ActionParameterToParameter(p));
             }
             string newName = SceneManager.Instance.GetFreeAOName(actionObject.GetName());
             SceneManager.Instance.SelectCreatedActionObject = newName;
             SceneManager.Instance.OpenTransformMenuOnCreatedObject = true;
-            await WebsocketManager.Instance.AddObjectToScene(newName,
-                actionObject.ActionObjectMetadata.Type, new IO.Swagger.Model.Pose(
+            await CommunicationManager.Instance.Client.AddActionObjectToSceneAsync(new AddObjectToSceneRequestArgs(newName,
+                actionObject.ActionObjectMetadata.Type, new Pose(
                     orientation: DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(actionObject.transform.localRotation)),
-                    position: DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(actionObject.transform.localPosition))), parameters);
+                    position: DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(actionObject.transform.localPosition))), parameters));
         }
     }
 }

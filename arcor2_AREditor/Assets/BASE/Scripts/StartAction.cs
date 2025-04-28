@@ -1,17 +1,21 @@
 using System;
 using System.Collections.Generic;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
 using UnityEngine;
+using Action = Arcor2.ClientSdk.Communication.OpenApi.Models.Action;
+using ActionMetadata = Base.ActionMetadata;
+using ActionPoint = Base.ActionPoint;
 
 public class StartAction : StartEndAction {
 
-    public override void Init(IO.Swagger.Model.Action projectAction, Base.ActionMetadata metadata, Base.ActionPoint ap, IActionProvider actionProvider, string actionType) {
-        IO.Swagger.Model.Action prAction = new IO.Swagger.Model.Action(
-            flows: new List<IO.Swagger.Model.Flow> {
-                new IO.Swagger.Model.Flow(
-                    outputs: new List<string> { "output" }, type: IO.Swagger.Model.Flow.TypeEnum.Default) },
+    public override void Init(Action projectAction, ActionMetadata metadata, ActionPoint ap, IActionProvider actionProvider, string actionType) {
+        Action prAction = new(
+            flows: new List<Flow> {
+                new(
+                    outputs: new List<string> { "output" }, type: Flow.TypeEnum.Default) },
             id: "START",
             name: "START",
-            parameters: new List<IO.Swagger.Model.ActionParameter>(),
+            parameters: new List<ActionParameter>(),
             type: "");
         base.Init(prAction, metadata, ap, actionProvider, actionType);
         transform.localPosition = PlayerPrefsHelper.LoadVector3(playerPrefsKey, new Vector3(0, 0.15f, -0.6f));

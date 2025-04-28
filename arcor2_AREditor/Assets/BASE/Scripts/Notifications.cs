@@ -1,7 +1,9 @@
 
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
+
 namespace Base {
     public abstract class Notifications : Singleton<Notifications> {
-        public abstract void SaveLogs(IO.Swagger.Model.Scene scene, IO.Swagger.Model.Project project, string customNotificationTitle = "");
+        public abstract void SaveLogs(Scene scene, Project project, string customNotificationTitle = "");
 
         public virtual void SaveLogs(string customNotificationTitle = "") {
             SaveLogs(SceneManager.Instance.GetScene(), ProjectManager.Instance.GetProject(), customNotificationTitle);

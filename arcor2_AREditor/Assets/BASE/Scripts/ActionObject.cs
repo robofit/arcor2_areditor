@@ -1,26 +1,29 @@
-using UnityEngine;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using IO.Swagger.Model;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
+using UnityEngine;
+using Pose = Arcor2.ClientSdk.Communication.OpenApi.Models.Pose;
 
 namespace Base {
     public abstract class ActionObject : InteractiveObject, IActionProvider, IActionPointParent {
 
         public GameObject ActionPointsSpawn;
-        [System.NonSerialized]
+        [NonSerialized]
         public int CounterAP = 0;
         protected float visibility;
 
         public Collider Collider;
 
-        public IO.Swagger.Model.SceneObject Data = new IO.Swagger.Model.SceneObject(id: "", name: "", pose: DataHelper.CreatePose(new Vector3(), new Quaternion()), type: "");
+        public SceneObject Data = new(id: "", name: "", pose: DataHelper.CreatePose(new Vector3(), new Quaternion()), type: "");
         public ActionObjectMetadata ActionObjectMetadata;
 
-        public Dictionary<string, Parameter> ObjectParameters = new Dictionary<string, Parameter>();
-        public Dictionary<string, Parameter> Overrides = new Dictionary<string, Parameter>();
+        public Dictionary<string, Parameter> ObjectParameters = new();
+        public Dictionary<string, Parameter> Overrides = new();
 
 
-        public virtual void InitActionObject(IO.Swagger.Model.SceneObject sceneObject, Vector3 position, Quaternion orientation, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null, bool loadResuources = true) {
+        public virtual void InitActionObject(SceneObject sceneObject, Vector3 position, Quaternion orientation, ActionObjectMetadata actionObjectMetadata, CollisionModels customCollisionModels = null, bool loadResuources = true) {
             Data.Id = sceneObject.Id;
             Data.Type = sceneObject.Type;
             name = sceneObject.Name; // show actual object name in unity hierarchy
@@ -55,12 +58,11 @@ namespace Base {
             }
         }
 
-        public virtual void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger) {
-            if (Data != null & Data.Name != actionObjectSwagger.Name)
+        public virtual void ActionObjectUpdate(SceneObject actionObjectSwagger) {
+            if ((Data != null) & (Data.Name != actionObjectSwagger.Name))
                 UpdateObjectName(actionObjectSwagger.Name);
             Data = actionObjectSwagger;
-            foreach (IO.Swagger.Model.Parameter p in Data.Parameters) {
-
+            foreach (Arcor2.ClientSdk.Communication.OpenApi.Models.Parameter p in Data.Parameters) {
                 if (!ObjectParameters.ContainsKey(p.Name)) {
                     if (TryGetParameterMetadata(p.Name, out ParameterMeta parameterMeta)) {
                         ObjectParameters[p.Name] = new Parameter(parameterMeta, p.Value);
@@ -84,11 +86,11 @@ namespace Base {
         }
 
         public virtual bool SceneInteractable() {
-            return (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor);
+            return GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor;
         }
 
-        public bool TryGetParameter(string id, out IO.Swagger.Model.Parameter parameter) {
-            foreach (IO.Swagger.Model.Parameter p in Data.Parameters) {
+        public bool TryGetParameter(string id, out Arcor2.ClientSdk.Communication.OpenApi.Models.Parameter parameter) {
+            foreach (Arcor2.ClientSdk.Communication.OpenApi.Models.Parameter p in Data.Parameters) {
                 if (p.Name == id) {
                     parameter = p;
                     return true;
@@ -98,8 +100,8 @@ namespace Base {
             return false;
         }
 
-        public bool TryGetParameterMetadata(string id, out IO.Swagger.Model.ParameterMeta parameterMeta) {
-            foreach (IO.Swagger.Model.ParameterMeta p in ActionObjectMetadata.Settings) {
+        public bool TryGetParameterMetadata(string id, out ParameterMeta parameterMeta) {
+            foreach (ParameterMeta p in ActionObjectMetadata.Settings) {
                 if (p.Name == id) {
                     parameterMeta = p;
                     return true;
@@ -147,7 +149,7 @@ namespace Base {
             RemoveActionPoints();
 
             // Remove this ActionObject reference from the scene ActionObject list
-            SceneManager.Instance.ActionObjects.Remove(this.Data.Id);
+            SceneManager.Instance.ActionObjects.Remove(Data.Id);
 
             DestroyObject();
             Destroy(gameObject);
@@ -192,7 +194,7 @@ namespace Base {
         public abstract void UpdateModel();
 
         public List<ActionPoint> GetActionPoints() {
-            List<ActionPoint> actionPoints = new List<ActionPoint>();
+            List<ActionPoint> actionPoints = new();
             foreach (ActionPoint actionPoint in ProjectManager.Instance.ActionPoints.Values) {
                 if (actionPoint.Data.Parent == Data.Id) {
                     actionPoints.Add(actionPoint);
@@ -210,7 +212,7 @@ namespace Base {
             return true;
         }
 
-        public Base.ActionObject GetActionObject() {
+        public ActionObject GetActionObject() {
             return this;
         }
 
@@ -241,21 +243,21 @@ namespace Base {
             }
         }
 
-        public abstract void CreateModel(IO.Swagger.Model.CollisionModels customCollisionModels = null);
+        public abstract void CreateModel(CollisionModels customCollisionModels = null);
         public abstract GameObject GetModelCopy();
 
-        public IO.Swagger.Model.Pose GetPose() {
+        public Pose GetPose() {
             if (ActionObjectMetadata.HasPose)
-                return new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(transform.localPosition)),
-                    orientation: DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(transform.localRotation)));
+                return new Pose(DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(transform.localPosition)),
+                    DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(transform.localRotation)));
             else
-                return new IO.Swagger.Model.Pose(orientation: new IO.Swagger.Model.Orientation(), position: new IO.Swagger.Model.Position());
+                return new Pose(orientation: new Orientation(), position: new Position());
         }
         public async override Task Rename(string name) {
             try {
-                await WebsocketManager.Instance.RenameObject(GetId(), name);
+                await CommunicationManager.Instance.Client.RenameActionObjectAsync(new RenameArgs(GetId(), name));
                 Notifications.Instance.ShowToastMessage("Action object renamed");
-            } catch (RequestFailedException e) {
+            } catch (Arcor2ConnectionException e) {
                 Notifications.Instance.ShowNotification("Failed to rename action object", e.Message);
                 throw;
             }
@@ -266,7 +268,7 @@ namespace Base {
             } else if (SceneManager.Instance.SceneStarted) {
                 return new RequestResult(false, "Scene online");
             } else {
-                IO.Swagger.Model.RemoveFromSceneResponse response = await WebsocketManager.Instance.RemoveFromScene(GetId(), false, true);
+                RemoveFromSceneResponse response = await CommunicationManager.Instance.Client.RemoveActionObjectFromSceneAsync(new RemoveFromSceneRequestArgs(GetId(), false), true);
                 if (response.Result)
                     return new RequestResult(true);
                 else
@@ -276,8 +278,8 @@ namespace Base {
 
 
         public async override void Remove() {
-            IO.Swagger.Model.RemoveFromSceneResponse response =
-            await WebsocketManager.Instance.RemoveFromScene(GetId(), false, false);
+            RemoveFromSceneResponse response =
+            await CommunicationManager.Instance.Client.RemoveActionObjectFromSceneAsync(new RemoveFromSceneRequestArgs(GetId(), false));
             if (!response.Result) {
                 Notifications.Instance.ShowNotification("Failed to remove object " + GetName(), response.Messages[0]);
                 return;

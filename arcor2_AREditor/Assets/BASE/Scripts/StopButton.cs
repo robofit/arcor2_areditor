@@ -1,12 +1,14 @@
 using System;
+using Arcor2.ClientSdk.Communication;
 using Base;
 using UnityEngine;
+using Action = Base.Action;
 
 public class StopButton : MonoBehaviour {
     private void Start() {
-        Base.GameManager.Instance.OnActionExecution += OnActionExecution;
-        Base.GameManager.Instance.OnActionExecutionFinished += OnActionExecutionFinishedOrCancelled;
-        Base.GameManager.Instance.OnActionExecutionCanceled += OnActionExecutionFinishedOrCancelled;
+        GameManager.Instance.OnActionExecution += OnActionExecution;
+        GameManager.Instance.OnActionExecutionFinished += OnActionExecutionFinishedOrCancelled;
+        GameManager.Instance.OnActionExecutionCanceled += OnActionExecutionFinishedOrCancelled;
         gameObject.SetActive(false);
     }
 
@@ -14,9 +16,9 @@ public class StopButton : MonoBehaviour {
         gameObject.SetActive(false);
     }
 
-    private void OnActionExecution(object sender, StringEventArgs args) {
+    private void OnActionExecution(object sender, ActionExecutionEventArgs args) {
         try {
-            Base.Action action = ProjectManager.Instance.GetAction(args.Data);
+            Action action = ProjectManager.Instance.GetAction(args.Data.ActionId);
             if (action.ActionProvider.IsRobot() && action.Metadata.Meta.Cancellable)
                 gameObject.SetActive(true);
         } catch (ItemNotFoundException ex) {

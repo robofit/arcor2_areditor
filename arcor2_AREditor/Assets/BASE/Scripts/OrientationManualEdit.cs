@@ -1,10 +1,11 @@
 using System;
 using System.Globalization;
-using IO.Swagger.Model;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
+using TMPro;
 using UnityEngine;
 
 public class OrientationManualEdit : MonoBehaviour {
-    public TMPro.TMP_InputField InputX, InputY, InputZ, InputW; //for quaternion/euler input
+    public TMP_InputField InputX, InputY, InputZ, InputW; //for quaternion/euler input
     public GameObject InputFieldW; //for setting (in)active
 
     private Orientation orientation = null;
@@ -13,7 +14,7 @@ public class OrientationManualEdit : MonoBehaviour {
 
     public void SetOrientation(Orientation orientation) {
         this.orientation = orientation;
-        NumberFormatInfo numberFormatInfo = new NumberFormatInfo();
+        NumberFormatInfo numberFormatInfo = new();
         numberFormatInfo.NumberDecimalSeparator = ".";
         InputFieldW.SetActive(!eulerMode);
 

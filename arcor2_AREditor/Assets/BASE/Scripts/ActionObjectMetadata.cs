@@ -1,17 +1,11 @@
 using System.Collections.Generic;
-using ARServer.Models;
-using IO.Swagger.Model;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
 
 namespace Base {
     public class ActionObjectMetadata : ObjectTypeMeta {
-
-        private Dictionary<string, ActionMetadata> actionsMetadata = new Dictionary<string, ActionMetadata>();
-        private bool robot, actionsLoaded, camera, collisionObject;
-
-        public ActionObjectMetadata(ObjectTypeMeta meta) : base(_abstract: meta.Abstract,
-                                                                _base: meta.Base,
+        public ActionObjectMetadata(ObjectTypeMeta meta) : base(varAbstract: meta.Abstract,
+                                                                varBase: meta.Base,
                                                                 builtIn: meta.BuiltIn,
                                                                 description: meta.Description,
                                                                 disabled: meta.Disabled,
@@ -37,26 +31,28 @@ namespace Base {
         }
 
         public bool Robot {
-            get => robot;
-            set => robot = value;
+            get;
+            set;
         }
 
         public bool Camera {
-            get => camera;
-            set => camera = value;
+            get;
+            set;
         }
 
         public bool ActionsLoaded {
-            get => actionsLoaded;
-            set => actionsLoaded = value;
+            get;
+            set;
         }
+
         public Dictionary<string, ActionMetadata> ActionsMetadata {
-            get => actionsMetadata;
-            set => actionsMetadata = value;
-        }
+            get;
+            set;
+        } = new();
+
         public bool CollisionObject {
-            get => collisionObject;
-            set => collisionObject = value;
+            get;
+            set;
         }
 
         public Vector3 GetModelBB() {

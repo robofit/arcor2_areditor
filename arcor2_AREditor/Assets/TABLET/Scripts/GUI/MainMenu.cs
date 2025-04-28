@@ -1,14 +1,7 @@
-using UnityEngine;
-using UnityEngine.UI;
 using System;
-using Michsky.UI.ModernUIPack;
-using System.Collections.Generic;
 using Base;
 using DanielLochner.Assets.SimpleSideMenu;
-using System.Threading.Tasks;
-using IO.Swagger.Model;
-using System.Linq;
-using Newtonsoft.Json;
+using UnityEngine;
 using UnityEngine.Events;
 
 [RequireComponent(typeof(SimpleSideMenu))]
@@ -35,11 +28,11 @@ public class MainMenu : Singleton<MainMenu>, IMenu {
 
 
     public void DisconnectFromSever() {
-        Base.GameManager.Instance.DisconnectFromSever();
+        GameManager.Instance.DisconnectFromSever();
     }
 
     public void ExitApp() {
-        Base.GameManager.Instance.ExitApp();
+        GameManager.Instance.ExitApp();
     }
 
     public void SetDebugMode() {
@@ -65,7 +58,7 @@ public class MainMenu : Singleton<MainMenu>, IMenu {
     }
 
     public void SaveLogs() {
-        Base.Notifications.Instance.SaveLogs(Base.SceneManager.Instance.GetScene(), Base.ProjectManager.Instance.GetProject());
+        Notifications.Instance.SaveLogs(SceneManager.Instance.GetScene(), ProjectManager.Instance.GetProject());
     }
 
     public void ShowLogs() {

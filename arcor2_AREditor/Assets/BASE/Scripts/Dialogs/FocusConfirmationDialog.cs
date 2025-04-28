@@ -1,14 +1,15 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using Michsky.UI.ModernUIPack;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
 using Base;
+using Michsky.UI.ModernUIPack;
+using TMPro;
+using UnityEngine;
 
 public class FocusConfirmationDialog : MonoBehaviour
 {
     public string RobotName, ArmId, EndEffectorId, OrientationId, JointsId, OrientationName, ActionPointId, ActionPointName;
     public bool UpdatePosition;
-    public TMPro.TMP_Text SettingsText;
+    public TMP_Text SettingsText;
     public ModalWindowManager WindowManager;
 
     private string RobotId;
@@ -37,14 +38,20 @@ public class FocusConfirmationDialog : MonoBehaviour
             if (!robot.MultiArm())
                 ArmId = null;
             if (UpdatePosition)
-                Base.GameManager.Instance.UpdateActionPointPositionUsingRobot(ActionPointId, RobotId, EndEffectorId, ArmId);
+                GameManager.Instance.UpdateActionPointPositionUsingRobot(ActionPointId, RobotId, EndEffectorId, ArmId);
             
-            await WebsocketManager.Instance.UpdateActionPointOrientationUsingRobot(RobotId, EndEffectorId, OrientationId, ArmId);
-            await WebsocketManager.Instance.UpdateActionPointJointsUsingRobot(JointsId);
-            
+            var responseOrientation = await CommunicationManager.Instance.Client.UpdateActionPointOrientationUsingRobotAsync(new UpdateActionPointOrientationUsingRobotRequestArgs(OrientationId, new RobotArg(RobotId, EndEffectorId, ArmId)));
+
+            var responseJoints = await CommunicationManager.Instance.Client.UpdateActionPointJointsUsingRobotAsync(new UpdateActionPointJointsUsingRobotRequestArgs(JointsId));
+
+            if (!responseOrientation.Result || !responseJoints.Result) {
+                Notifications.Instance.ShowNotification("Failed to update", string.Join(',', responseOrientation.Messages));
+                return;
+            }
+
             GetComponent<ModalWindowManager>().CloseWindow();
-        } catch (Base.RequestFailedException ex) {
-            Base.NotificationsModernUI.Instance.ShowNotification("Failed to update", ex.Message);
+        } catch (Arcor2ConnectionException ex) {
+            NotificationsModernUI.Instance.ShowNotification("Failed to update", ex.Message);
         }
     }
 }

@@ -1,9 +1,10 @@
 using System;
+using System.Threading.Tasks;
 using Base;
 using UnityEngine;
-using System.Threading.Tasks;
+using Action = Base.Action;
 
-public abstract class StartEndAction : Base.Action {
+public abstract class StartEndAction : Action {
     public Renderer Visual;
     public GameObject VisualRoot;
 
@@ -13,10 +14,10 @@ public abstract class StartEndAction : Base.Action {
     public GameObject ModelPrefab;
 
 
-    public virtual void Init(IO.Swagger.Model.Action projectAction, Base.ActionMetadata metadata, Base.ActionPoint ap, IActionProvider actionProvider, string actionType) {
+    public virtual void Init(Arcor2.ClientSdk.Communication.OpenApi.Models.Action projectAction, ActionMetadata metadata, ActionPoint ap, IActionProvider actionProvider, string actionType) {
         base.Init(projectAction, metadata, ap, actionProvider);
 
-        if (!Base.ProjectManager.Instance.ProjectMeta.HasLogic) {
+        if (!ProjectManager.Instance.ProjectMeta.HasLogic) {
             Destroy(gameObject);
             return;
         }

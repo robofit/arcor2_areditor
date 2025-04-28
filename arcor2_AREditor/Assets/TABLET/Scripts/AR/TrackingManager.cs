@@ -18,7 +18,7 @@ public class TrackingManager : Singleton<TrackingManager> {
     public Material PlaneTransparentMaterial;
     public Material PlaneOpaqueMaterial;
 
-    public event AREditorEventArgs.FloatEventHandler NewLowestPlanePosition;
+    public event EventHandler<FloatEventArgs> NewLowestPlanePosition;
 
     private float lowestPlanePosition = 0f;
 
@@ -116,7 +116,7 @@ public class TrackingManager : Singleton<TrackingManager> {
                                 Notifications.Instance.ShowNotification("Tracking state", "Session Tracking");
                                 GameManager.Instance.SceneSetActive(true);
                                 deviceTrackingStatus = DeviceTrackingStatus.Tracking;
-                                StopTrackingFailureNotifications(stopVideoOverride: true);
+                                StopTrackingFailureNotifications(true);
                             }
                         }
                         break;
@@ -291,7 +291,7 @@ public class TrackingManager : Singleton<TrackingManager> {
                     Notifications.Instance.ShowNotification("Tracking state", "Session Tracking");
                     deviceTrackingStatus = DeviceTrackingStatus.Tracking;
                     GameManager.Instance.SceneSetActive(true);
-                    StopTrackingFailureNotifications(stopVideoOverride: true);
+                    StopTrackingFailureNotifications(true);
                 } else {
                     deviceTrackingStatus = DeviceTrackingStatus.WaitingForAnchor;
                 }
@@ -330,12 +330,12 @@ public class TrackingManager : Singleton<TrackingManager> {
     /// <returns></returns>
     private IEnumerator TrackingFailureTimeout(float timeout) {
         yield return new WaitForSeconds(timeout);
-        StopTrackingFailureNotifications(stopVideoOverride: true);
+        StopTrackingFailureNotifications(true);
 
         Notifications.Instance.ShowNotification("Tracking lost timeout!", "System will be calibrated.");
 
         // Make request for recalibration
-        CalibrationManager.Instance.Recalibrate(startAutoCalibrationProcess: true);
+        CalibrationManager.Instance.Recalibrate(true);
     }
 
     public TrackingQuality GetTrackingQuality() {
@@ -347,7 +347,7 @@ public class TrackingManager : Singleton<TrackingManager> {
 
         // TODO Decide how to resolve pointCloud
         foreach (ARPointCloud pointCloud in ARPointCloudManager.trackables) {
-            featurePoints += (pointCloud.identifiers?.Length == null ? 0 : (int) pointCloud.identifiers?.Length);
+            featurePoints += pointCloud.identifiers?.Length == null ? 0 : (int) pointCloud.identifiers?.Length;
         }
 
         //Notifications.Instance.ShowNotification("Tracking quality", "Feature points: " + featurePoints + " Planes: " + ARPlaneManager.trackables.count);
@@ -413,6 +413,6 @@ public class TrackingManager : Singleton<TrackingManager> {
     }
 
     public bool IsDeviceTracking() {
-        return (deviceTrackingStatus == DeviceTrackingStatus.Tracking) && (anchorTrackingStatus == AnchorTrackingStatus.Tracking);
+        return deviceTrackingStatus == DeviceTrackingStatus.Tracking && anchorTrackingStatus == AnchorTrackingStatus.Tracking;
     }
 }

@@ -1,7 +1,8 @@
+using System;
 using System.Threading.Tasks;
+using Arcor2.ClientSdk.Communication;
 using Base;
-using Newtonsoft.Json;
-using UnityEngine;
+using DanielLochner.Assets.SimpleSideMenu;
 
 public class LeftMenuPackage : LeftMenu {
 
@@ -9,14 +10,14 @@ public class LeftMenuPackage : LeftMenu {
 
     protected override void Awake() {
         base.Awake();
-        Base.GameManager.Instance.OnRunPackage += OnOpenProjectRunning;
-        Base.GameManager.Instance.OnPausePackage += OnPausePackage;
-        Base.GameManager.Instance.OnResumePackage += OnResumePackage;
-        Base.GameManager.Instance.OnStopPackage += OnStopPackage;
+        GameManager.Instance.OnRunPackage += OnOpenProjectRunning;
+        GameManager.Instance.OnPausePackage += OnPausePackage;
+        GameManager.Instance.OnResumePackage += OnResumePackage;
+        GameManager.Instance.OnStopPackage += OnStopPackage;
         SceneManager.Instance.OnSceneStateEvent += OnSceneStateEvent;
     }
 
-    private void OnStopPackage(object sender, System.EventArgs e) {
+    private void OnStopPackage(object sender, EventArgs e) {
         UpdateVisibility(GameManager.GameStateEnum.ProjectEditor);
     }
 
@@ -54,7 +55,7 @@ public class LeftMenuPackage : LeftMenu {
     public void UpdateVisibility(GameManager.GameStateEnum newGameState) {
         
         if (newGameState == GameManager.GameStateEnum.PackageRunning &&
-            MainMenu.Instance.CurrentState() == DanielLochner.Assets.SimpleSideMenu.SimpleSideMenu.State.Closed) {
+            MainMenu.Instance.CurrentState() == SimpleSideMenu.State.Closed) {
             UpdateVisibility(true);            
         } else {
             UpdateVisibility(false);
@@ -79,20 +80,15 @@ public class LeftMenuPackage : LeftMenu {
     public void StopPackage() {
         CloseButton.SetInteractivity(false, "Stopping package");
         GameManager.Instance.ShowLoadingScreen();
-        WebsocketManager.Instance.StopPackage(StopPackageCallback);
-        
+        CommunicationManager.Instance.Client.StopPackageAsync().ContinueWith(task => {
+            var response = task.Result;
+            CloseButton.SetInteractivity(true);
+            if (!response.Result) {
+                Notifications.Instance.ShowNotification("Failed to stop package.", response.Messages.Count > 0 ? response.Messages[0] : "Unknown error");
+                GameManager.Instance.HideLoadingScreen();
+            }
+        }, TaskScheduler.FromCurrentSynchronizationContext());
     }
-
-
-    private void StopPackageCallback(string _, string data) {
-        IO.Swagger.Model.StopPackageResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.StopPackageResponse>(data);
-        CloseButton.SetInteractivity(true);
-        if (!response.Result) {
-            Notifications.Instance.ShowNotification("Failed to stop package.", response.Messages.Count > 0 ? response.Messages[0] : "Unknown error");
-            GameManager.Instance.HideLoadingScreen();
-
-        }
-    } 
 
     public async void PausePackage() {
         PauseBtn.SetInteractivity(false, "Pausing package");
@@ -138,13 +134,16 @@ public class LeftMenuPackage : LeftMenu {
     }
 
     public override void CopyObjectClick() {
-        throw new System.NotImplementedException();
+        throw new NotImplementedException();
     }
 
     public async void StepAction() {
         try {
-            await WebsocketManager.Instance.StepAction();
-        } catch (RequestFailedException ex) {
+            var response = await CommunicationManager.Instance.Client.StepActionAsync();
+            if (!response.Result) {
+                Notifications.Instance.ShowNotification("Failed to step", string.Join(',', response.Messages));
+            }
+        } catch (Arcor2ConnectionException ex) {
             Notifications.Instance.ShowNotification("Failed to step", ex.Message);
         }
     } 

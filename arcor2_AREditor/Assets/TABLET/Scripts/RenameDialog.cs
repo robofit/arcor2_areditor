@@ -1,11 +1,11 @@
+using Arcor2.ClientSdk.Communication;
+using TMPro;
 using UnityEngine;
-using Base;
 using UnityEngine.Events;
-using System;
 
 public class RenameDialog : Dialog {
     //public GameObject CanvasRoot;
-    public TMPro.TMP_Text Title;
+    public TMP_Text Title;
 
     [SerializeField]
     private LabeledInput nameInput;
@@ -49,7 +49,7 @@ public class RenameDialog : Dialog {
             return;
         }
 
-        bool valid = ((string) nameInput.GetValue()) != selectedObject.GetName();
+        bool valid = (string) nameInput.GetValue() != selectedObject.GetName();
 
         ConfirmButton.SetInteractivity(valid, "Name has not been changed");
     }
@@ -69,7 +69,7 @@ public class RenameDialog : Dialog {
             await selectedObject.Rename(name);
             Cancel();
             confirmCallback?.Invoke();
-        } catch (RequestFailedException) {
+        } catch (Arcor2ConnectionException) {
             //notification already shown, nothing else to do
         }
     }

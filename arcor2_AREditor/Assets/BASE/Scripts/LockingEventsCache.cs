@@ -1,29 +1,30 @@
 using System;
-using System.Collections.Generic;
-using UnityEngine;
-using IO.Swagger.Model;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
+using UnityEngine;
 
 namespace Base {
     public class LockingEventsCache : Singleton<LockingEventsCache> {
         /// <summary>
         /// Invoked when an object is locked or unlocked
         /// </summary>
-        public event AREditorEventArgs.ObjectLockingEventHandler OnObjectLockingEvent;
-        public event AREditorEventArgs.StringEventHandler OnAfterObjectLockingEvent;
+        public event EventHandler<ObjectLockingEventArgs> OnObjectLockingEvent;
+        public event EventHandler<StringEventArgs> OnAfterObjectLockingEvent;
         private bool canInvoke = false;
         private bool wasAppKilled = true;
         private bool arOn = false;
         private bool tracking = false;
         private bool sceneLoaded = false;
 
-        private List<ObjectLockingEventArgs> events = new List<ObjectLockingEventArgs>();
+        private List<ObjectLockingEventArgs> events = new();
 
         private void Start() {
             SceneManager.Instance.OnLoadScene += OnProjectOrSceneLoaded;
             ProjectManager.Instance.OnLoadProject += OnProjectOrSceneLoaded;
-            WebsocketManager.Instance.OnDisconnectEvent += OnAppDisconnected;
+            CommunicationManager.Instance.Client.ConnectionClosed += CommunicationManager.SafeEventHandler<WebSocketCloseEventArgs>(OnAppDisconnected);
 #if UNITY_ANDROID && AR_ON
             CalibrationManager.Instance.OnARCalibrated += OnARCalibrated;
             arOn = true;
@@ -86,11 +87,11 @@ namespace Base {
                     lock (events) {
                         if (!wasAppKilled) //check again
                             return;
-                        List<ObjectLockingEventArgs> toRemove = new List<ObjectLockingEventArgs>();
+                        List<ObjectLockingEventArgs> toRemove = new();
                         foreach (ObjectLockingEventArgs ev in events) {
                             if (ev.Locked && ev.Owner == LandingScreen.Instance.GetUsername()) {
                                 foreach(var id in ev.ObjectIds)
-                                    WebsocketManager.Instance.WriteUnlock(id); //if the app was killed, unlock my locks, because UI doesnt know what menu should be opened
+                                    CommunicationManager.Instance.Client.WriteUnlockAsync(new WriteUnlockRequestArgs(id)); //if the app was killed, unlock my locks, because UI doesnt know what menu should be opened
                                 toRemove.Add(ev);
                             }
                         }

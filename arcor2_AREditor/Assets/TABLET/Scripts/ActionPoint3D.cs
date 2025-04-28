@@ -1,14 +1,17 @@
-using Base;
-using UnityEngine;
-using System.Collections.Generic;
-using IO.Swagger.Model;
-using TMPro;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
+using Base;
+using TMPro;
+using UnityEngine;
+using ActionPoint = Base.ActionPoint;
 
 [RequireComponent(typeof(OutlineOnClick))]
 [RequireComponent(typeof(Target))]
-public class ActionPoint3D : Base.ActionPoint {
+public class ActionPoint3D : ActionPoint {
 
     public GameObject Sphere, Visual, CollapsedPucksVisual, Lock;
     public TextMeshPro ActionPointName;
@@ -22,12 +25,12 @@ public class ActionPoint3D : Base.ActionPoint {
 
     private void LateUpdate() {
         // Fix of AP rotations - works on both PC and tablet
-        transform.rotation = Base.SceneManager.Instance.SceneOrigin.transform.rotation;
-        ActionsVisuals.transform.rotation = Base.SceneManager.Instance.SceneOrigin.transform.rotation;
+        transform.rotation = SceneManager.Instance.SceneOrigin.transform.rotation;
+        ActionsVisuals.transform.rotation = SceneManager.Instance.SceneOrigin.transform.rotation;
         if (Parent != null)
             orientations.transform.rotation = Parent.GetTransform().rotation;
         else
-            orientations.transform.rotation = Base.SceneManager.Instance.SceneOrigin.transform.rotation;
+            orientations.transform.rotation = SceneManager.Instance.SceneOrigin.transform.rotation;
     }
 
     public override bool BreakPoint {
@@ -89,7 +92,7 @@ public class ActionPoint3D : Base.ActionPoint {
         Visual.transform.localScale = new Vector3(size / 10, size / 10, size / 10);
     }
 
-    public override (List<string>, Dictionary<string, string>) UpdateActionPoint(IO.Swagger.Model.ActionPoint projectActionPoint) {
+    public override (List<string>, Dictionary<string, string>) UpdateActionPoint(Arcor2.ClientSdk.Communication.OpenApi.Models.ActionPoint projectActionPoint) {
         (List<string>, Dictionary<string, string>) result = base.UpdateActionPoint(projectActionPoint);
         ActionPointName.text = projectActionPoint.Name;
         return result;
@@ -144,12 +147,12 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
 
-    public override void ActionPointBaseUpdate(IO.Swagger.Model.BareActionPoint apData) {
+    public override void ActionPointBaseUpdate(BareActionPoint apData) {
         base.ActionPointBaseUpdate(apData);
         ActionPointName.text = apData.Name;
     }
 
-    public override void InitAP(IO.Swagger.Model.ActionPoint apData, float size, IActionPointParent parent = null) {
+    public override void InitAP(Arcor2.ClientSdk.Communication.OpenApi.Models.ActionPoint apData, float size, IActionPointParent parent = null) {
         base.InitAP(apData, size, parent);
         ActionPointName.text = apData.Name;
     }
@@ -202,27 +205,38 @@ public class ActionPoint3D : Base.ActionPoint {
             return new RequestResult(false, "AP could only be removed in project editor");
         } else {
             try {
-                await WebsocketManager.Instance.RemoveActionPoint(GetId(), true);
-                return new RequestResult(true);
-            } catch (RequestFailedException ex) {
+                var response =
+                    await CommunicationManager.Instance.Client.RemoveActionPointAsync(new IdArgs(GetId()), true);
+                return new RequestResult(response.Result, response.Messages?.FirstOrDefault() ?? string.Empty);
+            } catch (Arcor2ConnectionException ex) {
                 return new RequestResult(false, ex.Message);
+
             }
         }
     }
 
     public async override void Remove() {
         try {
-            await WebsocketManager.Instance.RemoveActionPoint(GetId(), false);
-        } catch (RequestFailedException ex) {
+            var response =
+                await CommunicationManager.Instance.Client.RemoveActionPointAsync(new IdArgs(GetId()), false);
+            if (!response.Result) {
+                Notifications.Instance.ShowNotification("Failed to remove AP " + GetName(), string.Join(',', response.Messages));
+            }
+        } catch (Arcor2ConnectionException ex) {
             Notifications.Instance.ShowNotification("Failed to remove AP " + GetName(), ex.Message);
         }
     }
 
     public async override Task Rename(string name) {
         try {
-            await WebsocketManager.Instance.RenameActionPoint(GetId(), name);
+            var response =
+                await CommunicationManager.Instance.Client.RenameActionPointAsync(new RenameActionPointRequestArgs(GetId(), name));
+            if (!response.Result) {
+                Notifications.Instance.ShowNotification("Failed to rename action point", string.Join(',', response.Messages));
+                return;
+            }
             Notifications.Instance.ShowToastMessage("Action point renamed");
-        } catch (RequestFailedException e) {
+        } catch (Arcor2ConnectionException e) {
             Notifications.Instance.ShowNotification("Failed to rename action point", e.Message);
         }
     }

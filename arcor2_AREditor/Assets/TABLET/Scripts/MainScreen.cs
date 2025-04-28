@@ -1,15 +1,18 @@
-using System.Collections.Generic;
-using UnityEngine;
 using System;
-using Base;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using Newtonsoft.Json;
-using IO.Swagger.Model;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
+using Base;
+using TMPro;
+using UnityEngine;
+using Debug = UnityEngine.Debug;
 
-public class MainScreen : Base.Singleton<MainScreen> {
-    public TMPro.TMP_Text[] ScenesBtns, ProjectsBtns, PackagesBtns;
+public class MainScreen : Singleton<MainScreen> {
+    public TMP_Text[] ScenesBtns, ProjectsBtns, PackagesBtns;
     public GameObject SceneTilePrefab, TileNewPrefab, ProjectTilePrefab, PackageTilePrefab, ScenesDynamicContent, ProjectsDynamicContent, PackagesDynamicContent;
     public NewProjectDialog NewProjectDialog;
     public InputDialog InputDialog;
@@ -19,9 +22,17 @@ public class MainScreen : Base.Singleton<MainScreen> {
     private SceneOptionMenu sceneOptionMenu;
     public SceneOptionMenu SceneOptionMenu => sceneOptionMenu;
 
-    public List<SceneTile> SceneTiles => sceneTiles;
-    public List<ProjectTile> ProjectTiles => projectTiles;
-    public List<PackageTile> PackageTiles => packageTiles;
+    public List<SceneTile> SceneTiles {
+        get;
+    } = new();
+
+    public List<ProjectTile> ProjectTiles {
+        get;
+    } = new();
+
+    public List<PackageTile> PackageTiles {
+        get;
+    } = new();
 
     public CanvasGroup ProjectsList => projectsList;
     public CanvasGroup ScenesList => scenesList;
@@ -44,10 +55,6 @@ public class MainScreen : Base.Singleton<MainScreen> {
     private GameObject ButtonsPortrait, ButtonsLandscape;
 
     private bool scenesLoaded, projectsLoaded, packagesLoaded, scenesUpdating, projectsUpdating, packagesUpdating;
-
-    private List<SceneTile> sceneTiles = new List<SceneTile>();
-    private List<ProjectTile> projectTiles = new List<ProjectTile>();
-    private List<PackageTile> packageTiles = new List<PackageTile>();
 
     //filters
     private bool starredOnly = false;
@@ -132,37 +139,37 @@ public class MainScreen : Base.Singleton<MainScreen> {
     }
 
     private void Start() {
-        Base.GameManager.Instance.OnOpenMainScreen += ShowSceneProjectManagerScreen;
-        Base.GameManager.Instance.OnOpenProjectEditor += HideSceneProjectManagerScreen;
-        Base.GameManager.Instance.OnOpenSceneEditor += HideSceneProjectManagerScreen;
-        Base.GameManager.Instance.OnDisconnectedFromServer += HideSceneProjectManagerScreen;
-        Base.GameManager.Instance.OnRunPackage += HideSceneProjectManagerScreen;
-        Base.GameManager.Instance.OnScenesListChanged += UpdateScenes;
-        Base.GameManager.Instance.OnProjectsListChanged += UpdateProjects;
-        Base.GameManager.Instance.OnPackagesListChanged += UpdatePackages;
-        WebsocketManager.Instance.OnProjectRemoved += OnProjectRemoved;
-        WebsocketManager.Instance.OnProjectBaseUpdated += OnProjectBaseUpdated;
-        WebsocketManager.Instance.OnSceneRemoved += OnSceneRemoved;
-        WebsocketManager.Instance.OnSceneBaseUpdated += OnSceneBaseUpdated;
+        GameManager.Instance.OnOpenMainScreen += ShowSceneProjectManagerScreen;
+        GameManager.Instance.OnOpenProjectEditor += HideSceneProjectManagerScreen;
+        GameManager.Instance.OnOpenSceneEditor += HideSceneProjectManagerScreen;
+        GameManager.Instance.OnDisconnectedFromServer += HideSceneProjectManagerScreen;
+        GameManager.Instance.OnRunPackage += HideSceneProjectManagerScreen;
+        GameManager.Instance.OnScenesListChanged += UpdateScenes;
+        GameManager.Instance.OnProjectsListChanged += UpdateProjects;
+        GameManager.Instance.OnPackagesListChanged += UpdatePackages;
+        CommunicationManager.Instance.Client.ProjectRemoved += CommunicationManager.SafeEventHandler<BareProjectEventArgs>(OnProjectRemoved);
+        CommunicationManager.Instance.Client.ProjectBaseUpdated += CommunicationManager.SafeEventHandler<BareProjectEventArgs>(OnProjectBaseUpdated);
+        CommunicationManager.Instance.Client.SceneRemoved += CommunicationManager.SafeEventHandler<BareSceneEventArgs>(OnSceneRemoved);
+        CommunicationManager.Instance.Client.SceneBaseUpdated += CommunicationManager.SafeEventHandler<BareSceneEventArgs>(OnSceneBaseUpdated);
     }
 
 
     private void OnSceneBaseUpdated(object sender, BareSceneEventArgs args) {
-        foreach (SceneTile s in sceneTiles) {
-            if (s.SceneId == args.Scene.Id) {
-                s.SetLabel(args.Scene.Name);
-                s.SetTimestamp(args.Scene.Modified.ToString());
+        foreach (SceneTile s in SceneTiles) {
+            if (s.SceneId == args.Data.Id) {
+                s.SetLabel(args.Data.Name);
+                s.SetTimestamp(args.Data.Modified.ToString());
                 break;
             }
         }
     }
 
-    private void OnSceneRemoved(object sender, StringEventArgs args) {
+    private void OnSceneRemoved(object sender, BareSceneEventArgs args) {
         int i = 0;
-        foreach (SceneTile s in sceneTiles) {
-            if (s.SceneId == args.Data) {
+        foreach (SceneTile s in SceneTiles) {
+            if (s.SceneId == args.Data.Id) {
                 Destroy(s.gameObject);
-                sceneTiles.RemoveAt(i);
+                SceneTiles.RemoveAt(i);
                 break;
             }
             i++;
@@ -170,21 +177,21 @@ public class MainScreen : Base.Singleton<MainScreen> {
     }
 
     private void OnProjectBaseUpdated(object sender, BareProjectEventArgs args) {
-        foreach (ProjectTile p in projectTiles) {
-            if (p.ProjectId == args.Project.Id) {
-                p.SetLabel(args.Project.Name);
-                p.SetTimestamp(args.Project.Modified.ToString());
+        foreach (ProjectTile p in ProjectTiles) {
+            if (p.ProjectId == args.Data.Id) {
+                p.SetLabel(args.Data.Name);
+                p.SetTimestamp(args.Data.Modified.ToString());
                 break;
             }
         }
     }
 
-    private void OnProjectRemoved(object sender, StringEventArgs args) {
+    private void OnProjectRemoved(object sender, BareProjectEventArgs args) {
         int i = 0;
-        foreach (ProjectTile p in projectTiles) {
-            if (p.ProjectId == args.Data) {
+        foreach (ProjectTile p in ProjectTiles) {
+            if (p.ProjectId == args.Data.Id) {
                 Destroy(p.gameObject);
-                projectTiles.RemoveAt(i);
+                ProjectTiles.RemoveAt(i);
                 break;
             }
             i++;
@@ -193,7 +200,7 @@ public class MainScreen : Base.Singleton<MainScreen> {
 
     private async Task WaitUntilScenesLoaded() {
         await Task.Run(() => {
-            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+            Stopwatch sw = new();
             sw.Start();
 
             while (true) {
@@ -210,7 +217,7 @@ public class MainScreen : Base.Singleton<MainScreen> {
 
     private async Task WaitUntilProjectsLoaded() {
         await Task.Run(() => {
-            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+            Stopwatch sw = new();
             sw.Start();
 
             while (true) {
@@ -228,7 +235,7 @@ public class MainScreen : Base.Singleton<MainScreen> {
 
     private async Task WaitUntilPackagesLoaded() {
         await Task.Run(() => {
-            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+            Stopwatch sw = new();
             sw.Start();
 
             while (true) {
@@ -250,23 +257,25 @@ public class MainScreen : Base.Singleton<MainScreen> {
         if (!scenesUpdating) {
             scenesUpdating = true;
             scenesLoaded = false;
-            WebsocketManager.Instance.LoadScenes(LoadScenesCb);
+            var scenesResponse = await CommunicationManager.Instance.Client.ListScenesAsync();
+            LoadScenes(scenesResponse);
         }
         try {
             await WaitUntilScenesLoaded();
             if (!projectsUpdating) {
                 projectsUpdating = true;
                 projectsLoaded = false;
-                WebsocketManager.Instance.LoadProjects(LoadProjectsCb);
+                var projectsResponse = await CommunicationManager.Instance.Client.ListProjectsAsync();
+                LoadProjects(projectsResponse);
             }
             await WaitUntilProjectsLoaded();
-            foreach (TMPro.TMP_Text btn in ScenesBtns) {
+            foreach (TMP_Text btn in ScenesBtns) {
                 btn.color = new Color(0.687f, 0.687f, 0.687f);
             }
-            foreach (TMPro.TMP_Text btn in PackagesBtns) {
+            foreach (TMP_Text btn in PackagesBtns) {
                 btn.color = new Color(0.687f, 0.687f, 0.687f);
             }
-            foreach (TMPro.TMP_Text btn in ProjectsBtns) {
+            foreach (TMP_Text btn in ProjectsBtns) {
                 btn.color = new Color(0, 0, 0);
             }
             ProjectsList.gameObject.SetActive(true);
@@ -290,19 +299,20 @@ public class MainScreen : Base.Singleton<MainScreen> {
         if (!scenesUpdating) {
             scenesUpdating = true;
             scenesLoaded = false;
-            WebsocketManager.Instance.LoadScenes(LoadScenesCb);
+            var scenesResponse = await CommunicationManager.Instance.Client.ListScenesAsync();
+            LoadScenes(scenesResponse);
         }
         try {
             await WaitUntilScenesLoaded();
 
 
-            foreach (TMPro.TMP_Text btn in ScenesBtns) {
+            foreach (TMP_Text btn in ScenesBtns) {
                 btn.color = new Color(0, 0, 0);
             }
-            foreach (TMPro.TMP_Text btn in PackagesBtns) {
+            foreach (TMP_Text btn in PackagesBtns) {
                 btn.color = new Color(0.687f, 0.687f, 0.687f);
             }
-            foreach (TMPro.TMP_Text btn in ProjectsBtns) {
+            foreach (TMP_Text btn in ProjectsBtns) {
                 btn.color = new Color(0.687f, 0.687f, 0.687f);
             }
 
@@ -326,29 +336,32 @@ public class MainScreen : Base.Singleton<MainScreen> {
         if (!scenesUpdating) {
             scenesUpdating = true;
             scenesLoaded = false;
-            WebsocketManager.Instance.LoadScenes(LoadScenesCb);
+            var responseScenes = await CommunicationManager.Instance.Client.ListScenesAsync();
+            LoadScenes(responseScenes);
         }
         try {
             await WaitUntilScenesLoaded();
             if (!projectsUpdating) {
                 projectsUpdating = true;
                 projectsLoaded = false;
-                WebsocketManager.Instance.LoadProjects(LoadProjectsCb);
+                var responseProjects = await CommunicationManager.Instance.Client.ListProjectsAsync();
+                LoadProjects(responseProjects);
             }
             await WaitUntilProjectsLoaded();
             if (!packagesUpdating) {
                 packagesUpdating = true;
                 packagesLoaded = false;
-                WebsocketManager.Instance.LoadPackages(LoadPackagesCb);
+                var responsePackages = await CommunicationManager.Instance.Client.ListPackagesAsync();
+                LoadPackages(responsePackages);
             }
             await WaitUntilPackagesLoaded();
-            foreach (TMPro.TMP_Text btn in ScenesBtns) {
+            foreach (TMP_Text btn in ScenesBtns) {
                 btn.color = new Color(0.687f, 0.687f, 0.687f);
             }
-            foreach (TMPro.TMP_Text btn in PackagesBtns) {
+            foreach (TMP_Text btn in PackagesBtns) {
                 btn.color = new Color(0, 0, 0);
             }
-            foreach (TMPro.TMP_Text btn in ProjectsBtns) {
+            foreach (TMP_Text btn in ProjectsBtns) {
                 btn.color = new Color(0.687f, 0.687f, 0.687f);
             }
             ProjectsList.gameObject.SetActive(false);
@@ -364,9 +377,7 @@ public class MainScreen : Base.Singleton<MainScreen> {
         }
     }
 
-    public void LoadScenesCb(string id, string responseData) {
-        IO.Swagger.Model.ListScenesResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.ListScenesResponse>(responseData);
-
+    public void LoadScenes(ListScenesResponse response) {
         if (response == null || !response.Result) {
             Notifications.Instance.ShowNotification("Failed to load scenes", "Please, try again later.");
             scenesUpdating = false;
@@ -381,8 +392,7 @@ public class MainScreen : Base.Singleton<MainScreen> {
         GameManager.Instance.InvokeScenesListChanged();
     }
 
-    public void LoadProjectsCb(string id, string responseData) {
-        IO.Swagger.Model.ListProjectsResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.ListProjectsResponse>(responseData);
+    public void LoadProjects(ListProjectsResponse response) {
         if (response == null) {
             Notifications.Instance.ShowNotification("Failed to load projects", "Please, try again later.");
         }
@@ -394,8 +404,7 @@ public class MainScreen : Base.Singleton<MainScreen> {
         projectsLoaded = true;
         GameManager.Instance.InvokeProjectsListChanged();
     }
-    public void LoadPackagesCb(string id, string responseData) {
-        IO.Swagger.Model.ListPackagesResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.ListPackagesResponse>(responseData);
+    public void LoadPackages(ListPackagesResponse response) {
         if (response == null)
             Notifications.Instance.ShowNotification("Failed to load packages", "Please, try again later.");
         GameManager.Instance.Packages = response.Data;
@@ -511,12 +520,12 @@ public class MainScreen : Base.Singleton<MainScreen> {
             if (t.gameObject.tag != "Persistent")
                 Destroy(t.gameObject);
         }
-        foreach (IO.Swagger.Model.ListScenesResponseData scene in Base.GameManager.Instance.Scenes) {
+        foreach (ListScenesResponseData scene in GameManager.Instance.Scenes) {
             SceneTile tile = Instantiate(SceneTilePrefab, ScenesDynamicContent.transform).GetComponent<SceneTile>();
             bool starred = PlayerPrefsHelper.LoadBool("scene/" + scene.Id + "/starred", false);
             if (scene.Problems == null) {
                 tile.InitTile(scene.Name,
-                              () => Base.GameManager.Instance.OpenScene(scene.Id),
+                              () => GameManager.Instance.OpenScene(scene.Id),
                               () => SceneOptionMenu.Open(tile),
                               starred,
                               scene.Created,
@@ -532,7 +541,7 @@ public class MainScreen : Base.Singleton<MainScreen> {
     }
 
     public async void NewScene(string name) {
-        if (await Base.GameManager.Instance.NewScene(name)) {
+        if (await GameManager.Instance.NewScene(name)) {
             InputDialog.Close();
         }
     }
@@ -552,7 +561,7 @@ public class MainScreen : Base.Singleton<MainScreen> {
             if (t.gameObject.tag != "Persistent")
                 Destroy(t.gameObject);
         }
-        foreach (IO.Swagger.Model.PackageSummary package in Base.GameManager.Instance.Packages) {
+        foreach (PackageSummary package in GameManager.Instance.Packages) {
             PackageTile tile = Instantiate(PackageTilePrefab, PackagesDynamicContent.transform).GetComponent<PackageTile>();
             bool starred = PlayerPrefsHelper.LoadBool("package/" + package.Id + "/starred", false);
             string projectName;
@@ -561,7 +570,7 @@ public class MainScreen : Base.Singleton<MainScreen> {
             else
                 projectName = package.ProjectMeta.Name;
             tile.InitTile(package.PackageMeta.Name,
-                          async () => await Base.GameManager.Instance.RunPackage(package.Id),
+                          async () => await GameManager.Instance.RunPackage(package.Id),
                           () => PackageOptionMenu.Open(tile),
                           starred,
                           package.PackageMeta.Built,
@@ -581,7 +590,7 @@ public class MainScreen : Base.Singleton<MainScreen> {
             if (t.gameObject.tag != "Persistent")
                 Destroy(t.gameObject);
         }
-        foreach (IO.Swagger.Model.ListProjectsResponseData project in Base.GameManager.Instance.Projects) {
+        foreach (ListProjectsResponseData project in GameManager.Instance.Projects) {
             ProjectTile tile = Instantiate(ProjectTilePrefab, ProjectsDynamicContent.transform).GetComponent<ProjectTile>();
             bool starred = PlayerPrefsHelper.LoadBool("project/" + project.Id + "/starred", false);
             if (project.Problems == null) {
@@ -617,11 +626,11 @@ public class MainScreen : Base.Singleton<MainScreen> {
     }
 
     public void NotImplemented() {
-        Base.Notifications.Instance.ShowNotification("Not implemented", "Not implemented");
+        Notifications.Instance.ShowNotification("Not implemented", "Not implemented");
     }
 
     public void SaveLogs() {
-        Base.Notifications.Instance.SaveLogs();
+        Notifications.Instance.SaveLogs();
     }
 
     public bool IsActive() {
@@ -632,7 +641,7 @@ public class MainScreen : Base.Singleton<MainScreen> {
     }
 
     public SceneTile GetSceneTile(string sceneName) {
-        foreach (SceneTile sceneTile in MainScreen.Instance.SceneTiles) {
+        foreach (SceneTile sceneTile in Instance.SceneTiles) {
             if (sceneTile.GetLabel() == sceneName) {
                 return sceneTile;
             }
@@ -641,7 +650,7 @@ public class MainScreen : Base.Singleton<MainScreen> {
     }
 
     public ProjectTile GetProjectTile(string projectName) {
-        foreach (ProjectTile projectTile in projectTiles) {
+        foreach (ProjectTile projectTile in ProjectTiles) {
             if (projectTile.GetLabel() == projectName) {
                 return projectTile;
             }

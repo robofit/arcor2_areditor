@@ -1,12 +1,13 @@
 using System;
 using System.Globalization;
-using IO.Swagger.Model;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
 using Michsky.UI.ModernUIPack;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class PositionManualEdit : MonoBehaviour {
-    public TMPro.TMP_InputField InputX, InputY, InputZ;
+    public TMP_InputField InputX, InputY, InputZ;
 
     [SerializeField]
     private Button ConfirmButton;
@@ -15,7 +16,7 @@ public class PositionManualEdit : MonoBehaviour {
     private TooltipContent buttonTooltip;
 
     public void SetPosition(Position position) {
-        NumberFormatInfo numberFormatInfo = new NumberFormatInfo();
+        NumberFormatInfo numberFormatInfo = new();
         numberFormatInfo.NumberDecimalSeparator = ".";
 
         InputX.text = position.X.ToString(numberFormatInfo);

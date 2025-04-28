@@ -1,16 +1,14 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using Michsky.UI.ModernUIPack;
-using UnityEngine.UI;
 using System;
+using System.Collections.Generic;
+using Michsky.UI.ModernUIPack;
+using TMPro;
+using UnityEngine;
 using UnityEngine.Events;
-using IO.Swagger.Model;
-using System.Security.Cryptography;
+using UnityEngine.UI;
 
 public class DropdownParameter : MonoBehaviour, IParameter {
 
-    public TMPro.TMP_Text Label, NoOption;
+    public TMP_Text Label, NoOption;
     public CustomDropdown Dropdown;
     public GameObject LoadingObject;
     public bool Loading;
@@ -31,7 +29,7 @@ public class DropdownParameter : MonoBehaviour, IParameter {
     }
 
     public void SetLoading(bool loading) {
-        this.Loading = loading;
+        Loading = loading;
         if (Dropdown == null || Dropdown.gameObject == null)
             return;
         if (loading) {
@@ -70,7 +68,7 @@ public class DropdownParameter : MonoBehaviour, IParameter {
         
         LayoutGroupToBeDisabled = layoutGroupToBeDisabled;
        
-        this.Loading = false;
+        Loading = false;
     }
 
     public void OnClick() {
@@ -85,10 +83,10 @@ public class DropdownParameter : MonoBehaviour, IParameter {
 
     public virtual void PutData(List<string> data, string selectedItem, UnityAction<string> callback, List<string> labels = null) {
         Debug.Assert(labels == null || labels.Count == data.Count);
-        List<CustomDropdown.Item> items = new List<CustomDropdown.Item>();
+        List<CustomDropdown.Item> items = new();
         for (int i = 0; i < data.Count; ++i) {
 
-            CustomDropdown.Item item = new CustomDropdown.Item {
+            CustomDropdown.Item item = new() {
                 itemName = labels == null ? data[i] : labels[i]
             };
             items.Add(item);

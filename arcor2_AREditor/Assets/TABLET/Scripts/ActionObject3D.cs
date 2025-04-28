@@ -1,10 +1,10 @@
-using System.Collections.Generic;
-using UnityEngine;
-using TMPro;
-using Base;
-using IO.Swagger.Model;
-using TriLibCore;
 using System;
+using System.Collections.Generic;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
+using Base;
+using TMPro;
+using TriLibCore;
+using UnityEngine;
 
 [RequireComponent(typeof(OutlineOnClick))]
 [RequireComponent(typeof(Target))]
@@ -21,7 +21,7 @@ public class ActionObject3D : ActionObject {
     private Shader transparentShader;
     private bool isGreyColorForced;
 
-    private List<Renderer> aoRenderers = new List<Renderer>();
+    private List<Renderer> aoRenderers = new();
 
     public GameObject CylinderPrefab, SpherePrefab;
 
@@ -54,7 +54,7 @@ public class ActionObject3D : ActionObject {
         ActionObjectName.text = newUserId;
     }
 
-    public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger) {
+    public override void ActionObjectUpdate(SceneObject actionObjectSwagger) {
         base.ActionObjectUpdate(actionObjectSwagger);
         ActionObjectName.text = actionObjectSwagger.Name;
         ResetPosition();
@@ -159,18 +159,18 @@ public class ActionObject3D : ActionObject {
 
     public override void CreateModel(CollisionModels customCollisionModels = null) {
 
-        if (ActionObjectMetadata.ObjectModel == null || ActionObjectMetadata.ObjectModel.Type == IO.Swagger.Model.ObjectModel.TypeEnum.None) {
+        if (ActionObjectMetadata.ObjectModel == null || ActionObjectMetadata.ObjectModel.Type == ObjectModel.TypeEnum.None) {
             Model = Instantiate(CubePrefab, Visual.transform);
             Model.transform.localScale = new Vector3(0.05f, 0.01f, 0.05f);
         } else {
             switch (ActionObjectMetadata.ObjectModel.Type) {
-                case IO.Swagger.Model.ObjectModel.TypeEnum.Box:
+                case ObjectModel.TypeEnum.Box:
                     Model = Instantiate(CubePrefab, Visual.transform);
 
                     if (customCollisionModels == null) {
                         Model.transform.localScale = TransformConvertor.ROSToUnityScale(new Vector3((float) ActionObjectMetadata.ObjectModel.Box.SizeX, (float) ActionObjectMetadata.ObjectModel.Box.SizeY, (float) ActionObjectMetadata.ObjectModel.Box.SizeZ));
                     } else {
-                        foreach (IO.Swagger.Model.Box box in customCollisionModels.Boxes) {
+                        foreach (Box box in customCollisionModels.Boxes) {
                             if (box.Id == ActionObjectMetadata.Type) {
                                 Model.transform.localScale = TransformConvertor.ROSToUnityScale(new Vector3((float) box.SizeX, (float) box.SizeY, (float) box.SizeZ));
                                 break;
@@ -178,12 +178,12 @@ public class ActionObject3D : ActionObject {
                         }
                     }
                     break;
-                case IO.Swagger.Model.ObjectModel.TypeEnum.Cylinder:
+                case ObjectModel.TypeEnum.Cylinder:
                     Model = Instantiate(CylinderPrefab, Visual.transform);
                     if (customCollisionModels == null) {
                         Model.transform.localScale = new Vector3((float) ActionObjectMetadata.ObjectModel.Cylinder.Radius, (float) ActionObjectMetadata.ObjectModel.Cylinder.Height / 2, (float) ActionObjectMetadata.ObjectModel.Cylinder.Radius);
                     } else {
-                        foreach (IO.Swagger.Model.Cylinder cylinder in customCollisionModels.Cylinders) {
+                        foreach (Cylinder cylinder in customCollisionModels.Cylinders) {
                             if (cylinder.Id == ActionObjectMetadata.Type) {
                                 Model.transform.localScale = new Vector3((float) cylinder.Radius, (float) cylinder.Height, (float) cylinder.Radius);
                                 break;
@@ -191,12 +191,12 @@ public class ActionObject3D : ActionObject {
                         }
                     }
                     break;
-                case IO.Swagger.Model.ObjectModel.TypeEnum.Sphere:
+                case ObjectModel.TypeEnum.Sphere:
                     Model = Instantiate(SpherePrefab, Visual.transform);
                     if (customCollisionModels == null) {
                         Model.transform.localScale = new Vector3((float) ActionObjectMetadata.ObjectModel.Sphere.Radius, (float) ActionObjectMetadata.ObjectModel.Sphere.Radius, (float) ActionObjectMetadata.ObjectModel.Sphere.Radius);
                     } else {
-                        foreach (IO.Swagger.Model.Sphere sphere in customCollisionModels.Spheres) {
+                        foreach (Sphere sphere in customCollisionModels.Spheres) {
                             if (sphere.Id == ActionObjectMetadata.Type) {
                                 Model.transform.localScale = new Vector3((float) sphere.Radius, (float) sphere.Radius, (float) sphere.Radius);
                                 break;
@@ -242,7 +242,7 @@ public class ActionObject3D : ActionObject {
     /// </summary>
     /// <param name="assetLoaderContext"></param>
     public void OnModelLoaded(object sender, ImportedMeshEventArgs args) {
-        if (args.Name != this.GetId())
+        if (args.Name != GetId())
             return;
 
         bool outlineWasHighlighted = outlineOnClick.Highlighted;
@@ -274,7 +274,7 @@ public class ActionObject3D : ActionObject {
         Colliders.AddRange(Model.GetComponentsInChildren<MeshCollider>(true));
         outlineOnClick.InitRenderers(aoRenderers);
         outlineOnClick.InitMaterials();
-        SetVisibility(visibility, forceShaderChange: true);
+        SetVisibility(visibility, true);
 
         if (outlineWasHighlighted) {
             outlineOnClick.Highlight();
@@ -291,7 +291,7 @@ public class ActionObject3D : ActionObject {
     /// </summary>
     /// <param name="obj"></param>
     private void OnModelLoadError(IContextualizedError obj) {
-        Notifications.Instance.ShowNotification("Unable to show mesh " + this.GetName(), obj.GetInnerException().Message);
+        Notifications.Instance.ShowNotification("Unable to show mesh " + GetName(), obj.GetInnerException().Message);
     }
 
 

@@ -1,13 +1,15 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
+using System.Threading.Tasks;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
 using Base;
 using UnityEngine;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
-using System.Threading.Tasks;
-using IO.Swagger.Model;
-using static Base.AREditorEventArgs;
+using Pose = Arcor2.ClientSdk.Communication.OpenApi.Models.Pose;
 #if (UNITY_ANDROID || UNITY_IOS) && AR_ON
 using Google.XR.ARCoreExtensions;
 #endif
@@ -52,7 +54,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         get;
     }
 
-    public event CalibrationEventHandler OnARCalibrated;
+    public event EventHandler<CalibrationEventArgs> OnARCalibrated;
 
     public delegate void ARRecalibrateEventHandler(object sender, EventArgs args);
     public event ARRecalibrateEventHandler OnARRecalibrate;
@@ -179,7 +181,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             if (startAutoCalibrationProcess) {
                 RecalibrateUsingServerAuto();
             } else {
-                RecalibrateUsingServer(inverse: true, showNotification: showNotification);
+                RecalibrateUsingServer(true, showNotification);
             }
         } else {
             RecalibrateUsingARFoundation();
@@ -576,7 +578,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             yield return CalibrateUsingServerAsync(success => {
                 calibrated = success;
                 markerDetectionState = success ? MarkerDetectionState.Success : MarkerDetectionState.Failure;
-            }, inverse: true, force: true);
+            }, true, force: true);
 
             Calibrated = calibrated;
 
@@ -607,7 +609,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
                         }
                         AutoRecalibrateTime = 0.5f - (Time.realtimeSinceStartup - serviceStartTime);
                     }
-                }, inverse: true, autoCalibrate: true);
+                }, true, true);
             }
 
             yield return new WaitForSeconds(AutoRecalibrateTime);
@@ -642,7 +644,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             //StartCoroutine(ProcessImage(image, cameraIntrinsics, inverse));
             yield return ProcessImage(image, cameraIntrinsics, success => {
                 callback?.Invoke(success);
-            }, inverse, autoCalibrate, force: force, showNotification: showNotification);
+            }, inverse, autoCalibrate, force, showNotification);
 
             // It's safe to dispose the image before the async operation completes.
             image.Dispose();
@@ -705,18 +707,18 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         // with the request, including the raw data.
         request.Dispose();
 
-        string imageString = System.Text.Encoding.GetEncoding("iso-8859-1").GetString(m_Texture.EncodeToJPG());
+        string imageString = Encoding.GetEncoding("iso-8859-1").GetString(m_Texture.EncodeToJPG());
 
 
 
-        CameraParameters cameraParams = new CameraParameters(cx: (decimal) cameraIntrinsics.principalPoint.x,
+        CameraParameters cameraParams = new(cx: (decimal) cameraIntrinsics.principalPoint.x,
                                                      cy: (decimal) cameraIntrinsics.principalPoint.y,
                                                      distCoefs: new List<decimal>() { 0, 0, 0, 0 },
                                                      fx: (decimal) cameraIntrinsics.focalLength.x,
                                                      fy: (decimal) cameraIntrinsics.focalLength.y);
 
         if (inverse) {
-            GetMarkerPosition(cameraParams, imageString, autoCalibrate: autoCalibrate, force: force, showNotification: showNotification);
+            GetMarkerPosition(cameraParams, imageString, autoCalibrate, force, showNotification);
         }
 
         yield return new WaitWhile(() => markerDetectionState == MarkerDetectionState.Processing);
@@ -730,7 +732,12 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 
     public async Task GetMarkerCornersPosition(CameraParameters cameraParams, string image) {
         try {
-            List<IO.Swagger.Model.MarkerCorners> markerCorners = await WebsocketManager.Instance.GetMarkerCorners(cameraParams, image);
+            var response = await CommunicationManager.Instance.Client.GetMarkersCornersAsync(new MarkersCornersRequestArgs(cameraParams, image));
+            if (!response.Result) {
+                Notifications.Instance.ShowNotification("Failed to get marker corners.", string.Join(",", response.Messages));
+                return;
+            }
+            List<MarkerCorners> markerCorners = response.Data;
             foreach (MarkerCorners marker in markerCorners) {
                 foreach (Corner corner in marker.Corners) {
                     Vector3 position = Camera.main.ScreenToWorldPoint(new Vector3((float) corner.X, (float) corner.Y, 0.5f));
@@ -740,7 +747,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
                     cornerGO.transform.localScale = new Vector3(0.005f, 0.005f, 0.005f);
                 }
             }
-        } catch (RequestFailedException ex) {
+        } catch (Arcor2ConnectionException ex) {
             Notifications.Instance.ShowNotification("Failed to get marker corners.", ex.Message);
         }
     }
@@ -748,14 +755,23 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     public async void GetMarkerPosition(CameraParameters cameraParams, string image, bool autoCalibrate = false, bool force = false, bool showNotification = false) {
         try {
             // receive cameraPose from server
-            IO.Swagger.Model.EstimatedPose markerEstimatedPose = await WebsocketManager.Instance.GetCameraPose(cameraParams, image, inverse: true);
+            var response = await CommunicationManager.Instance.Client.GetCameraPoseAsync(new GetCameraPoseRequestArgs(cameraParams, image, true));
+            if (!response.Result) {
+                markerDetectionState = MarkerDetectionState.Failure;
+                if (showNotification) {
+                    Notifications.Instance.ShowNotification("No markers visible", "Find some markers and try again.");
+                }
+                return;
+            }
+
+            var markerEstimatedPose = response.Data;
 
             if ((float) markerEstimatedPose.Quality > anchorQuality || force) {
                 anchorQuality = (float) markerEstimatedPose.Quality;
-                IO.Swagger.Model.Pose markerPose = markerEstimatedPose.Pose;
+                Pose markerPose = markerEstimatedPose.Pose;
 
-                Vector3 markerPositionReceived = new Vector3((float) markerPose.Position.X, (float) markerPose.Position.Y, (float) markerPose.Position.Z);
-                Quaternion markerRotationReceived = new Quaternion((float) markerPose.Orientation.X, (float) markerPose.Orientation.Y,
+                Vector3 markerPositionReceived = new((float) markerPose.Position.X, (float) markerPose.Position.Y, (float) markerPose.Position.Z);
+                Quaternion markerRotationReceived = new((float) markerPose.Orientation.X, (float) markerPose.Orientation.Y,
                                                                     (float) markerPose.Orientation.Z, (float) markerPose.Orientation.W);
 
                 Matrix4x4 markerMatrix = AdjustMatrixByScreenOrientation(Matrix4x4.TRS(markerPositionReceived, markerRotationReceived, Vector3.one));
@@ -781,7 +797,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
                 }
             }
 
-        } catch (RequestFailedException ex) {
+        } catch (Arcor2ConnectionException ex) {
             markerDetectionState = MarkerDetectionState.Failure;
             if (showNotification) {
                 Notifications.Instance.ShowNotification("No markers visible", "Find some markers and try again.");
@@ -870,11 +886,11 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 
     public async Task ReceiveImageFromCamera() {
         // EXAMPLE OF LOADING IMAGE FROM CAMERA ON SERVER
-        string image = await WebsocketManager.Instance.GetCameraColorImage("ID");
-        byte[] bytes = System.Text.Encoding.GetEncoding("iso-8859-1").GetBytes(image);
-        Texture2D texture = new Texture2D(1, 1);
-        texture.LoadImage(bytes);
-        texture.Apply();
+        //string image = (await CommunicationManager.Instance.Client.GetCameraColorImageAsync(...)).Data;
+        //byte[] bytes = Encoding.GetEncoding("iso-8859-1").GetBytes(image);
+        //Texture2D texture = new(1, 1);
+        //texture.LoadImage(bytes);
+        //texture.Apply();
     }
 
     #endregion

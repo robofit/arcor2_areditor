@@ -1,18 +1,17 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
 using System;
 using Base;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(CanvasGroup))]
-public class LandingScreen : Base.Singleton<LandingScreen>
+public class LandingScreen : Singleton<LandingScreen>
 {
-    public TMPro.TMP_InputField Domain, Port, Username;
+    public TMP_InputField Domain, Port, Username;
     public Toggle KeepConnected;
     public CanvasGroup CanvasGroup;
     [SerializeField]
-    private TMPro.TMP_Text Version;
+    private TMP_Text Version;
     public Button ConnectToServerBtn;
 
     private void Start() {
@@ -22,8 +21,8 @@ public class LandingScreen : Base.Singleton<LandingScreen>
         Debug.Assert(CanvasGroup != null);
         Debug.Assert(Version != null);
         bool keepConnected = PlayerPrefs.GetInt("arserver_keep_connected", 0) == 1 ? true : false;
-        Base.GameManager.Instance.OnConnectedToServer += ConnectedToServer;
-        Base.GameManager.Instance.OnDisconnectedFromServer += DisconnectedFromServer;
+        GameManager.Instance.OnConnectedToServer += ConnectedToServer;
+        GameManager.Instance.OnDisconnectedFromServer += DisconnectedFromServer;
         Domain.text = PlayerPrefs.GetString("arserver_domain", "");
         Port.text = PlayerPrefs.GetInt("arserver_port", 6789).ToString();
         Username.text = PlayerPrefs.GetString("arserver_username", "user1");
@@ -50,7 +49,7 @@ public class LandingScreen : Base.Singleton<LandingScreen>
         PlayerPrefs.SetString("arserver_username", GetUsername());
         PlayerPrefs.SetInt("arserver_keep_connected", KeepConnected.isOn ? 1 : 0);
         PlayerPrefs.Save();
-        Base.GameManager.Instance.ConnectToSever(domain, port);
+        GameManager.Instance.ConnectToSever(domain, port);
     }
 
     internal string GetUsername() {

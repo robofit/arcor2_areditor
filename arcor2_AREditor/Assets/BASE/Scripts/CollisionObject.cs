@@ -1,5 +1,8 @@
 using System.Threading.Tasks;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
 using Base;
+
 public class CollisionObject : ActionObject3D {
     public override string GetObjectTypeName() {
         return "Collision object";
@@ -7,18 +10,16 @@ public class CollisionObject : ActionObject3D {
 
     public async Task<bool> WriteLockObjectType() {
         try {
-            await WebsocketManager.Instance.WriteLock(ActionObjectMetadata.Type, false);
-            return true;
-        } catch (RequestFailedException) {
+            return (await CommunicationManager.Instance.Client.WriteLockAsync(new WriteLockRequestArgs(ActionObjectMetadata.Type, false))).Result;
+        } catch (Arcor2ConnectionException) {
             return false;
         }
     }
 
     public async Task<bool> WriteUnlockObjectType() {
         try {
-            await WebsocketManager.Instance.WriteUnlock(ActionObjectMetadata.Type);
-            return true;
-        } catch (RequestFailedException) {
+            return (await CommunicationManager.Instance.Client.WriteUnlockAsync(new WriteUnlockRequestArgs(ActionObjectMetadata.Type))).Result;
+        } catch (Arcor2ConnectionException) {
             return false;
         }
     }

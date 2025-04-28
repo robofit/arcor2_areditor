@@ -2,13 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
 using Base;
 using UnityEngine;
+using Action = Base.Action;
 
-public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
+public class ConnectionManagerArcoro : Singleton<ConnectionManagerArcoro> {
 
     public GameObject ConnectionPrefab;
-    public List<Connection> Connections = new List<Connection>();
+    public List<Connection> Connections = new();
     private Connection virtualConnectionToMouse;
     private GameObject virtualPointer;
     [SerializeField]
@@ -23,7 +26,7 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
         c.transform.SetParent(transform);
         // Set correct targets. Output has to be always at 0 index, because we are connecting output to input.
         // Output has direction to the east, while input has direction to the west.
-        if (o1.GetComponent<Base.InputOutput>().GetType() == typeof(Base.PuckOutput)) {
+        if (o1.GetComponent<InputOutput>().GetType() == typeof(PuckOutput)) {
             c.target[0] = o1.GetComponent<RectTransform>();
             c.target[1] = o2.GetComponent<RectTransform>();
         } else {
@@ -61,7 +64,7 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
         return virtualConnectionToMouse != null;
     }
 
-    public Base.Action GetActionConnectedToPointer() {
+    public Action GetActionConnectedToPointer() {
         Debug.Assert(virtualConnectionToMouse != null);
         GameObject obj = GetConnectedTo(virtualConnectionToMouse, virtualPointer);
         return obj.GetComponent<InputOutput>().Action;
@@ -72,7 +75,7 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
         return GetConnectedTo(virtualConnectionToMouse, virtualPointer);
     }
 
-    public Base.Action GetActionConnectedTo(Connection c, GameObject o) {
+    public Action GetActionConnectedTo(Connection c, GameObject o) {
         return GetConnectedTo(c, o).GetComponent<InputOutput>().Action;
     }
 
@@ -86,10 +89,10 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
         }
     }
 
-    private int GetIndexByType(Connection c, System.Type type) {
-        if (c.target[0] != null && c.target[0].gameObject.GetComponent<Base.InputOutput>() != null && c.target[0].gameObject.GetComponent<Base.InputOutput>().GetType().IsSubclassOf(type))
+    private int GetIndexByType(Connection c, Type type) {
+        if (c.target[0] != null && c.target[0].gameObject.GetComponent<InputOutput>() != null && c.target[0].gameObject.GetComponent<InputOutput>().GetType().IsSubclassOf(type))
             return 0;
-        else if (c.target[1] != null && c.target[1].gameObject.GetComponent<Base.InputOutput>() != null && c.target[1].gameObject.GetComponent<Base.InputOutput>().GetType().IsSubclassOf(type))
+        else if (c.target[1] != null && c.target[1].gameObject.GetComponent<InputOutput>() != null && c.target[1].gameObject.GetComponent<InputOutput>().GetType().IsSubclassOf(type))
             return 1;
         else
             return -1;
@@ -111,13 +114,13 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
     public bool ValidateConnection(Connection c) {
         if (c == null)
             return false;
-        int input = GetIndexByType(c, typeof(Base.InputOutput)), output = GetIndexByType(c, typeof(Base.PuckOutput));
+        int input = GetIndexByType(c, typeof(InputOutput)), output = GetIndexByType(c, typeof(PuckOutput));
         if (input < 0 || output < 0)
             return false;
         return input + output == 1;
     }
 
-    public async Task<bool> ValidateConnection(InputOutput output, InputOutput input, IO.Swagger.Model.ProjectLogicIf condition) {
+    public async Task<bool> ValidateConnection(InputOutput output, InputOutput input, ProjectLogicIf condition) {
         string[] startEnd = new[] { "START", "END" };
         if (output.GetType() == input.GetType() ||
             output.Action.Data.Id.Equals(input.Action.Data.Id) ||
@@ -126,11 +129,10 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
         }
         try {
             // TODO: how to pass condition?
-            await WebsocketManager.Instance.AddLogicItem(output.Action.Data.Id, input.Action.Data.Id, condition, true);
-        } catch (RequestFailedException) {
+            return (await CommunicationManager.Instance.Client.AddLogicItemAsync(new AddLogicItemRequestArgs(output.Action.Data.Id, input.Action.Data.Id, condition), true)).Result;
+        } catch (Arcor2ConnectionException) {
             return false;
         }
-        return true;
     }
 
     public void Clear() {

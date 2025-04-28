@@ -1,20 +1,24 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
 using Base;
-using IO.Swagger.Model;
 using Michsky.UI.ModernUIPack;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
+using ActionPoint = Base.ActionPoint;
+
 public class ActionPointAimingMenu : RightMenu<ActionPointAimingMenu> {
-    public Base.ActionPoint CurrentActionPoint;
+    public ActionPoint CurrentActionPoint;
 
     public GameObject PositionExpertModeBlock, PositionRobotPickBlock, OrientationsDynamicList, JointsDynamicList, ContainerPosition, ContainerOrientations, ContainerJoints,
         AddOrientationContainer, AddJointsContainer, OrientationJointsDetailContainer, RobotPickBlock;
 
     [SerializeField]
-    private TMPro.TMP_Text OrientationsListLabel, JointsListLabel;
+    private TMP_Text OrientationsListLabel, JointsListLabel;
 
     [SerializeField]
     private ActionButton OrientationManualDefaultButton;
@@ -48,17 +52,17 @@ public class ActionPointAimingMenu : RightMenu<ActionPointAimingMenu> {
     private StateEnum State;
 
     private void Start() {
-        WebsocketManager.Instance.OnActionPointBaseUpdated += OnActionPointBaseUpdated;
+        CommunicationManager.Instance.Client.ActionPointBaseUpdated += CommunicationManager.SafeEventHandler<BareActionPointEventArgs>(OnActionPointBaseUpdated);
 
         // TODO: subscribe only when menu is opened
         ProjectManager.Instance.OnActionPointOrientationAdded += OnActionPointOrientationAdded;
         ProjectManager.Instance.OnActionPointOrientationBaseUpdated += OnActionPointOrientationBaseUpdated;
         ProjectManager.Instance.OnActionPointOrientationRemoved += OnActionPointOrientationRemoved;
 
-        WebsocketManager.Instance.OnActionPointJointsAdded += OnActionPointJointsAdded;
-        WebsocketManager.Instance.OnActionPointJointsBaseUpdated += OnActionPointJointsBaseUpdated;
-        WebsocketManager.Instance.OnActionPointJointsUpdated += OnActionPointJointsUpdated;
-        WebsocketManager.Instance.OnActionPointJointsRemoved += OnActionPointJointsRemoved;
+        CommunicationManager.Instance.Client.JointsAdded += CommunicationManager.SafeEventHandler<JointsEventArgs>(OnActionPointJointsAdded);
+        CommunicationManager.Instance.Client.JointsBaseUpdated += CommunicationManager.SafeEventHandler<JointsEventArgs>(OnActionPointJointsBaseUpdated);
+        CommunicationManager.Instance.Client.JointsUpdated += CommunicationManager.SafeEventHandler<JointsEventArgs>(OnActionPointJointsUpdated);
+        CommunicationManager.Instance.Client.JointsRemoved += CommunicationManager.SafeEventHandler<JointsEventArgs>(OnActionPointJointsRemoved);
         SceneManager.Instance.OnSceneStateEvent += OnSceneStateEvent;
     }
 
@@ -83,7 +87,7 @@ public class ActionPointAimingMenu : RightMenu<ActionPointAimingMenu> {
         }
 
     }
-    public async Task<bool> Show(Base.ActionPoint actionPoint, string preselectedOrientation) {
+    public async Task<bool> Show(ActionPoint actionPoint, string preselectedOrientation) {
         if (!await Show(actionPoint, true))
             return false;
 
@@ -138,7 +142,7 @@ public class ActionPointAimingMenu : RightMenu<ActionPointAimingMenu> {
         State = StateEnum.Joints;
     }
 
-    private void OnActionPointJointsUpdated(object sender, RobotJointsEventArgs args) {
+    private void OnActionPointJointsUpdated(object sender, JointsEventArgs args) {
         if (!IsVisible && ContainerJoints.activeInHierarchy)
             return;
         try {
@@ -155,18 +159,18 @@ public class ActionPointAimingMenu : RightMenu<ActionPointAimingMenu> {
     private void OnActionPointBaseUpdated(object sender, BareActionPointEventArgs args) {
         if (!IsVisible)
             return;
-        if (CurrentActionPoint == null || args.ActionPoint.Id != CurrentActionPoint.GetId())
+        if (CurrentActionPoint == null || args.Data.Id != CurrentActionPoint.GetId())
             return;
-        PositionManualEdit.SetPosition(args.ActionPoint.Position);
+        PositionManualEdit.SetPosition(args.Data.Position);
         if (SceneManager.Instance.SceneStarted)
             UpdateJointsDynamicList(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedArmId);  //because of possible invalidation of joints
     }
 
-    private void OnActionPointJointsRemoved(object sender, StringEventArgs args) {
+    private void OnActionPointJointsRemoved(object sender, JointsEventArgs args) {
         if (!IsVisible)
             return;
         try {
-            ActionButton btn = GetButton(args.Data, JointsDynamicList);
+            ActionButton btn = GetButton(args.Data.Id, JointsDynamicList);
             btn.gameObject.SetActive(false);
             Destroy(btn.gameObject);
         } catch (ItemNotFoundException) {
@@ -175,7 +179,7 @@ public class ActionPointAimingMenu : RightMenu<ActionPointAimingMenu> {
         }
     }
 
-    private void OnActionPointJointsBaseUpdated(object sender, RobotJointsEventArgs args) {
+    private void OnActionPointJointsBaseUpdated(object sender, JointsEventArgs args) {
         if (!IsVisible)
             return;
         try {
@@ -186,8 +190,8 @@ public class ActionPointAimingMenu : RightMenu<ActionPointAimingMenu> {
         }
     }
 
-    private void OnActionPointJointsAdded(object sender, RobotJointsEventArgs args) {
-        if (!IsVisible || args.ActionPointId != CurrentActionPoint.GetId())
+    private void OnActionPointJointsAdded(object sender, JointsEventArgs args) {
+        if (!IsVisible || args.ParentId != CurrentActionPoint.GetId())
             return;
         if (args.Data.RobotId == SceneManager.Instance.SelectedRobot.GetId()) {
             ServiceButton btn = CreateJointsButton(JointsDynamicList.transform, args.Data.Id, args.Data.Name, () => OpenDetailMenu(args.Data), args.Data.IsValid);
@@ -195,11 +199,11 @@ public class ActionPointAimingMenu : RightMenu<ActionPointAimingMenu> {
         }
     }
 
-    private void OnActionPointOrientationRemoved(object sender, StringEventArgs args) {
+    private void OnActionPointOrientationRemoved(object sender, OrientationEventArgs args) {
         if (!IsVisible)
             return;
         try {
-            ActionButton btn = GetButton(args.Data, OrientationsDynamicList);
+            ActionButton btn = GetButton(args.Data.Id, OrientationsDynamicList);
             btn.gameObject.SetActive(false);
             Destroy(btn.gameObject);
             UpdateOrientationsListLabel();
@@ -208,7 +212,7 @@ public class ActionPointAimingMenu : RightMenu<ActionPointAimingMenu> {
         }
     }
 
-    private void OnActionPointOrientationBaseUpdated(object sender, ActionPointOrientationEventArgs args) {
+    private void OnActionPointOrientationBaseUpdated(object sender, OrientationEventArgs args) {
 
         if (!IsVisible)
             return;
@@ -221,9 +225,9 @@ public class ActionPointAimingMenu : RightMenu<ActionPointAimingMenu> {
         }
     }
 
-    private void OnActionPointOrientationAdded(object sender, ActionPointOrientationEventArgs args) {
+    private void OnActionPointOrientationAdded(object sender, OrientationEventArgs args) {
 
-        if (IsVisible && CurrentActionPoint.Data.Id == args.ActionPointId) {
+        if (IsVisible && CurrentActionPoint.Data.Id == args.ParentId) {
             CreateOrientationBtn(args.Data);
             UpdateOrientationsListLabel();
         }
@@ -306,16 +310,24 @@ public class ActionPointAimingMenu : RightMenu<ActionPointAimingMenu> {
     private async void UpdateActionPointPosition(Position position = null) {
         try {
             if (position != null) {
-                await WebsocketManager.Instance.UpdateActionPointPosition(CurrentActionPoint.GetId(), position);
+                var response = await CommunicationManager.Instance.Client.UpdateActionPointPositionAsync(new UpdateActionPointPositionRequestArgs(CurrentActionPoint.GetId(), position));
+                if (!response.Result) {
+                    Notifications.Instance.ShowNotification("Update position failed", string.Join(',', response.Messages));
+                    return;
+                }
             } else {
                 string armId = null;
                 if (SceneManager.Instance.SelectedRobot.MultiArm())
                     armId = SceneManager.Instance.SelectedArmId;
-                await WebsocketManager.Instance.UpdateActionPointUsingRobot(CurrentActionPoint.GetId(), SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.EEId, armId);
+                var response = await CommunicationManager.Instance.Client.UpdateActionPointUsingRobotAsync(new UpdateActionPointUsingRobotRequestArgs(CurrentActionPoint.GetId(), new RobotArg(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.EEId, armId)));
+                if (!response.Result) {
+                    Notifications.Instance.ShowNotification("Update position failed", string.Join(',', response.Messages));
+                    return;
+                }
                 await SceneManager.Instance.SelectedRobot.WriteUnlock();
             }
             Notifications.Instance.ShowToastMessage("Position updated successfully");
-        } catch (RequestFailedException ex) {
+        } catch (Arcor2ConnectionException ex) {
             Debug.LogError(ex);
             Notifications.Instance.ShowNotification("Update position failed", ex.Message);
         } finally {
@@ -334,7 +346,7 @@ public class ActionPointAimingMenu : RightMenu<ActionPointAimingMenu> {
                 Destroy(o.gameObject);
             }
         }
-        foreach (IO.Swagger.Model.NamedOrientation orientation in CurrentActionPoint.GetNamedOrientations()) {
+        foreach (NamedOrientation orientation in CurrentActionPoint.GetNamedOrientations()) {
             CreateOrientationBtn(orientation);
         }
 
@@ -352,14 +364,14 @@ public class ActionPointAimingMenu : RightMenu<ActionPointAimingMenu> {
         OutlineOnClick orientationOutline = CurrentActionPoint.GetOrientationVisual(orientation.Id).GetComponent<OutlineOnClick>();
         EventTrigger eventTrigger = orientationButton.gameObject.AddComponent<EventTrigger>();
         // Create OnPointerEnter entry
-        EventTrigger.Entry onPointerEnter = new EventTrigger.Entry {
+        EventTrigger.Entry onPointerEnter = new() {
             eventID = EventTriggerType.PointerEnter
         };
         onPointerEnter.callback.AddListener((eventData) => orientationOutline.Highlight());
         eventTrigger.triggers.Add(onPointerEnter);
 
         // Create OnPointerExit entry
-        EventTrigger.Entry onPointerExit = new EventTrigger.Entry {
+        EventTrigger.Entry onPointerExit = new() {
             eventID = EventTriggerType.PointerExit
         };
         onPointerExit.callback.AddListener((eventData) => orientationOutline.UnHighlight());
@@ -398,7 +410,7 @@ public class ActionPointAimingMenu : RightMenu<ActionPointAimingMenu> {
     /// <param name="isValid">State of joints</param>
     /// <returns></returns>
     private ServiceButton CreateJointsButton(Transform parent, string jointsID, string label, UnityAction callback, bool isValid) {
-        ServiceButton serviceBtn = Instantiate(Base.GameManager.Instance.ServiceButtonPrefab, parent).GetComponent<ServiceButton>();
+        ServiceButton serviceBtn = Instantiate(GameManager.Instance.ServiceButtonPrefab, parent).GetComponent<ServiceButton>();
         var btn = serviceBtn.GetComponentInChildren<ActionButton>();
         btn.transform.localScale = new Vector3(1, 1, 1);
         btn.SetLabel(label);
@@ -416,7 +428,7 @@ public class ActionPointAimingMenu : RightMenu<ActionPointAimingMenu> {
 
     private ActionButton CreateBtn(Transform parent, string objectId, string label, UnityAction callback) {
         ActionButton btn;
-        btn = Instantiate(Base.GameManager.Instance.ButtonPrefab, parent).GetComponent<ActionButton>();
+        btn = Instantiate(GameManager.Instance.ButtonPrefab, parent).GetComponent<ActionButton>();
         btn.transform.localScale = new Vector3(1, 1, 1);
         btn.SetLabel(label);
         btn.ObjectId = objectId;
@@ -448,12 +460,12 @@ public class ActionPointAimingMenu : RightMenu<ActionPointAimingMenu> {
                 }
             }
 
-            System.Collections.Generic.List<ProjectRobotJoints> joints;
+            List<ProjectRobotJoints> joints;
             if (string.IsNullOrEmpty(arm_id))
                 joints = CurrentActionPoint.GetAllJoints(true, robot_id).Values.ToList();
             else
                 joints = CurrentActionPoint.GetJointsOfArm(robot_id, arm_id, true).Values.ToList();
-            foreach (IO.Swagger.Model.ProjectRobotJoints joint in joints) {
+            foreach (ProjectRobotJoints joint in joints) {
                 CreateJointsButton(JointsDynamicList.transform, joint.Id, joint.Name, () => OpenDetailMenu(joint), joint.IsValid);
             }
 
@@ -552,9 +564,14 @@ public class ActionPointAimingMenu : RightMenu<ActionPointAimingMenu> {
     public async void AddDefaultOrientation() {
         try {
             name = CurrentActionPoint.GetFreeOrientationName();
-            await WebsocketManager.Instance.AddActionPointOrientation(CurrentActionPoint.Data.Id, new Orientation(), name);
+            var response = await CommunicationManager.Instance.Client.AddActionPointOrientationAsync(new AddActionPointOrientationRequestArgs(CurrentActionPoint.Data.Id, new Orientation(), name));
+            if (!response.Result) {
+                Notifications.Instance.ShowNotification("Failed to add new orientation", string.Join(',', response.Messages));
+                return;
+            }
+
             Notifications.Instance.ShowToastMessage("Orientation added successfully");
-        } catch (RequestFailedException ex) {
+        } catch (Arcor2ConnectionException ex) {
             Notifications.Instance.ShowNotification("Failed to add new orientation", ex.Message);
         }
     }

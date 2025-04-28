@@ -1,15 +1,16 @@
-using System;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
 using Base;
-using DanielLochner.Assets.SimpleSideMenu;
 using Michsky.UI.ModernUIPack;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using ActionPoint = Base.ActionPoint;
 
 public class AddJointsMenu : MonoBehaviour {
-    public Base.ActionPoint CurrentActionPoint;
+    public ActionPoint CurrentActionPoint;
 
-    public TMPro.TMP_InputField NameInput;
+    public TMP_InputField NameInput;
 
     [SerializeField]
     private Button CreateNewJoints;
@@ -55,9 +56,14 @@ public class AddJointsMenu : MonoBehaviour {
             if (SceneManager.Instance.SelectedRobot.MultiArm())
                 armId = SceneManager.Instance.SelectedArmId;
             jointsName = NameInput.text;
-            await Base.WebsocketManager.Instance.AddActionPointJoints(CurrentActionPoint.Data.Id, SceneManager.Instance.SelectedRobot.GetId(), jointsName, SceneManager.Instance.SelectedEndEffector.EEId, armId);
+            var response = await CommunicationManager.Instance.Client.AddActionPointJointsUsingRobotAsync(new AddActionPointJointsUsingRobotRequestArgs(CurrentActionPoint.Data.Id, SceneManager.Instance.SelectedRobot.GetId(), jointsName, armId, SceneManager.Instance.SelectedEndEffector.EEId));
+            if (!response.Result) {
+                Notifications.Instance.ShowNotification("Failed to add joints", string.Join(',', response.Messages));
+                return;
+            }
+
             Notifications.Instance.ShowToastMessage("Joints added successfully");
-        } catch (RequestFailedException ex) {
+        } catch (Arcor2ConnectionException ex) {
             Notifications.Instance.ShowNotification("Failed to add joints", ex.Message);
             return;
         }
@@ -69,7 +75,7 @@ public class AddJointsMenu : MonoBehaviour {
     /// Opens menu for adding joints
     /// </summary>
     /// <param name="actionPoint"></param>
-    public void ShowMenu(Base.ActionPoint actionPoint) {
+    public void ShowMenu(ActionPoint actionPoint) {
         CurrentActionPoint = actionPoint;
         NameInput.text = CurrentActionPoint.GetFreeOrientationName();
 

@@ -1,14 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
 using Base;
-using static IO.Swagger.Model.UpdateObjectPoseUsingRobotRequestArgs;
+using TMPro;
 using UnityEngine;
+using Pose = Arcor2.ClientSdk.Communication.OpenApi.Models.Pose;
 
 public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu> {
     public DropdownParameter PivotList;
     public ButtonWithTooltip NextButton, PreviousButton, FocusObjectDoneButton, StartObjectFocusingButton, SavePositionButton, CancelAimingButton;
-    public TMPro.TMP_Text CurrentPointLabel;
+    public TMP_Text CurrentPointLabel;
     public GameObject UpdatePositionBlockMesh, UpdatePositionBlockVO;
     public SwitchComponent ShowModelSwitch;
     private int currentFocusPoint = -1;
@@ -26,7 +29,7 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu> {
 
     public GameObject Sphere;
 
-    private List<AimingPointSphere> spheres = new List<AimingPointSphere>();
+    private List<AimingPointSphere> spheres = new();
 
     private void Update() {
         if (!AimingInProgress || !automaticPointSelection)
@@ -64,13 +67,13 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu> {
         Debug.Assert(CurrentPointLabel != null);
         Debug.Assert(UpdatePositionBlockMesh != null);
         Debug.Assert(UpdatePositionBlockVO != null);
-        List<string> pivots = new List<string>();
-        foreach (string item in Enum.GetNames(typeof(PivotEnum))) {
+        List<string> pivots = new();
+        foreach (string item in Enum.GetNames(typeof(UpdateObjectPoseUsingRobotRequestArgs.PivotEnum))) {
             pivots.Add(item);
         }
         PivotList.PutData(pivots, "Middle", OnPivotChanged);
         AimingInProgress = false;
-        WebsocketManager.Instance.OnProcessStateEvent += OnCameraOrRobotCalibrationEvent;
+        CommunicationManager.Instance.Client.ProcessState += CommunicationManager.SafeEventHandler<ProcessStateEventArgs>(OnCameraOrRobotCalibrationEvent);
         SceneManager.Instance.OnSceneStateEvent += OnSceneStateEvent;
     }
 
@@ -118,10 +121,10 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu> {
     }
 
     private void OnCameraOrRobotCalibrationEvent(object sender, ProcessStateEventArgs args) {
-        if (args.Data.State == IO.Swagger.Model.ProcessStateData.StateEnum.Finished) {
+        if (args.Data.State == ProcessStateData.StateEnum.Finished) {
             Notifications.Instance.ShowToastMessage("Calibration finished successfuly");
             GameManager.Instance.HideLoadingScreen();
-        } else if (args.Data.State == IO.Swagger.Model.ProcessStateData.StateEnum.Failed) {
+        } else if (args.Data.State == ProcessStateData.StateEnum.Failed) {
             Notifications.Instance.ShowNotification("Calibration failed", args.Data.Message);
             GameManager.Instance.HideLoadingScreen();
         }
@@ -157,7 +160,7 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu> {
 
         if (SceneManager.Instance.IsRobotAndEESelected()) {
 
-            if (currentObject.ActionObjectMetadata.ObjectModel?.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Mesh &&
+            if (currentObject.ActionObjectMetadata.ObjectModel?.Type == ObjectModel.TypeEnum.Mesh &&
                 currentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints?.Count > 0) {
                 UpdatePositionBlockVO.SetActive(false);
                 UpdatePositionBlockMesh.SetActive(true);
@@ -168,7 +171,7 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu> {
                     }
                 }
                 spheres.Clear();
-                foreach (IO.Swagger.Model.Pose point in currentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints) {
+                foreach (Pose point in currentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints) {
                     AimingPointSphere sphere = Instantiate(Sphere, currentObject.transform).GetComponent<AimingPointSphere>();
                     sphere.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
                     sphere.transform.localPosition = TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(point.Position));
@@ -178,7 +181,9 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu> {
                     ++idx;
                 }
                 try {
-                    List<int> finishedIndexes = await WebsocketManager.Instance.ObjectAimingAddPoint(0, true);
+                    List<int> finishedIndexes;
+                    var result = await CommunicationManager.Instance.Client.ObjectAimingAddPointAsync(new ObjectAimingAddPointRequestArgs(0), true);
+                    finishedIndexes = result.Data.FinishedIndexes;
                     foreach (AimingPointSphere sphere in spheres) {
                         sphere.SetAimed(finishedIndexes.Contains(sphere.Index));
                     }
@@ -197,7 +202,7 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu> {
                         PreviousButton.SetInteractivity(true);
                         PreviousPoint();
                     }
-                } catch (RequestFailedException ex) {
+                } catch (Arcor2ConnectionException ex) {
                     StartObjectFocusingButton.SetInteractivity(true);
                     FocusObjectDoneButton.SetInteractivity(false, "No aiming in progress");
                     NextButton.SetInteractivity(false, "No aiming in progress");
@@ -233,9 +238,9 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu> {
 
     private async Task CheckDoneBtn() {
         try {
-            await WebsocketManager.Instance.ObjectAimingDone(true);
+            await CommunicationManager.Instance.Client.ObjectAimingDoneAsync(true);
             FocusObjectDoneButton.SetInteractivity(true);
-        } catch (RequestFailedException ex) {
+        } catch (Arcor2ConnectionException ex) {
             FocusObjectDoneButton.SetInteractivity(false, ex.Message);
         }
     }
@@ -251,17 +256,17 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu> {
 
     public async void UpdateObjectPosition() {
         if (!SceneManager.Instance.IsRobotAndEESelected()) {
-            Base.NotificationsModernUI.Instance.ShowNotification("Failed to update object position", "No robot or end effector available");
+            NotificationsModernUI.Instance.ShowNotification("Failed to update object position", "No robot or end effector available");
             return;
         }
-        PivotEnum pivot = (PivotEnum) Enum.Parse(typeof(PivotEnum), (string) PivotList.GetValue());
+        UpdateObjectPoseUsingRobotRequestArgs.PivotEnum pivot = (UpdateObjectPoseUsingRobotRequestArgs.PivotEnum) Enum.Parse(typeof(UpdateObjectPoseUsingRobotRequestArgs.PivotEnum), (string) PivotList.GetValue());
         string armId = null;
         if (SceneManager.Instance.SelectedRobot.MultiArm())
             armId = SceneManager.Instance.SelectedArmId;
         try {
-            await WebsocketManager.Instance.UpdateActionObjectPoseUsingRobot(currentObject.Data.Id,
-                    SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), pivot, armId);
-        } catch (RequestFailedException ex) {
+            await CommunicationManager.Instance.Client.UpdateObjectPoseUsingRobotAsync(new UpdateObjectPoseUsingRobotRequestArgs(currentObject.Data.Id,
+                    new RobotArg(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), armId), pivot));
+        } catch (Arcor2ConnectionException ex) {
             Notifications.Instance.ShowNotification("Failed to update object position", ex.Message);
         }
 
@@ -269,7 +274,7 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu> {
 
     public async void CancelAiming() {
         try {
-            await WebsocketManager.Instance.CancelObjectAiming();
+            await CommunicationManager.Instance.Client.ObjectAimingCancelAsync();
             AimingInProgress = false;
             if (currentObject is ActionObject3D actionObject3D)
                 actionObject3D.Highlight();
@@ -277,7 +282,7 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu> {
                 spheres[currentFocusPoint].UnHighlight();
             UpdateCurrentPointLabel();
             await UpdateMenu();
-        } catch (RequestFailedException ex) {
+        } catch (Arcor2ConnectionException ex) {
             Notifications.Instance.ShowNotification("Failed to cancel aiming", ex.Message);
         }
     }
@@ -299,7 +304,7 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu> {
 
     public async void StartObjectFocusing() {
         if (!SceneManager.Instance.IsRobotAndEESelected()) {
-            Base.NotificationsModernUI.Instance.ShowNotification("Failed to update object position", "No robot or end effector available");
+            NotificationsModernUI.Instance.ShowNotification("Failed to update object position", "No robot or end effector available");
             return;
         }
         try {
@@ -307,10 +312,13 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu> {
             string armId = null;
             if (SceneManager.Instance.SelectedRobot.MultiArm())
                 armId = SceneManager.Instance.SelectedArmId;
-            await WebsocketManager.Instance.ObjectAimingStart(currentObject.Data.Id,
-                SceneManager.Instance.SelectedRobot.GetId(),
-                SceneManager.Instance.SelectedEndEffector.GetName(),
-                armId);
+            await CommunicationManager.Instance.Client.ObjectAimingStartAsync(new ObjectAimingStartRequestArgs(currentObject.Data.Id,
+                new RobotArg(
+                    SceneManager.Instance.SelectedRobot.GetId(),
+                    SceneManager.Instance.SelectedEndEffector.GetName(),
+                    armId)
+                )
+            );
             currentFocusPoint = 0;
             UpdateCurrentPointLabel();
             //TODO: ZAJISTIT ABY MENU NEŠLO ZAVŘÍT když běží focusing - ideálně nějaký dialog
@@ -329,8 +337,8 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu> {
             foreach (AimingPointSphere sphere in spheres) {
                 sphere.SetAimed(false);
             }
-        } catch (Base.RequestFailedException ex) {
-            Base.NotificationsModernUI.Instance.ShowNotification("Failed to start object focusing", ex.Message);
+        } catch (Arcor2ConnectionException ex) {
+            NotificationsModernUI.Instance.ShowNotification("Failed to start object focusing", ex.Message);
             CurrentPointLabel.text = "";
             currentFocusPoint = -1;
             AimingInProgress = false;
@@ -346,11 +354,11 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu> {
         if (currentFocusPoint < 0)
             return;
         try {
-            await WebsocketManager.Instance.ObjectAimingAddPoint(currentFocusPoint);
+            await CommunicationManager.Instance.Client.ObjectAimingAddPointAsync(new ObjectAimingAddPointRequestArgs(currentFocusPoint));
             spheres[currentFocusPoint].SetAimed(true);
             await CheckDoneBtn();
-        } catch (Base.RequestFailedException ex) {
-            Base.NotificationsModernUI.Instance.ShowNotification("Failed to save current position", ex.Message);
+        } catch (Arcor2ConnectionException ex) {
+            NotificationsModernUI.Instance.ShowNotification("Failed to save current position", ex.Message);
         }
 
 
@@ -363,7 +371,7 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu> {
             // TODO: znovupovolit zavření menu
             currentFocusPoint = -1;
 
-            await WebsocketManager.Instance.ObjectAimingDone();
+            await CommunicationManager.Instance.Client.ObjectAimingDoneAsync();
             FocusObjectDoneButton.SetInteractivity(false, "No aiming in progress");
             CancelAimingButton.SetInteractivity(false, "No aiming in progress");
             NextButton.SetInteractivity(false, "No aiming in progress");
@@ -373,8 +381,8 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu> {
             if (currentObject is ActionObject3D actionObject3D)
                 actionObject3D.Highlight();
             AimingInProgress = false;
-        } catch (Base.RequestFailedException ex) {
-            Base.NotificationsModernUI.Instance.ShowNotification("Failed to focus object", ex.Message);
+        } catch (Arcor2ConnectionException ex) {
+            NotificationsModernUI.Instance.ShowNotification("Failed to focus object", ex.Message);
         }
     }
 
@@ -427,20 +435,20 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu> {
         if (model == null)
             return;
         if (!SceneManager.Instance.IsRobotAndEESelected()) {
-            throw new RequestFailedException("Robot or end effector not selected!");
+            throw new Arcor2ConnectionException("Robot or end effector not selected!");
         }
 
         try {
             model.transform.parent = SceneManager.Instance.SelectedEndEffector.gameObject.transform;
 
-            switch ((PivotEnum) Enum.Parse(typeof(PivotEnum), (string) PivotList.GetValue())) {
-                case PivotEnum.Top:
+            switch ((UpdateObjectPoseUsingRobotRequestArgs.PivotEnum) Enum.Parse(typeof(UpdateObjectPoseUsingRobotRequestArgs.PivotEnum), (string) PivotList.GetValue())) {
+                case UpdateObjectPoseUsingRobotRequestArgs.PivotEnum.Top:
                     model.transform.localPosition = new Vector3(0, model.transform.localScale.y / 2, 0);
                     break;
-                case PivotEnum.Bottom:
+                case UpdateObjectPoseUsingRobotRequestArgs.PivotEnum.Bottom:
                     model.transform.localPosition = new Vector3(0, -model.transform.localScale.y / 2, 0);
                     break;
-                case PivotEnum.Middle:
+                case UpdateObjectPoseUsingRobotRequestArgs.PivotEnum.Middle:
                     model.transform.localPosition = new Vector3(0, 0, 0);
                     break;
             }
@@ -476,8 +484,13 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu> {
         try {
             ConfirmationDialog.Close();
             GameManager.Instance.ShowLoadingScreen("Calibrating camera...");
-            await WebsocketManager.Instance.CalibrateCamera(currentObject.Data.Id);
-        } catch (RequestFailedException ex) {
+            var response = await CommunicationManager.Instance.Client.CalibrateCameraAsync(new CalibrateCameraRequestArgs(currentObject.Data.Id));
+            if (!response.Result) {
+                GameManager.Instance.HideLoadingScreen();
+                Notifications.Instance.ShowNotification("Failed to calibrate camera", string.Join(',', response.Messages));
+                ConfirmationDialog.Close();
+            }
+        } catch (Arcor2ConnectionException ex) {
             GameManager.Instance.HideLoadingScreen();
             Notifications.Instance.ShowNotification("Failed to calibrate camera", ex.Message);
             ConfirmationDialog.Close();

@@ -16,19 +16,19 @@ public class UrdfManager : Singleton<UrdfManager> {
     /// Invoked when robot URDF model is fully loaded. Contains type of robot.
     /// Robot model itself needs to be loaded through UrdfManager.Instance.GetRobotModelInstance()
     /// </summary>
-    public event AREditorEventArgs.RobotUrdfModelEventHandler OnRobotUrdfModelLoaded;
+    public event EventHandler<RobotUrdfModelArgs> OnRobotUrdfModelLoaded;
 
     /// <summary>
     /// Dictionary of all loaded urdf robot models. Key = type of robot (e.g. magician), Value = list of RobotModels (including its instances).
     /// </summary>
-    private Dictionary<string, List<RobotModel>> RobotModels = new Dictionary<string, List<RobotModel>>();
+    private Dictionary<string, List<RobotModel>> RobotModels = new();
 
     /// <summary>
     /// Dictionary of all urdf robot source file names (e.g. dobot-magician.zip) and bool value indicating, whether download of these source files is in progress.
     /// // HACK - at the moment, this indicates if it was already downloaded - remove when lastModified will work on project service
     /// (fileName, downloadInProgress)
     /// </summary>
-    private Dictionary<string, bool> RobotModelsSources = new Dictionary<string, bool>();
+    private Dictionary<string, bool> RobotModelsSources = new();
 
     /// <summary>
     /// Downloads URDF package for selected robot and stores them to file.
@@ -57,7 +57,7 @@ public class UrdfManager : Singleton<UrdfManager> {
             string robotDictionary = string.Format("{0}/urdf/{1}/", Application.persistentDataPath, robotType);
             Directory.CreateDirectory(robotDictionary);
             string savePath = string.Format("{0}/{1}", robotDictionary, fileName);
-            System.IO.File.WriteAllBytes(savePath, www.downloadHandler.data);
+            File.WriteAllBytes(savePath, www.downloadHandler.data);
             string urdfDictionary = string.Format("{0}/{1}", robotDictionary, "urdf");
             try {
                 Directory.Delete(urdfDictionary, true);
@@ -106,7 +106,7 @@ public class UrdfManager : Singleton<UrdfManager> {
     /// <param name="robotType">Type of the robot that will be imported.</param>
     private void OnUrdfDownloaded(string path, string robotType) {
         //Debug.Log("URDF: urdf is downloaded and extracted");
-        DirectoryInfo dir = new DirectoryInfo(path);
+        DirectoryInfo dir = new(path);
 
         //Debug.Log("URDF: searching directory for urdf file");
 
@@ -146,14 +146,14 @@ public class UrdfManager : Singleton<UrdfManager> {
     /// <param name="robotType">Type of the robot.</param>
     /// </summary>
     private void ImportUrdfObject(string filename, string robotType) {
-        UrdfRobot urdfRobot = UrdfRobotExtensionsRuntime.Create(filename, useColliderInVisuals:true, useUrdfMaterials:true);
+        UrdfRobot urdfRobot = UrdfRobotExtensionsRuntime.Create(filename, true, true);
         urdfRobot.transform.parent = transform;
         urdfRobot.transform.localPosition = Vector3.zero;
         urdfRobot.transform.localEulerAngles = Vector3.zero;
 
         urdfRobot.SetRigidbodiesIsKinematic(true);
 
-        RobotModel robot = new RobotModel(robotType, urdfRobot.gameObject);
+        RobotModel robot = new(robotType, urdfRobot.gameObject);
         robot.LoadLinks();
 
         RobotModels[robotType].Add(robot);
@@ -203,8 +203,8 @@ public class UrdfManager : Singleton<UrdfManager> {
         robotModelGameObject.transform.localPosition = Vector3.zero;
         robotModelGameObject.transform.localEulerAngles = Vector3.zero;
 
-        RobotModel robot = new RobotModel(robotToCopy.RobotType, robotModelGameObject);
-        robot.LoadLinks(copyOfRobotModel:true);
+        RobotModel robot = new(robotToCopy.RobotType, robotModelGameObject);
+        robot.LoadLinks(true);
         robot.RobotLoaded = true;
 
         return robot;
@@ -253,7 +253,7 @@ public class UrdfManager : Singleton<UrdfManager> {
         // at the moment, project service could not provide lastModified property for meshes and URDFs, so it has to be downloaded every time..
         return true;
 
-        FileInfo urdfFileInfo = new FileInfo(Application.persistentDataPath + "/urdf/" + robotType + "/" + fileName);
+        FileInfo urdfFileInfo = new(Application.persistentDataPath + "/urdf/" + robotType + "/" + fileName);
         DateTime downloadedZipLastModified = urdfFileInfo.LastWriteTime;
         if (!urdfFileInfo.Exists) {
             //Debug.Log("URDF: URDF zip file of the robot " + robotType + " has to be downloaded.");

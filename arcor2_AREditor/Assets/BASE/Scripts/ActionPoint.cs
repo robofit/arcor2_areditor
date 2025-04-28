@@ -1,28 +1,36 @@
-using UnityEngine;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System;
-using IO.Swagger.Model;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
+using UnityEngine;
 using WebSocketSharp;
+using Pose = Arcor2.ClientSdk.Communication.OpenApi.Models.Pose;
 
 namespace Base {
     public abstract class ActionPoint : InteractiveObject, IActionPointParent {
 
         // Key string is set to IO.Swagger.Model.ActionPoint Data.Uuid
-        public Dictionary<string, Action> Actions = new Dictionary<string, Action>();
+        public Dictionary<string, Action> Actions = new();
         public GameObject ActionsSpawn;
         public GameObject ActionPoints;
 
         public IActionPointParent Parent;
 
         protected Vector3 offset;
-        [System.NonSerialized]
+        [NonSerialized]
         public int PuckCounter = 0;
         public LineConnection ConnectionToParent;
 
-        [System.NonSerialized]
-        public IO.Swagger.Model.ActionPoint Data = new IO.Swagger.Model.ActionPoint(id: "", robotJoints: new List<IO.Swagger.Model.ProjectRobotJoints>(), orientations: new List<IO.Swagger.Model.NamedOrientation>(), position: new IO.Swagger.Model.Position(), actions: new List<IO.Swagger.Model.Action>(), name: "");
+        [NonSerialized]
+        public Arcor2.ClientSdk.Communication.OpenApi.Models.ActionPoint Data =
+            new (id: "",
+                robotJoints: new List<ProjectRobotJoints>(),
+                orientations: new List<NamedOrientation>(),
+                position: new Position(),
+                actions: new List<Arcor2.ClientSdk.Communication.OpenApi.Models.Action>(),
+                name: "");
         
         [SerializeField]
         protected GameObject orientations;
@@ -45,7 +53,7 @@ namespace Base {
 
         
 
-        public virtual void ActionPointBaseUpdate(IO.Swagger.Model.BareActionPoint apData) {
+        public virtual void ActionPointBaseUpdate(BareActionPoint apData) {
             Data.Name = apData.Name;
             Data.Position = apData.Position;
             SelectorItem.SetText(apData.Name);
@@ -56,7 +64,7 @@ namespace Base {
         }
 
         
-        public virtual void InitAP(IO.Swagger.Model.ActionPoint apData, float size, IActionPointParent parent = null) {
+        public virtual void InitAP(Arcor2.ClientSdk.Communication.OpenApi.Models.ActionPoint apData, float size, IActionPointParent parent = null) {
             Debug.Assert(apData != null);
             SetParent(parent);
             Data = apData;
@@ -68,7 +76,7 @@ namespace Base {
             transform.localPosition = GetScenePosition();
             SetSize(size);
             if (Data.Actions == null)
-                Data.Actions = new List<IO.Swagger.Model.Action>();
+                Data.Actions = new List<Arcor2.ClientSdk.Communication.OpenApi.Models.Action>();
             if (Data.Orientations == null)
                 Data.Orientations = new List<NamedOrientation>();
             if (Data.RobotJoints == null)
@@ -87,7 +95,7 @@ namespace Base {
             c.transform.parent = transform;
             LineConnection newConnection = c.GetComponent<LineConnection>();
             newConnection.targets[0] = parent.GetTransform();
-            newConnection.targets[1] = this.transform;
+            newConnection.targets[1] = transform;
 
             // add the connection to connections manager
             SceneManager.Instance.AOToAPConnectionsManager.AddConnection(newConnection);
@@ -130,15 +138,15 @@ namespace Base {
 
         public abstract void UpdatePositionsOfPucks();
 
-        public Dictionary<string, IO.Swagger.Model.Pose> GetPoses() {
-            Dictionary<string, IO.Swagger.Model.Pose> poses = new Dictionary<string, IO.Swagger.Model.Pose>();
-            foreach (IO.Swagger.Model.NamedOrientation orientation in Data.Orientations) {
-                poses.Add(orientation.Id, new IO.Swagger.Model.Pose(orientation: orientation.Orientation, position: Data.Position));
+        public Dictionary<string, Pose> GetPoses() {
+            Dictionary<string, Pose> poses = new();
+            foreach (NamedOrientation orientation in Data.Orientations) {
+                poses.Add(orientation.Id, new Pose(orientation: orientation.Orientation, position: Data.Position));
             }
             return poses;
         }
 
-        public List<IO.Swagger.Model.NamedOrientation> GetNamedOrientations() {
+        public List<NamedOrientation> GetNamedOrientations() {
             return Data.Orientations;
         }
 
@@ -174,7 +182,7 @@ namespace Base {
         }
 
         public NamedOrientation GetFirstOrientationFromDescendants() {
-            List<ActionPoint> descendantActionPoints = new List<ActionPoint>();
+            List<ActionPoint> descendantActionPoints = new();
             foreach (Transform t in ActionPoints.transform) {
                 ActionPoint ap = t.GetComponent<ActionPoint>();
                 if (ap.Data.Orientations.Count > 0)
@@ -209,7 +217,7 @@ namespace Base {
         }
 
         public List<APOrientation> GetOrientationsVisuals() {
-            List<APOrientation> orientationsList = new List<APOrientation>();
+            List<APOrientation> orientationsList = new();
             foreach (Transform transform in orientations.transform) {
                 APOrientation o = transform.GetComponent<APOrientation>();
                 if (o != null)
@@ -218,17 +226,17 @@ namespace Base {
             return orientationsList;
         }
 
-        public IO.Swagger.Model.Pose GetDefaultPose() {
-            foreach (IO.Swagger.Model.NamedOrientation orientation in Data.Orientations) {
+        public Pose GetDefaultPose() {
+            foreach (NamedOrientation orientation in Data.Orientations) {
                 if (orientation.Id == "default")
-                    return new IO.Swagger.Model.Pose(position: Data.Position, orientation: orientation.Orientation);
+                    return new Pose(Data.Position, orientation.Orientation);
             }
             throw new ItemNotFoundException();            
         }
 
         //TODO: check if it works
-        public IO.Swagger.Model.ProjectRobotJoints GetFirstJoints(string robot_id = null, bool valid_only = false) {
-            foreach (IO.Swagger.Model.ProjectRobotJoints robotJoint in Data.RobotJoints) {
+        public ProjectRobotJoints GetFirstJoints(string robot_id = null, bool valid_only = false) {
+            foreach (ProjectRobotJoints robotJoint in Data.RobotJoints) {
                 if ((robot_id != null && robot_id != robotJoint.RobotId) ||
                         (valid_only && !robotJoint.IsValid))
                     continue;
@@ -242,8 +250,8 @@ namespace Base {
             throw new ItemNotFoundException();    
         }
 
-        public IO.Swagger.Model.ProjectRobotJoints GetFirstJointsFromDescendants() {
-            List<ActionPoint> descendantActionPoints = new List<ActionPoint>();
+        public ProjectRobotJoints GetFirstJointsFromDescendants() {
+            List<ActionPoint> descendantActionPoints = new();
             foreach (Transform t in ActionPoints.transform) {
                 ActionPoint ap = t.GetComponent<ActionPoint>();
                 if (ap.Data.RobotJoints.Count > 0)
@@ -261,13 +269,13 @@ namespace Base {
             throw new ItemNotFoundException("No joints");
         }
 
-        public Dictionary<string, IO.Swagger.Model.ProjectRobotJoints> GetAllJoints(bool uniqueOnly = false, string robot_id = null, bool valid_only = false) {
-            Dictionary<string, IO.Swagger.Model.ProjectRobotJoints> joints = new Dictionary<string, IO.Swagger.Model.ProjectRobotJoints>();
-            Dictionary<string, IO.Swagger.Model.Pose> poses = new Dictionary<string, IO.Swagger.Model.Pose>();
+        public Dictionary<string, ProjectRobotJoints> GetAllJoints(bool uniqueOnly = false, string robot_id = null, bool valid_only = false) {
+            Dictionary<string, ProjectRobotJoints> joints = new();
+            Dictionary<string, Pose> poses = new();
             if (uniqueOnly) {
                 poses = GetPoses();
             }
-            foreach (IO.Swagger.Model.ProjectRobotJoints robotJoint in Data.RobotJoints) {
+            foreach (ProjectRobotJoints robotJoint in Data.RobotJoints) {
                 if ((uniqueOnly && poses.ContainsKey(robotJoint.Id)) ||
                     (!robot_id.IsNullOrEmpty() && robot_id != robotJoint.RobotId) ||
                     (valid_only && !robotJoint.IsValid)) {
@@ -278,13 +286,13 @@ namespace Base {
             return joints;
         }
 
-        public Dictionary<string, IO.Swagger.Model.ProjectRobotJoints> GetJointsOfArm(string robot_id, string arm_id, bool uniqueOnly = false) {
-            Dictionary<string, IO.Swagger.Model.ProjectRobotJoints> joints = new Dictionary<string, IO.Swagger.Model.ProjectRobotJoints>();
-            Dictionary<string, IO.Swagger.Model.Pose> poses = new Dictionary<string, IO.Swagger.Model.Pose>();
+        public Dictionary<string, ProjectRobotJoints> GetJointsOfArm(string robot_id, string arm_id, bool uniqueOnly = false) {
+            Dictionary<string, ProjectRobotJoints> joints = new();
+            Dictionary<string, Pose> poses = new();
             if (uniqueOnly) {
                 poses = GetPoses();
             }
-            foreach (IO.Swagger.Model.ProjectRobotJoints robotJoint in Data.RobotJoints) {
+            foreach (ProjectRobotJoints robotJoint in Data.RobotJoints) {
                 if (uniqueOnly && poses.ContainsKey(robotJoint.Id)) {
                     continue;
                 }
@@ -305,7 +313,7 @@ namespace Base {
 
             // Remove this ActionPoint reference from parent ActionObject list
             if (removeFromList) // to allow remove all AP in foreach
-                ProjectManager.Instance.ActionPoints.Remove(this.Data.Id);
+                ProjectManager.Instance.ActionPoints.Remove(Data.Id);
 
             DestroyObject();
             Destroy(gameObject);
@@ -379,29 +387,29 @@ namespace Base {
         /// </summary>
         /// <param name="projectActionPoint"></param>
         /// <returns></returns>
-        public virtual (List<string>, Dictionary<string, string>) UpdateActionPoint(IO.Swagger.Model.ActionPoint projectActionPoint) {
+        public virtual (List<string>, Dictionary<string, string>) UpdateActionPoint(Arcor2.ClientSdk.Communication.OpenApi.Models.ActionPoint projectActionPoint) {
             if (Data.Parent != projectActionPoint.Parent) {
                 ChangeParent(projectActionPoint.Parent);
             }
             Data = projectActionPoint;
             transform.localPosition = GetScenePosition();            
             transform.localRotation = GetSceneOrientation();
-            List<string> currentA = new List<string>();
+            List<string> currentA = new();
 
             foreach (NamedOrientation orientation in Data.Orientations) {
                 UpdateOrientation(orientation);
             }
             // Connections between actions (action -> output --- input <- action2)
-            Dictionary<string, string> connections = new Dictionary<string, string>();
+            Dictionary<string, string> connections = new();
             if (projectActionPoint.Actions != null) {
                 //update actions
-                foreach (IO.Swagger.Model.Action projectAction in projectActionPoint.Actions) {
+                foreach (Arcor2.ClientSdk.Communication.OpenApi.Models.Action projectAction in projectActionPoint.Actions) {
 
                     // if action exist, just update it, otherwise create new
                     if (!Actions.TryGetValue(projectAction.Id, out Action action)) {
                         try {
                             action = ProjectManager.Instance.SpawnAction(projectAction, this);
-                        } catch (RequestFailedException ex) {
+                        } catch (Arcor2ConnectionException ex) {
                             Debug.LogError(ex);
                             continue;
                         }
@@ -472,8 +480,8 @@ namespace Base {
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public IO.Swagger.Model.NamedOrientation GetOrientation(string id) {
-            foreach (IO.Swagger.Model.NamedOrientation orientation in Data.Orientations) {
+        public NamedOrientation GetOrientation(string id) {
+            foreach (NamedOrientation orientation in Data.Orientations) {
                 if (orientation.Id == id)
                     return orientation;
             }
@@ -485,7 +493,7 @@ namespace Base {
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public IO.Swagger.Model.ProjectRobotJoints GetJoints(string id) {
+        public ProjectRobotJoints GetJoints(string id) {
             foreach (ProjectRobotJoints joints in Data.RobotJoints) {
                 if (joints.Id == id)
                     return joints;
@@ -498,7 +506,7 @@ namespace Base {
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public IO.Swagger.Model.ProjectRobotJoints GetJointsByName(string name) {
+        public ProjectRobotJoints GetJointsByName(string name) {
             foreach (ProjectRobotJoints joints in Data.RobotJoints) {
                 if (joints.Name == name)
                     return joints;
@@ -512,7 +520,7 @@ namespace Base {
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public IO.Swagger.Model.NamedOrientation GetOrientationByName(string name) {
+        public NamedOrientation GetOrientationByName(string name) {
             foreach (NamedOrientation orientation in Data.Orientations) {
                 if (orientation.Name == name)
                     return orientation;
@@ -646,15 +654,15 @@ namespace Base {
             transform.localRotation = GetSceneOrientation();
         }
 
-        public async override Task<RequestResult> Movable() {
+        public override async Task<RequestResult> Movable() {
 
             if (IsLocked && LockOwner != LandingScreen.Instance.GetUsername())
                 return new RequestResult(false, "Action point is locked");
             else {
                 try {
-                    await WebsocketManager.Instance.UpdateActionPointPosition(GetId(), new Position(), true);
+                    await CommunicationManager.Instance.Client.UpdateActionPointPositionAsync(new UpdateActionPointPositionRequestArgs(GetId(), new Position()), true);
                     return new RequestResult(true);
-                } catch (RequestFailedException e) {
+                } catch (Arcor2ConnectionException e) {
                     return new RequestResult(false, e.Message);
                 }
 

@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<linker>
+    <!-- Prevents accidentally stripping used code when using IL2CPP.-->
+    <assembly preserve="all" fullname="Arcor2.ClientSdk.Communication"/>
+	<assembly preserve="all" fullname="Arcor2.ClientSdk.Communication.OpenApi"/>
+	<assembly fullname="Newtonsoft.Json">
+		<type preserve="all" fullname="Newtonsoft.Json.Converters.StringEnumConverter"/>
+	</assembly>
+</linker>

@@ -1,7 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
+using Joint = Arcor2.ClientSdk.Communication.OpenApi.Models.Joint;
 
 public interface IRobot
 {
@@ -19,11 +19,11 @@ public interface IRobot
 
     bool HasUrdf();
 
-    void SetJointValue(List<IO.Swagger.Model.Joint> joints, bool angle_in_degrees = false, bool forceJointsValidCheck = false);
+    void SetJointValue(List<Joint> joints, bool angle_in_degrees = false, bool forceJointsValidCheck = false);
 
     void SetJointValue(string name, float angle, bool angle_in_degrees = false);
 
-    List<IO.Swagger.Model.Joint> GetJoints();
+    List<Joint> GetJoints();
 
     void SetGrey(bool grey, bool force = false);
 

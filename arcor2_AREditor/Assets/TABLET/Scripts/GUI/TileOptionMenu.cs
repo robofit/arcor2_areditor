@@ -1,6 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using System.Threading.Tasks;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
 using Base;
 using UnityEngine;
 
@@ -31,9 +31,14 @@ public abstract class TileOptionMenu : OptionMenu {
 
     protected async Task<bool> WriteLockProjectOrScene(string id) {
         try {
-            await WebsocketManager.Instance.WriteLock(id, false);
+            var response = await CommunicationManager.Instance.Client.WriteLockAsync(new WriteLockRequestArgs(id));
+            if (!response.Result) {
+                Debug.LogError(string.Join(",", response.Messages));
+                Notifications.Instance.ShowNotification("Failed to lock " + GetLabel(), string.Join(",", response.Messages));
+                return false;
+            }
             return true;
-        } catch (RequestFailedException ex) {
+        } catch (Arcor2ConnectionException ex) {
             Notifications.Instance.ShowNotification("Failed to lock " + GetLabel(), ex.Message);
             return false;
         }

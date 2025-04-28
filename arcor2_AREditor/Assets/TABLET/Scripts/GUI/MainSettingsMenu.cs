@@ -1,12 +1,12 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
 using Base;
 using UnityEngine;
 using UnityEngine.UI;
-using IO.Swagger.Model;
-using Newtonsoft.Json;
+using Parameter = Base.Parameter;
 
 public class MainSettingsMenu : Singleton<MainSettingsMenu>
 {
@@ -14,7 +14,7 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
     public ButtonWithTooltip SwitchToProjectParametersBtn;
     public Image SwitchToProjectParametersBtnImage;
 
-    public List<GameObject> ProjectRelatedSettings = new List<GameObject>();
+    public List<GameObject> ProjectRelatedSettings = new();
 
     public CanvasGroup CanvasGroup;
 
@@ -34,14 +34,18 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
 
     public LinkableInput AssetServiceURI;
     public ButtonWithTooltip ResetAssetServiceURIButton;
+
+    public EventHandler<ProjectParameterEventArgs> onProjectParameterAdded;
+    public EventHandler<ProjectParameterEventArgs> onProjectParameterRemoved;
+
     private void Start() {
         SceneManager.Instance.OnLoadScene += OnLoadScene;
         ProjectManager.Instance.OnLoadProject += OnLoadProject;
         EditConstantDialog = (EditProjectParameterDialog) AREditorResources.Instance.EditProjectParameterDialog;
         ConnectionsSwitch.AddOnValueChangedListener((_) => AREditorResources.Instance.LeftMenuProject.UpdateBtns());
         ConnectionsSwitch.AddOnValueChangedListener(ProjectManager.Instance.SetActionInputOutputVisibility);
-        WebsocketManager.Instance.OnProjectParameterAdded += OnProjectParameterAdded;
-        WebsocketManager.Instance.OnProjectParameterRemoved += OnProjectParameterRemoved;
+        CommunicationManager.Instance.Client.ProjectParameterAdded += onProjectParameterAdded;
+        CommunicationManager.Instance.Client.ProjectParameterRemoved += onProjectParameterRemoved;
 
     }
 
@@ -54,10 +58,10 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
         string uri = PlayerPrefsHelper.LoadString("AssetServiceURI", "");
         
         // TODO this could (should?) work without connection to the server
-        Debug.Assert(!string.IsNullOrEmpty(WebsocketManager.Instance.GetServerDomain()), "GetAssetServiceURI was probably used without connection to the server.");
+        Debug.Assert(!string.IsNullOrEmpty(CommunicationManager.Instance.Client.Uri!.GetComponents(UriComponents.Host, UriFormat.Unescaped)), "GetAssetServiceURI was probably used without connection to the server.");
 
         if (string.IsNullOrEmpty(uri))
-            return "http://" + WebsocketManager.Instance.GetServerDomain() + ":6790";
+            return "http://" + CommunicationManager.Instance.Client.Uri!.GetComponents(UriComponents.Host, UriFormat.Unescaped) + ":6790";
         else {
             return uri.Trim('/');
         }
@@ -98,13 +102,13 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
             APSizeSlider.gameObject.SetActive(true);
             APOrientationsVisibility.gameObject.SetActive(true);
             APSizeSlider.value = ProjectManager.Instance.APSize;
-            APOrientationsVisibility.SetValue(Base.ProjectManager.Instance.APOrientationsVisible);
+            APOrientationsVisibility.SetValue(ProjectManager.Instance.APOrientationsVisible);
 
             SwitchToProjectParametersBtn.SetInteractivity(true);
             SwitchToProjectParametersBtnImage.color = Color.white;
             GenerateParameterButtons();
-            WebsocketManager.Instance.OnProjectParameterAdded += OnProjectParameterAdded;
-            WebsocketManager.Instance.OnProjectParameterRemoved += OnProjectParameterRemoved;
+            CommunicationManager.Instance.Client.ProjectParameterAdded += onProjectParameterRemoved;
+            CommunicationManager.Instance.Client.ProjectParameterRemoved += onProjectParameterRemoved;
         } else {
             APSizeSlider.gameObject.SetActive(false);
             APOrientationsVisibility.gameObject.SetActive(false);
@@ -112,8 +116,8 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
             SwitchToProjectParametersBtnImage.color = Color.gray;
         }
 
-        Interactibility.SetValue(Base.SceneManager.Instance.ActionObjectsInteractive);
-        RobotsEEVisible.SetValue(Base.SceneManager.Instance.RobotsEEVisible, false);
+        Interactibility.SetValue(SceneManager.Instance.ActionObjectsInteractive);
+        RobotsEEVisible.SetValue(SceneManager.Instance.RobotsEEVisible, false);
         ActionObjectsVisibilitySlider.SetValueWithoutNotify(SceneManager.Instance.ActionObjectsVisibility * 100f);
 
 #if UNITY_ANDROID && AR_ON
@@ -185,8 +189,8 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
         EditorHelper.EnableCanvasGroup(CanvasGroup, false);
 
         DestroyConstantButtons();
-        WebsocketManager.Instance.OnProjectParameterAdded -= OnProjectParameterAdded;
-        WebsocketManager.Instance.OnProjectParameterRemoved -= OnProjectParameterRemoved;
+        CommunicationManager.Instance.Client.ProjectParameterAdded -= onProjectParameterRemoved;
+        CommunicationManager.Instance.Client.ProjectParameterRemoved -= onProjectParameterRemoved;
     }
 
     public void SetVisibilityActionObjects() {
@@ -198,19 +202,19 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
     }
 
     public void ShowAPOrientations() {
-        Base.ProjectManager.Instance.ShowAPOrientations();
+        ProjectManager.Instance.ShowAPOrientations();
     }
 
     public void HideAPOrientations() {
-        Base.ProjectManager.Instance.HideAPOrientations();
+        ProjectManager.Instance.HideAPOrientations();
     }
 
     public void InteractivityOn() {
-        Base.SceneManager.Instance.SetActionObjectsInteractivity(true);
+        SceneManager.Instance.SetActionObjectsInteractivity(true);
     }
 
     public void InteractivityOff() {
-        Base.SceneManager.Instance.SetActionObjectsInteractivity(false);
+        SceneManager.Instance.SetActionObjectsInteractivity(false);
     }
 
     public void ShowRobotsEE() {
@@ -338,7 +342,7 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
     private void OnProjectParameterRemoved(object sender, ProjectParameterEventArgs args) {
         ProjectParameterButton[] btns = ContentConstants.GetComponentsInChildren<ProjectParameterButton>();
         if (btns != null) {
-            foreach (ProjectParameterButton btn in btns.Where(o => o.Id == args.ProjectParameter.Id)) {
+            foreach (ProjectParameterButton btn in btns.Where(o => o.Id == args.Data.Id)) {
                 Destroy(btn.gameObject);
                 return;
             }
@@ -361,7 +365,7 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
         ProjectParameterButton btn = Instantiate(ConstantButtonPrefab, ContentConstants.transform).GetComponent<ProjectParameterButton>();
         btn.Id = projectParameter.Id;
         btn.SetName(projectParameter.Name);
-        btn.SetValue(Base.Parameter.GetValue<string>(projectParameter.Value));
+        btn.SetValue(Parameter.GetValue<string>(projectParameter.Value));
         btn.Button.onClick.AddListener(async () => {
             if (!await EditConstantDialog.Init((_) => Show(), Show, projectParameter))
                 return;

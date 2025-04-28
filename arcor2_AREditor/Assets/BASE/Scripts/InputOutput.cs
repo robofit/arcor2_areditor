@@ -1,18 +1,12 @@
-using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
-using System;
-using System.Threading.Tasks;
-using IO.Swagger.Model;
-using Newtonsoft.Json;
+using UnityEngine;
 using static Base.Clickable;
-using UnityEngine.Events;
-using RosSharp.RosBridgeClient.MessageTypes.Nav;
 
 namespace Base {
     public abstract class InputOutput : MonoBehaviour, ISubItem {
         public Action Action;
-        private List<string> logicItemIds = new List<string>();
+        private List<string> logicItemIds = new();
         [SerializeField]
         private OutlineOnClick outlineOnClick;
 
@@ -30,7 +24,7 @@ namespace Base {
         }
 
         public List<LogicItem> GetLogicItems() {
-            List<LogicItem> items = new List<LogicItem>();
+            List<LogicItem> items = new();
             foreach (string itemId in logicItemIds)
                 if (ProjectManager.Instance.LogicItems.TryGetValue(itemId, out LogicItem logicItem)) {
                     items.Add(logicItem);

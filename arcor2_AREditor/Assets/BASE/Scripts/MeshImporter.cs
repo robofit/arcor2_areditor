@@ -8,6 +8,7 @@ using Base;
 using TriLibCore;
 using UnityEngine;
 using UnityEngine.Networking;
+using Mesh = Arcor2.ClientSdk.Communication.OpenApi.Models.Mesh;
 
 public class MeshImporter : Singleton<MeshImporter> {
 
@@ -18,14 +19,14 @@ public class MeshImporter : Singleton<MeshImporter> {
     /// Dictionary of all urdf robot source file names (e.g. dobot-magician.zip) and bool value indicating, whether download of these source files is in progress.
     /// (fileName, downloadInProgress)
     /// </summary>
-    private Dictionary<string, bool> meshSources = new Dictionary<string, bool>();
+    private Dictionary<string, bool> meshSources = new();
 
     /// <summary>
     /// Loads mesh - takes care of downloading, updating and importing mesh
     /// </summary>
     /// <param name="mesh"></param>
     /// <param name="aoId">ID of action object which is asociated with the mesh</param>
-    public void LoadModel(IO.Swagger.Model.Mesh mesh, string aoId) {
+    public void LoadModel(Mesh mesh, string aoId) {
         if (CheckIfNewerRobotModelExists(mesh.Id, mesh.AssetId)) {
             StartCoroutine(DownloadMesh(mesh.Id, mesh.AssetId, aoId));
         } else {
@@ -47,7 +48,7 @@ public class MeshImporter : Singleton<MeshImporter> {
     /// <returns></returns>
     private void ImportMesh(string path, string aoId) {
 
-        GameObject loadedObject = new GameObject("ImportedMeshObject");
+        GameObject loadedObject = new("ImportedMeshObject");
         if (Path.GetExtension(path).ToLower() == ".dae") {
             //Debug.LogError("importing dae mesh name: " + path);
             StreamReader reader = File.OpenText(path);
@@ -56,10 +57,10 @@ public class MeshImporter : Singleton<MeshImporter> {
             // Requires Simple Collada asset from Unity Asset Store: https://assetstore.unity.com/packages/tools/input-management/simple-collada-19579
             // Supports: DAE
             StartCoroutine(ColladaImporter.Instance.ImportAsync(daeFile, Quaternion.identity, Vector3.one, Vector3.zero,
-                onModelImported: delegate (GameObject loadedGameObject) {
+                delegate (GameObject loadedGameObject) {
                     OnMeshImported?.Invoke(this, new ImportedMeshEventArgs(loadedGameObject, aoId));
                 },
-                wrapperGameObject: loadedObject));
+                loadedObject));
 
         } else {
             // Requires Trilib 2 asset from Unity Asset Store: https://assetstore.unity.com/packages/tools/modeling/trilib-2-model-loading-package-157548
@@ -97,7 +98,7 @@ public class MeshImporter : Singleton<MeshImporter> {
                 string meshDirectory = string.Format("{0}/meshes/{1}", Application.persistentDataPath, meshId);
                 Directory.CreateDirectory(meshDirectory);
                 string savePath = string.Format("{0}/{1}", meshDirectory, fileName);
-                System.IO.File.WriteAllBytes(savePath, www.downloadHandler.data);
+                File.WriteAllBytes(savePath, www.downloadHandler.data);
                 meshSources[fileName] = false;
 
                 //Debug.LogError("MESH: download finished");
@@ -152,7 +153,7 @@ public class MeshImporter : Singleton<MeshImporter> {
             string[] extensions = { "dae", "fbx", "obj", "gltf2", "stl", "ply", "3mf" };
             string[] files = { };
             foreach (var extension in extensions) {
-                files = System.IO.Directory.GetFiles(path, "*." + extension);
+                files = Directory.GetFiles(path, "*." + extension);
                 if (files.Length > 0)
                     return files[0];
             }
@@ -194,7 +195,7 @@ public class MeshImporter : Singleton<MeshImporter> {
         }
 
         //Debug.LogError("mesh: Checking if newer  mesh exists " + meshId);
-        FileInfo meshFileInfo = new FileInfo(Application.persistentDataPath + "/meshes/" + meshId + "/" + fileName);
+        FileInfo meshFileInfo = new(Application.persistentDataPath + "/meshes/" + meshId + "/" + fileName);
         if (!meshFileInfo.Exists) {
             //Debug.LogError("mesh: mesh file " + meshId + " has to be downloaded.");
             // Check whether downloading can be started and start it, if so.

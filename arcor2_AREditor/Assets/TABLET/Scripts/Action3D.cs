@@ -1,23 +1,27 @@
 using System;
 using System.Threading.Tasks;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
 using Base;
-using IO.Swagger.Model;
 using Newtonsoft.Json;
 using UnityEngine;
+using Action = Base.Action;
+using ActionMetadata = Base.ActionMetadata;
+using ActionPoint = Base.ActionPoint;
 
 [RequireComponent(typeof(OutlineOnClick))]
 [RequireComponent(typeof(Target))]
-public class Action3D : Base.Action, ISubItem {
+public class Action3D : Action, ISubItem {
     public Renderer Visual;
 
-    private Color32 colorDefault = new Color32(229, 215, 68, 255);
-    private Color32 colorRunnning = new Color32(255, 0, 255, 255);
+    private Color32 colorDefault = new(229, 215, 68, 255);
+    private Color32 colorRunnning = new(255, 0, 255, 255);
 
     private bool selected = false;
     [SerializeField]
     protected OutlineOnClick outlineOnClick;
 
-    public override void Init(IO.Swagger.Model.Action projectAction, Base.ActionMetadata metadata, Base.ActionPoint ap, IActionProvider actionProvider) {
+    public override void Init(Arcor2.ClientSdk.Communication.OpenApi.Models.Action projectAction, ActionMetadata metadata, ActionPoint ap, IActionProvider actionProvider) {
         base.Init(projectAction, metadata, ap, actionProvider);
     }
 
@@ -40,13 +44,13 @@ public class Action3D : Base.Action, ISubItem {
         }
     }
 
-    private void OnProjectStop(object sender, System.EventArgs e) {
+    private void OnProjectStop(object sender, EventArgs e) {
         StopAction();
     }
 
     public override void RunAction() {
         Visual.material.color = colorRunnning;
-        foreach (IO.Swagger.Model.ActionParameter p in Data.Parameters) {
+        foreach (ActionParameter p in Data.Parameters) {
             if (p.Type == "pose") {
                 string orientationId = JsonConvert.DeserializeObject<string>(p.Value);
                 ProjectManager.Instance.HighlightOrientation(orientationId, true);
@@ -58,7 +62,7 @@ public class Action3D : Base.Action, ISubItem {
         if (Visual != null) {
             Visual.material.color = colorDefault;
         }
-        foreach (IO.Swagger.Model.ActionParameter p in Data.Parameters) {
+        foreach (ActionParameter p in Data.Parameters) {
             if (p.Type == "pose") {
                 string orientationId = JsonConvert.DeserializeObject<string>(p.Value);
                 ProjectManager.Instance.HighlightOrientation(orientationId, false);
@@ -71,7 +75,7 @@ public class Action3D : Base.Action, ISubItem {
         NameText.text = newName;
     }
 
-    public override void ActionUpdateBaseData(IO.Swagger.Model.BareAction aData = null) {
+    public override void ActionUpdateBaseData(BareAction aData = null) {
         base.ActionUpdateBaseData(aData);
         NameText.text = aData.Name;
     }
@@ -148,9 +152,13 @@ public class Action3D : Base.Action, ISubItem {
             return new RequestResult(false, "Action could only be removed in project editor");
         else {
             try {
-                await WebsocketManager.Instance.RemoveAction(GetId(), true);
+                var response = await CommunicationManager.Instance.Client.RemoveActionAsync(new IdArgs(GetId()), true);
+                if (!response.Result) {
+                    return new RequestResult(false, string.Join(',', response.Messages));
+                }
+
                 return new RequestResult(true);
-            } catch (RequestFailedException ex) {
+            } catch (Arcor2ConnectionException ex) {
                 return new RequestResult(false, ex.Message);
             }
         }
@@ -158,17 +166,24 @@ public class Action3D : Base.Action, ISubItem {
 
     public async override void Remove() {
         try {
-            await WebsocketManager.Instance.RemoveAction(GetId(), false);
-        } catch (RequestFailedException ex) {
+            var response = await CommunicationManager.Instance.Client.RemoveActionAsync(new IdArgs(GetId()), false);
+            if (!response.Result) {
+                Notifications.Instance.ShowNotification("Failed to remove action " + GetName(), string.Join(',', response.Messages));
+            }
+        } catch (Arcor2ConnectionException ex) {
             Notifications.Instance.ShowNotification("Failed to remove action " + GetName(), ex.Message);
         }
     }
 
     public async override Task Rename(string newName) {
         try {
-            await WebsocketManager.Instance.RenameAction(GetId(), newName);
+            var response = await CommunicationManager.Instance.Client.RenameActionAsync(new RenameActionRequestArgs(GetId(), newName));
+            if (!response.Result) {
+                Notifications.Instance.ShowNotification("Failed to rename action " + GetName(), string.Join(',', response.Messages));
+                return;
+            }
             Notifications.Instance.ShowToastMessage("Action renamed");
-        } catch (RequestFailedException e) {
+        } catch (Arcor2ConnectionException e) {
             Notifications.Instance.ShowNotification("Failed to rename action", e.Message);
             throw;
         }

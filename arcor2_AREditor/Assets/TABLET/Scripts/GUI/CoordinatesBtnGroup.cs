@@ -1,3 +1,4 @@
+using System;
 using Base;
 using UnityEngine;
 
@@ -7,7 +8,7 @@ public class CoordinatesBtnGroup : MonoBehaviour {
     public CoordBtn X, Y, Z;
     private CoordBtn selectedBtn;
 
-    public event AREditorEventArgs.GizmoAxisEventHandler OnAxisChanged;
+    public event EventHandler<GizmoAxisEventArgs> OnAxisChanged;
 
 
     private void Start() {

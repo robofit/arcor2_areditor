@@ -1,17 +1,24 @@
+using System;
+using Arcor2.ClientSdk.Communication;
+using Base;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using Base;
 
 public class ProjectParameterButton : MonoBehaviour {
     public Button Button;
     [SerializeField]
     private ButtonWithTooltip ButtonWithTooltip;
-    public TMPro.TMP_Text Name, Value;
+    public TMP_Text Name, Value;
     public string Id;
+
+    // Need to keep track, so we can properly unregister it
+    private static EventHandler<ProjectParameterEventArgs> onProjectParameterAdded;
 
     // Start is called before the first frame update
     void Start() {
-        WebsocketManager.Instance.OnProjectParameterUpdated += OnProjectParameterUpdated;
+        onProjectParameterAdded = CommunicationManager.SafeEventHandler<ProjectParameterEventArgs>(OnProjectParameterUpdated);
+        CommunicationManager.Instance.Client.ProjectParameterUpdated += onProjectParameterAdded;
         LockingEventsCache.Instance.OnObjectLockingEvent += OnLockingEvent;
     }
 
@@ -23,15 +30,15 @@ public class ProjectParameterButton : MonoBehaviour {
     }
 
     private void OnProjectParameterUpdated(object sender, ProjectParameterEventArgs args) {
-        if (args.ProjectParameter.Id != Id)
+        if (args.Data.Id != Id)
             return;
 
-        SetName(args.ProjectParameter.Name);
-        SetValue(ProjectParametersHelper.GetValue(args.ProjectParameter.Value, ProjectParametersHelper.ConvertStringParameterTypeToEnum(args.ProjectParameter.Type)));
+        SetName(args.Data.Name);
+        SetValue(ProjectParametersHelper.GetValue(args.Data.Value, ProjectParametersHelper.ConvertStringParameterTypeToEnum(args.Data.Type)));
     }
 
     private void OnDestroy() {
-        WebsocketManager.Instance.OnProjectParameterUpdated -= OnProjectParameterUpdated;
+        CommunicationManager.Instance.Client.ProjectParameterUpdated -= onProjectParameterAdded;
         LockingEventsCache.Instance.OnObjectLockingEvent -= OnLockingEvent;
     }
 

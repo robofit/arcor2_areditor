@@ -1,13 +1,17 @@
-using UnityEngine;
-using UnityEngine.UI;
-using Base;
 using System.Collections.Generic;
-using Newtonsoft.Json;
 using System.Linq;
 using System.Threading.Tasks;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
+using Base;
+using Newtonsoft.Json;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+using Parameter = Base.Parameter;
 
 public class ActionObjectMenu : RightMenu<ActionObjectMenu> {
-    public Base.ActionObject CurrentObject;
+    public ActionObject CurrentObject;
     public GameObject Parameters;
     public Slider VisibilitySlider;
     public InputDialog InputDialog;
@@ -20,14 +24,14 @@ public class ActionObjectMenu : RightMenu<ActionObjectMenu> {
     protected bool parametersChanged = false;
     public VerticalLayoutGroup DynamicContentLayout;
     public GameObject CanvasRoot;
-    public TMPro.TMP_Text VisibilityLabel;
+    public TMP_Text VisibilityLabel;
 
     public SwitchComponent BlocklistSwitch;
 
     public GameObject ParameterOverridePrefab;
-    private Dictionary<string, ActionObjectParameterOverride> overrides = new Dictionary<string, ActionObjectParameterOverride>();
+    private Dictionary<string, ActionObjectParameterOverride> overrides = new();
 
-    protected List<IParameter> objectParameters = new List<IParameter>();
+    protected List<IParameter> objectParameters = new();
 
     private void Start() {
 
@@ -37,24 +41,23 @@ public class ActionObjectMenu : RightMenu<ActionObjectMenu> {
 
         SceneManager.Instance.OnSceneStateEvent += OnSceneStateEvent;
 
-        WebsocketManager.Instance.OnOverrideAdded += OnOverrideAddedOrUpdated;
-        WebsocketManager.Instance.OnOverrideUpdated += OnOverrideAddedOrUpdated;
-        WebsocketManager.Instance.OnOverrideBaseUpdated += OnOverrideAddedOrUpdated;
-        WebsocketManager.Instance.OnOverrideRemoved += OnOverrideRemoved;
+        CommunicationManager.Instance.Client.ProjectOverrideAdded += CommunicationManager.SafeEventHandler<ParameterEventArgs>(OnOverrideAddedOrUpdated);
+        CommunicationManager.Instance.Client.ProjectOverrideUpdated += CommunicationManager.SafeEventHandler<ParameterEventArgs>(OnOverrideAddedOrUpdated);
+        CommunicationManager.Instance.Client.ProjectOverrideRemoved += CommunicationManager.SafeEventHandler<ParameterEventArgs>(OnOverrideRemoved);
 
     }
 
     private void OnOverrideRemoved(object sender, ParameterEventArgs args) {
-        if (CurrentObject.TryGetParameter(args.Parameter.Name, out IO.Swagger.Model.Parameter parameter)) {
-            if (overrides.TryGetValue(args.Parameter.Name, out ActionObjectParameterOverride parameterOverride)) {
+        if (CurrentObject.TryGetParameter(args.Data.Name, out Arcor2.ClientSdk.Communication.OpenApi.Models.Parameter parameter)) {
+            if (overrides.TryGetValue(args.Data.Name, out ActionObjectParameterOverride parameterOverride)) {
                 parameterOverride.SetValue(Parameter.GetStringValue(parameter.Value, parameter.Type), false);
             }
         }
     }
 
     private void OnOverrideAddedOrUpdated(object sender, ParameterEventArgs args) {
-        if (overrides.TryGetValue(args.Parameter.Name, out ActionObjectParameterOverride parameterOverride)) {
-            parameterOverride.SetValue(Parameter.GetStringValue(args.Parameter.Value, args.Parameter.Type), true);
+        if (overrides.TryGetValue(args.Data.Name, out ActionObjectParameterOverride parameterOverride)) {
+            parameterOverride.SetValue(Parameter.GetStringValue(args.Data.Value, args.Data.Type), true);
         }
     }
     private void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
@@ -71,8 +74,8 @@ public class ActionObjectMenu : RightMenu<ActionObjectMenu> {
     }
 
     public async void DeleteActionObject() {
-        IO.Swagger.Model.RemoveFromSceneResponse response =
-            await WebsocketManager.Instance.RemoveFromScene(CurrentObject.Data.Id, false, false);
+       RemoveFromSceneResponse response =
+            await CommunicationManager.Instance.Client.RemoveActionObjectFromSceneAsync(new RemoveFromSceneRequestArgs(CurrentObject.Data.Id, false));
         if (!response.Result) {
             Notifications.Instance.ShowNotification("Failed to remove object " + CurrentObject.Data.Name, response.Messages[0]);
             return;
@@ -100,9 +103,9 @@ public class ActionObjectMenu : RightMenu<ActionObjectMenu> {
 
     public async void RenameObject(string newName) {
         try {
-            await WebsocketManager.Instance.RenameObject(CurrentObject.Data.Id, newName);
+            await CommunicationManager.Instance.Client.RenameActionObjectAsync(new RenameArgs(CurrentObject.Data.Id, newName));
             InputDialog.Close();
-        } catch (RequestFailedException e) {
+        } catch (Arcor2ConnectionException e) {
             Notifications.Instance.ShowNotification("Failed to rename object", e.Message);
         }
     }
@@ -200,12 +203,12 @@ public class ActionObjectMenu : RightMenu<ActionObjectMenu> {
 
 
     public async void SaveSceneObjectParameters() {
-        if (Base.Parameter.CheckIfAllValuesValid(objectParameters)) {
-            List<IO.Swagger.Model.Parameter> parameters = new List<IO.Swagger.Model.Parameter>();
+        if (Parameter.CheckIfAllValuesValid(objectParameters)) {
+            List<Arcor2.ClientSdk.Communication.OpenApi.Models.Parameter> parameters = new();
             foreach (IParameter p in objectParameters) {
-                if (CurrentObject.TryGetParameterMetadata(p.GetName(), out IO.Swagger.Model.ParameterMeta parameterMeta)) {
-                    IO.Swagger.Model.ParameterMeta metadata = parameterMeta;
-                    IO.Swagger.Model.Parameter ap = new IO.Swagger.Model.Parameter(name: p.GetName(), value: JsonConvert.SerializeObject(p.GetValue()), type: metadata.Type);
+                if (CurrentObject.TryGetParameterMetadata(p.GetName(), out ParameterMeta parameterMeta)) {
+                    ParameterMeta metadata = parameterMeta;
+                    Arcor2.ClientSdk.Communication.OpenApi.Models.Parameter ap = new(p.GetName(), value: JsonConvert.SerializeObject(p.GetValue()), type: metadata.Type);
                     parameters.Add(ap);
                 } else {
                     Notifications.Instance.ShowNotification("Failed to save parameters!", "");
@@ -215,11 +218,11 @@ public class ActionObjectMenu : RightMenu<ActionObjectMenu> {
             }
 
             try {
-                await WebsocketManager.Instance.UpdateObjectParameters(CurrentObject.Data.Id, parameters, false);
-                Base.Notifications.Instance.ShowToastMessage("Parameters saved");
+                await CommunicationManager.Instance.Client.UpdateActionObjectParametersAsync(new UpdateObjectParametersRequestArgs(CurrentObject.Data.Id, parameters));
+                Notifications.Instance.ShowToastMessage("Parameters saved");
                 parametersChanged = false;
                 UpdateSaveBtn();
-            } catch (RequestFailedException e) {
+            } catch (Arcor2ConnectionException e) {
                 Notifications.Instance.ShowNotification("Failed to update object parameters ", e.Message);
             }
         }
@@ -229,7 +232,7 @@ public class ActionObjectMenu : RightMenu<ActionObjectMenu> {
     public void OnChangeParameterHandler(string parameterId, object newValue, string type, bool isValueValid = true) {
         if (!isValueValid) {
             SaveParametersBtn.SetInteractivity(false, "Some parameter has invalid value");
-        } else if (CurrentObject.TryGetParameter(parameterId, out IO.Swagger.Model.Parameter parameter)) {
+        } else if (CurrentObject.TryGetParameter(parameterId, out Arcor2.ClientSdk.Communication.OpenApi.Models.Parameter parameter)) {
             try {
                 if (JsonConvert.SerializeObject(newValue) != parameter.Value) {
                     SaveParameters();

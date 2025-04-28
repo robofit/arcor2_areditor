@@ -1,19 +1,16 @@
-using System.Collections.Generic;
-using System.Linq;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
 using UnityEngine;
-using IO.Swagger.Model;
-using System.Threading.Tasks;
-using System.Collections;
-using Newtonsoft.Json;
-using UnityEngine.XR.ARSubsystems;
+using Debug = UnityEngine.Debug;
 
 namespace Base {
 
     public class ActionsManager : Singleton<ActionsManager> {
-
-        private Dictionary<string, ActionObjectMetadata> actionObjectsMetadata = new Dictionary<string, ActionObjectMetadata>();
-        
         public Action CurrentlyRunningAction = null;
         
         public event EventHandler OnServiceMetadataUpdated, OnActionsLoaded;
@@ -25,16 +22,18 @@ namespace Base {
 
         public GameObject InteractiveObjects;
 
-        public event AREditorEventArgs.StringListEventHandler OnObjectTypesAdded, OnObjectTypesRemoved, OnObjectTypesUpdated;
+        public event EventHandler<ObjectTypesEventArgs> OnObjectTypesAdded, OnObjectTypesRemoved, OnObjectTypesUpdated;
 
         public bool ActionsReady, ActionObjectsLoaded, AbstractOnlyObjects;
 
-        public Dictionary<string, RobotMeta> RobotsMeta = new Dictionary<string, RobotMeta>();
+        public Dictionary<string, RobotMeta> RobotsMeta = new();
 
 
         public Dictionary<string, ActionObjectMetadata> ActionObjectsMetadata {
-            get => actionObjectsMetadata; set => actionObjectsMetadata = value;
-        }
+            get;
+            set;
+        } = new();
+
         private void Awake() {
             ActionsReady = false;
             ActionObjectsLoaded = false;
@@ -48,10 +47,10 @@ namespace Base {
             Debug.Assert(ParameterRelPosePrefab != null);
             Debug.Assert(InteractiveObjects != null);
             Init();
-            WebsocketManager.Instance.OnDisconnectEvent += OnDisconnected;
-            WebsocketManager.Instance.OnObjectTypeAdded += ObjectTypeAdded;
-            WebsocketManager.Instance.OnObjectTypeRemoved += ObjectTypeRemoved;
-            WebsocketManager.Instance.OnObjectTypeUpdated += ObjectTypeUpdated;
+            CommunicationManager.Instance.Client.ConnectionClosed += CommunicationManager.SafeEventHandler<WebSocketCloseEventArgs>(OnDisconnected);
+            CommunicationManager.Instance.Client.ObjectTypeAdded += CommunicationManager.SafeEventHandler<ObjectTypesEventArgs>(ObjectTypeAdded);
+            CommunicationManager.Instance.Client.ObjectTypeRemoved += CommunicationManager.SafeEventHandler<ObjectTypesEventArgs>(ObjectTypeRemoved);
+            CommunicationManager.Instance.Client.ObjectTypeUpdated += CommunicationManager.SafeEventHandler<ObjectTypesEventArgs>(ObjectTypeUpdated);
         }
         
         private void OnDisconnected(object sender, EventArgs args) {
@@ -72,7 +71,7 @@ namespace Base {
         }
 
         public void Init() {
-            actionObjectsMetadata.Clear();
+            ActionObjectsMetadata.Clear();
             AbstractOnlyObjects = true;
             ActionsReady = false;
             ActionObjectsLoaded = false;
@@ -80,7 +79,7 @@ namespace Base {
 
         public bool HasObjectTypePose(string type) {
             if (!ActionObjectsMetadata.TryGetValue(type,
-            out Base.ActionObjectMetadata actionObjectMetadata)) {
+            out ActionObjectMetadata actionObjectMetadata)) {
                 throw new ItemNotFoundException("No object type " + type);
             }
             return actionObjectMetadata.HasPose;
@@ -96,21 +95,21 @@ namespace Base {
 
 
 
-        public void ObjectTypeRemoved(object sender, StringListEventArgs type) {
-            List<string> removed = new List<string>();
-            foreach (string item in type.Data) {
-                if (actionObjectsMetadata.ContainsKey(item)) {
-                    actionObjectsMetadata.Remove(item);
+        public void ObjectTypeRemoved(object sender, ObjectTypesEventArgs type) {
+            List<ObjectTypeMeta> removed = new();
+            foreach (var item in type.Data) {
+                if (ActionObjectsMetadata.ContainsKey(item.Type)) {
+                    ActionObjectsMetadata.Remove(item.Type);
                     removed.Add(item);
                 }
             }
             if (type.Data.Count > 0) {
                 AbstractOnlyObjects = true;
-                foreach (ActionObjectMetadata obj in actionObjectsMetadata.Values) {
+                foreach (ActionObjectMetadata obj in ActionObjectsMetadata.Values) {
                     if (AbstractOnlyObjects && !obj.Abstract)
                         AbstractOnlyObjects = false;
                 }
-                OnObjectTypesRemoved?.Invoke(this, new StringListEventArgs(new List<string>(removed)));
+                OnObjectTypesRemoved?.Invoke(this, new ObjectTypesEventArgs(removed));
             }
 
         }
@@ -119,9 +118,9 @@ namespace Base {
             ActionsReady = false;
             enabled = true;
             bool robotAdded = false;
-            List<string> added = new List<string>();
-            foreach (ObjectTypeMeta obj in args.ObjectTypes) {
-                ActionObjectMetadata m = new ActionObjectMetadata(meta: obj);
+            List<ObjectTypeMeta> added = new();
+            foreach (ObjectTypeMeta obj in args.Data) {
+                ActionObjectMetadata m = new(obj);
                 if (AbstractOnlyObjects && !m.Abstract)
                     AbstractOnlyObjects = false;
                 if (!m.Abstract && !m.BuiltIn)
@@ -131,15 +130,15 @@ namespace Base {
                 m.Robot = IsDescendantOfType("Robot", m);
                 m.Camera = IsDescendantOfType("Camera", m);
                 m.CollisionObject = IsDescendantOfType("VirtualCollisionObject", m);
-                actionObjectsMetadata.Add(obj.Type, m);
+                ActionObjectsMetadata.Add(obj.Type, m);
                 if (m.Robot)
                     robotAdded = true;
-                added.Add(obj.Type);
+                added.Add(obj);
             }
             if (robotAdded)
-                UpdateRobotsMetadata(await WebsocketManager.Instance.GetRobotMeta());
+                UpdateRobotsMetadata((await CommunicationManager.Instance.Client.GetRobotMetaAsync()).Data);
             
-            OnObjectTypesAdded?.Invoke(this, new StringListEventArgs(added));
+            OnObjectTypesAdded?.Invoke(this, new ObjectTypesEventArgs(added));
         }
 
         public bool AnyNonAbstractObject() {
@@ -151,9 +150,9 @@ namespace Base {
             ActionsReady = false;
             enabled = true;
             bool updatedRobot = false;
-            List<string> updated = new List<string>();
-            foreach (ObjectTypeMeta obj in args.ObjectTypes) {
-                if (actionObjectsMetadata.TryGetValue(obj.Type, out ActionObjectMetadata actionObjectMetadata)) {
+            List<ObjectTypeMeta> updated = new();
+            foreach (ObjectTypeMeta obj in args.Data) {
+                if (ActionObjectsMetadata.TryGetValue(obj.Type, out ActionObjectMetadata actionObjectMetadata)) {
                     actionObjectMetadata.Update(obj);
                     if (actionObjectMetadata.Robot)
                         updatedRobot = true;
@@ -163,7 +162,7 @@ namespace Base {
                         UpdateActionsOfActionObject(actionObjectMetadata);
                     else
                         actionObjectMetadata.ActionsLoaded = true;
-                    updated.Add(obj.Type);
+                    updated.Add(obj);
                     foreach (ActionObject updatedObj in SceneManager.Instance.GetAllObjectsOfType(obj.Type)) {
                         updatedObj.UpdateModel();
                     }
@@ -172,42 +171,43 @@ namespace Base {
                 }
             }
             if (updatedRobot)
-                UpdateRobotsMetadata(await WebsocketManager.Instance.GetRobotMeta());
-            OnObjectTypesUpdated?.Invoke(this, new StringListEventArgs(updated));
+                UpdateRobotsMetadata((await CommunicationManager.Instance.Client.GetRobotMetaAsync()).Data);
+            OnObjectTypesUpdated?.Invoke(this, new ObjectTypesEventArgs(updated));
         }
         
 
-        private void UpdateActionsOfActionObject(ActionObjectMetadata actionObject) {
+        private async void UpdateActionsOfActionObject(ActionObjectMetadata actionObject) {
             if (!actionObject.Disabled)
                 try {
-                    WebsocketManager.Instance.GetActions(actionObject.Type, GetActionsCallback);                    
-                } catch (RequestFailedException e) {
+                    var response = await CommunicationManager.Instance.Client.GetActionsAsync(new TypeArgs(actionObject.Type));
+                    if (!response.Result) {
+                        Debug.LogError("Failed to load action for object " + actionObject.Type);
+                        Notifications.Instance.ShowNotification("Failed to load actions", "Failed to load action for object " + actionObject.Type);
+                        Notifications.Instance.SaveLogs();
+                        return;
+                    }
+                    if (ActionObjectsMetadata.TryGetValue(actionObject.Type, out ActionObjectMetadata actionObj)) {
+                        actionObj.ActionsMetadata = ParseActions(response.Data);
+                        if (actionObj.ActionsMetadata == null) {
+                            actionObj.Disabled = true;
+                            actionObj.Problem = "Failed to load actions";
+                        }
+                        actionObj.ActionsLoaded = true;
+                    }
+                } catch (Arcor2ConnectionException e) {
                     Debug.LogError("Failed to load action for object " + actionObject.Type);
                     Notifications.Instance.ShowNotification("Failed to load actions", "Failed to load action for object " + actionObject.Type);
                     Notifications.Instance.SaveLogs();
                 }            
         }
 
-        public void GetActionsCallback(string actionName, string data) {
-            IO.Swagger.Model.GetActionsResponse getActionsResponse = JsonConvert.DeserializeObject<IO.Swagger.Model.GetActionsResponse>(data);
-            if (actionObjectsMetadata.TryGetValue(actionName, out ActionObjectMetadata actionObject)) {
-                actionObject.ActionsMetadata = ParseActions(getActionsResponse.Data);
-                if (actionObject.ActionsMetadata == null) {
-                    actionObject.Disabled = true;
-                    actionObject.Problem = "Failed to load actions";
-                }
-                actionObject.ActionsLoaded = true;
-            }
-        }
-        
-
-        private Dictionary<string, ActionMetadata> ParseActions(List<IO.Swagger.Model.ObjectAction> actions) {
+        private Dictionary<string, ActionMetadata> ParseActions(List<ObjectAction> actions) {
             if (actions == null) {
                 return null;
             }
-            Dictionary<string, ActionMetadata> metadata = new Dictionary<string, ActionMetadata>();
-            foreach (IO.Swagger.Model.ObjectAction action in actions) {
-                ActionMetadata a = new ActionMetadata(action);
+            Dictionary<string, ActionMetadata> metadata = new();
+            foreach (ObjectAction action in actions) {
+                ActionMetadata a = new(action);
                 metadata[a.Name] = a;
             }
             return metadata;
@@ -216,20 +216,20 @@ namespace Base {
             
         }
 
-        public void UpdateObjects(List<IO.Swagger.Model.ObjectTypeMeta> newActionObjectsMetadata) {
+        public void UpdateObjects(List<ObjectTypeMeta> newActionObjectsMetadata) {
             ActionsReady = false;
-            actionObjectsMetadata.Clear();
-            foreach (IO.Swagger.Model.ObjectTypeMeta metadata in newActionObjectsMetadata) {
-                ActionObjectMetadata m = new ActionObjectMetadata(meta: metadata);
+            ActionObjectsMetadata.Clear();
+            foreach (ObjectTypeMeta metadata in newActionObjectsMetadata) {
+                ActionObjectMetadata m = new(metadata);
                 if (AbstractOnlyObjects && !m.Abstract)
                     AbstractOnlyObjects = false;
                 if (!m.Abstract && !m.BuiltIn)
                     UpdateActionsOfActionObject(m);
                 else
                     m.ActionsLoaded = true;
-                actionObjectsMetadata.Add(metadata.Type, m);
+                ActionObjectsMetadata.Add(metadata.Type, m);
             }
-            foreach (KeyValuePair<string, ActionObjectMetadata> kv in actionObjectsMetadata) {
+            foreach (KeyValuePair<string, ActionObjectMetadata> kv in ActionObjectsMetadata) {
                 kv.Value.Robot = IsDescendantOfType("Robot", kv.Value);
                 kv.Value.Camera = IsDescendantOfType("Camera", kv.Value);
                 kv.Value.CollisionObject = IsDescendantOfType("VirtualCollisionObject", kv.Value);
@@ -244,7 +244,7 @@ namespace Base {
                 return true;
             if (actionObjectMetadata.Type == "Generic")
                 return false;
-            foreach (KeyValuePair<string, ActionObjectMetadata> kv in actionObjectsMetadata) {
+            foreach (KeyValuePair<string, ActionObjectMetadata> kv in ActionObjectsMetadata) {
                 if (kv.Key == actionObjectMetadata.Base) {
                     return IsDescendantOfType(type, kv.Value);
                 }
@@ -253,19 +253,19 @@ namespace Base {
         }
 
         public void WaitUntilActionsReady(int timeout) {
-            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+            Stopwatch sw = new();
             sw.Start();
             while (!ActionsReady) {
                 if (sw.ElapsedMilliseconds > timeout)
                     throw new TimeoutException();
-                System.Threading.Thread.Sleep(100);
+                Thread.Sleep(100);
             }
         }
 
         public Dictionary<IActionProvider, List<ActionMetadata>> GetAllActions() {
-            Dictionary<IActionProvider, List<ActionMetadata>> actionsMetadata = new Dictionary<IActionProvider, List<ActionMetadata>>();
+            Dictionary<IActionProvider, List<ActionMetadata>> actionsMetadata = new();
             foreach (ActionObject ao in SceneManager.Instance.ActionObjects.Values) {               
-                if (!actionObjectsMetadata.TryGetValue(ao.Data.Type, out ActionObjectMetadata aom)) {
+                if (!ActionObjectsMetadata.TryGetValue(ao.Data.Type, out ActionObjectMetadata aom)) {
                     continue;
                 }
                 if (aom.ActionsMetadata.Count > 0) {
@@ -274,9 +274,6 @@ namespace Base {
             }
             return actionsMetadata;
         }
-
-
-        
     }
 }
 

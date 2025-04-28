@@ -1,24 +1,20 @@
-using System.Collections.Generic;
-using UnityEngine;
 using System;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
-using System.Globalization;
-using UnityEngine.UI;
-using UnityEngine.Events;
-using Michsky.UI.ModernUIPack;
-using IO.Swagger.Model;
-using TMPro;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
+using Newtonsoft.Json;
+using TMPro;
+using UnityEngine;
+using UnityEngine.Events;
 
 namespace Base
 {
     public abstract class Action : InteractiveObject
     {
         // Metadata of this Action
-        private ActionMetadata metadata;
         // Dictionary of all action parameters for this Action
-        private Dictionary<string, Parameter> parameters = new Dictionary<string, Parameter>();
 
         public InputOutput Input;
         public PuckOutput Output;
@@ -26,18 +22,18 @@ namespace Base
 
         public ActionPoint ActionPoint;
 
-        public IO.Swagger.Model.Action Data = null;
+        public Arcor2.ClientSdk.Communication.OpenApi.Models.Action Data = null;
 
         public TextMeshPro NameText;
 
 
         public bool ActionBeingExecuted = false;
 
-        public virtual void Init(IO.Swagger.Model.Action projectAction, ActionMetadata metadata, ActionPoint ap, IActionProvider actionProvider)
+        public virtual void Init(Arcor2.ClientSdk.Communication.OpenApi.Models.Action projectAction, ActionMetadata metadata, ActionPoint ap, IActionProvider actionProvider)
         {
 
             ActionPoint = ap;
-            this.metadata = metadata;
+            Metadata = metadata;
             ActionProvider = actionProvider;
             Data = projectAction;
             UpdateName(Data.Name);
@@ -46,17 +42,17 @@ namespace Base
             SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
         }
 
-        public virtual void ActionUpdateBaseData(IO.Swagger.Model.BareAction action)
+        public virtual void ActionUpdateBaseData(BareAction action)
         {
             Data.Name = action.Name;
             SelectorItem.SetText(action.Name);
         }
 
-        public virtual void ActionUpdate(IO.Swagger.Model.Action action, bool updateConnections = false)
+        public virtual void ActionUpdate(Arcor2.ClientSdk.Communication.OpenApi.Models.Action action, bool updateConnections = false)
         {
 
             // Updates (or creates new) parameters of current action
-            foreach (IO.Swagger.Model.ActionParameter projectActionParameter in action.Parameters)
+            foreach (ActionParameter projectActionParameter in action.Parameters)
             {
                 try
                 {
@@ -69,7 +65,7 @@ namespace Base
                     else
                     {
                         // Loads metadata of specified action parameter - projectActionParameter. Action.Metadata is created when creating Action.
-                        IO.Swagger.Model.ParameterMeta actionParameterMetadata = Metadata.GetParamMetadata(projectActionParameter.Name);
+                        ParameterMeta actionParameterMetadata = Metadata.GetParamMetadata(projectActionParameter.Name);
 
                         actionParameter = new Parameter(actionParameterMetadata, projectActionParameter.Type, projectActionParameter.Value);
                         Parameters.Add(actionParameter.Name, actionParameter);
@@ -96,7 +92,7 @@ namespace Base
 
         public string GetActionType()
         {
-            return ActionProvider.GetProviderType() + "/" + metadata.Name; //TODO: AO|Service/Id
+            return ActionProvider.GetProviderType() + "/" + Metadata.Name; //TODO: AO|Service/Id
         }
 
         public void DeleteAction()
@@ -106,14 +102,14 @@ namespace Base
             ActionPoint.Actions.Remove(Data.Id);
         }
 
-        public Dictionary<string, Parameter> Parameters
-        {
-            get => parameters; set => parameters = value;
-        }
+        public Dictionary<string, Parameter> Parameters {
+            get;
+            set;
+        } = new();
 
-        public ActionMetadata Metadata
-        {
-            get => metadata; set => metadata = value;
+        public ActionMetadata Metadata {
+            get;
+            set;
         }
 
         public virtual void RunAction()
@@ -182,7 +178,7 @@ namespace Base
                 int howManyConditions = 0;
 
                 // kterej connection chci, případně chci vytvořit novej
-                Dictionary<string, LogicItem> items = new Dictionary<string, LogicItem>();
+                Dictionary<string, LogicItem> items = new();
                 foreach (LogicItem logicItem in Output.GetLogicItems())
                 {
                     Action start = ProjectManager.Instance.GetAction(logicItem.Data.Start);
@@ -254,7 +250,7 @@ namespace Base
 
         protected async virtual void GetOtherAction(object otherAction)
         {
-            Base.Action input = (Base.Action)otherAction;
+            Action input = (Action)otherAction;
 
             if (otherAction == null || input == null)
             {
@@ -263,11 +259,11 @@ namespace Base
             }
             try
             {
-                await WebsocketManager.Instance.AddLogicItem(GetId(), input.GetId(), GetProjectLogicIf(), false);
+                await CommunicationManager.Instance.Client.AddLogicItemAsync(new AddLogicItemRequestArgs(GetId(), input.GetId(), GetProjectLogicIf()));
                 Output.ifValue = null;
                 ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();
             }
-            catch (RequestFailedException ex)
+            catch (Arcor2ConnectionException ex)
             {
                 Debug.LogError(ex);
                 Notifications.Instance.SaveLogs("Failed to add connection");
@@ -277,9 +273,9 @@ namespace Base
 
         private async Task<RequestResult> ValidateInput(object selectedInput)
         {
-            if (selectedInput is Base.Action action)
+            if (selectedInput is Action action)
             {
-                RequestResult result = new RequestResult(true, "");
+                RequestResult result = new(true, "");
                 if (!await ConnectionManagerArcoro.Instance.ValidateConnection(Output, action.Input, GetProjectLogicIf()))
                 {
                     result.Success = false;
@@ -294,13 +290,13 @@ namespace Base
 
         }
 
-        private IO.Swagger.Model.ProjectLogicIf GetProjectLogicIf()
+        private ProjectLogicIf GetProjectLogicIf()
         {
             if (Output.ifValue is null)
                 return null;
             List<Flow> flows = GetFlows();
             string flowName = flows[0].Type.GetValueOrDefault().ToString().ToLower();
-            IO.Swagger.Model.ProjectLogicIf projectLogicIf = new ProjectLogicIf(value: JsonConvert.SerializeObject(Output.ifValue), what: $"{GetId()}/{flowName}/0");
+            ProjectLogicIf projectLogicIf = new(value: JsonConvert.SerializeObject(Output.ifValue), what: $"{GetId()}/{flowName}/0");
             return projectLogicIf;
         }
 
@@ -328,12 +324,12 @@ namespace Base
                     else
                         otherAction = ProjectManager.Instance.GetAction(logicItem.Data.Start);
                     GameManager.Instance.ShowLoadingScreen("Removing old connection...");
-                    await WebsocketManager.Instance.RemoveLogicItem(logicItem.Data.Id);
+                    await CommunicationManager.Instance.Client.RemoveLogicItemAsync(new RemoveLogicItemRequestArgs(logicItem.Data.Id));
                     GameManager.Instance.HideLoadingScreen();
                     AddConnection();
 
                 }
-                catch (RequestFailedException ex)
+                catch (Arcor2ConnectionException ex)
                 {
                     GameManager.Instance.HideLoadingScreen();
                     Notifications.Instance.ShowNotification("Failed to remove connection", ex.Message);
@@ -355,7 +351,7 @@ namespace Base
             }
         }
 
-        public void UpdateRotation(Base.Action otherAction)
+        public void UpdateRotation(Action otherAction)
         {
             if (otherAction != null && (otherAction.transform.position - transform.position).magnitude > 0.0001)
             {

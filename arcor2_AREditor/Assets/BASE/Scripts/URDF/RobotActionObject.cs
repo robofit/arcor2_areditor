@@ -1,21 +1,20 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using IO.Swagger.Model;
-using RosSharp.Urdf;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
 using TMPro;
 using UnityEngine;
+using Joint = Arcor2.ClientSdk.Communication.OpenApi.Models.Joint;
 
 namespace Base {
 
     [RequireComponent(typeof(OutlineOnClick))]
     [RequireComponent(typeof(Target))]
     public class RobotActionObject : ActionObject, IRobot {
-        
+
         public TextMeshPro ActionObjectName;
         public GameObject RobotPlaceholderPrefab;
         public GameObject LockIcon;
@@ -34,21 +33,19 @@ namespace Base {
         }
         public bool manipulationStarted {
             get;
-            private set;
         }
         public bool updatePose {
             get;
-            private set;
         }
 
         private bool robotVisible = false;
 
-        private Dictionary<string, List<RobotEE>> EndEffectors = new Dictionary<string, List<RobotEE>>();
-        
+        private Dictionary<string, List<RobotEE>> EndEffectors = new();
+
         private GameObject RobotPlaceholder;
 
-        private List<Renderer> robotRenderers = new List<Renderer>();
-        private List<Collider> robotColliders = new List<Collider>();
+        private List<Renderer> robotRenderers = new();
+        private List<Collider> robotColliders = new();
 
         private bool transparent = false;
         private bool ghost = false;
@@ -84,7 +81,7 @@ namespace Base {
             if (HasUrdf() && RobotModel != null)
                 SetDefaultJoints();
 
-            if (args.Event.State == SceneStateData.StateEnum.Stopped) {
+            if (args.Data.State == SceneStateData.StateEnum.Stopped) {
                 HideRobotEE();
             }
         }
@@ -101,9 +98,9 @@ namespace Base {
             SceneManager.Instance.OnHideRobotsEE += OnHideRobotsEE;
             SceneManager.Instance.OnSceneStateEvent += OnSceneStateEvent;
         }
-        
+
         private void OnShowRobotsEE(object sender, EventArgs e) {
-            _ = EnableVisualisationOfEE();            
+            _ = EnableVisualisationOfEE();
         }
 
         private void OnHideRobotsEE(object sender, EventArgs e) {
@@ -116,8 +113,12 @@ namespace Base {
 
         private async void UpdatePose() {
             try {
-                await WebsocketManager.Instance.UpdateActionObjectPose(Data.Id, GetPose());
-            } catch (RequestFailedException e) {
+                var response = await CommunicationManager.Instance.Client.UpdateActionObjectPoseAsync(new UpdateObjectPoseRequestArgs(Data.Id, GetPose()));
+                if (!response.Result) {
+                    Notifications.Instance.ShowNotification("Failed to update action object pose", string.Join(",", response.Messages));
+                    ResetPosition();
+                }
+            } catch (Arcor2ConnectionException e) {
                 Notifications.Instance.ShowNotification("Failed to update action object pose", e.Message);
                 ResetPosition();
             }
@@ -127,7 +128,7 @@ namespace Base {
             foreach (List<RobotEE> eeList in EndEffectors.Values)
                 foreach (RobotEE ee in eeList) {
                     ee.gameObject.SetActive(true);
-                }            
+                }
         }
 
         public void HideRobotEE() {
@@ -139,8 +140,8 @@ namespace Base {
                         continue;
                     }
                 }
-                               
-            }           
+
+            }
         }
 
         public async Task DisableVisualisationOfEE() {
@@ -148,11 +149,11 @@ namespace Base {
                 return;
             eeVisible = false;
             if (EndEffectors.Count > 0) {
-                await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), false, RegisterForRobotEventRequestArgs.WhatEnum.Eefpose);
+                await CommunicationManager.Instance.Client.RegisterForRobotEventAsync(new RegisterForRobotEventRequestArgs(GetId(), RegisterForRobotEventRequestArgs.WhatEnum.EefPose, false));
                 HideRobotEE();
             }
         }
-        
+
 
         public async Task EnableVisualisationOfEE() {
             if (eeVisible)
@@ -161,13 +162,13 @@ namespace Base {
             if (!ResourcesLoaded)
                 await LoadResources();
             if (EndEffectors.Count > 0) {
-                await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventRequestArgs.WhatEnum.Eefpose);
+                await CommunicationManager.Instance.Client.RegisterForRobotEventAsync(new RegisterForRobotEventRequestArgs(GetId(), RegisterForRobotEventRequestArgs.WhatEnum.EefPose, true));
                 ShowRobotEE();
             }
         }
-        
 
-        public async override void InitActionObject(IO.Swagger.Model.SceneObject sceneObject, Vector3 position, Quaternion orientation, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null, bool loadResources = true) {
+
+        public async override void InitActionObject(SceneObject sceneObject, Vector3 position, Quaternion orientation, ActionObjectMetadata actionObjectMetadata, CollisionModels customCollisionModels = null, bool loadResources = true) {
             base.InitActionObject(sceneObject, position, orientation, actionObjectMetadata);
 
             // if there should be an urdf robot model
@@ -176,7 +177,7 @@ namespace Base {
                 if (!string.IsNullOrEmpty(robotMeta.UrdfPackageFilename)) {
                     // Get the robot model, if it returns null, the robot will be loading itself
                     RobotModel = UrdfManager.Instance.GetRobotModelInstance(robotMeta.Type, robotMeta.UrdfPackageFilename);
-                
+
                     if (RobotModel != null) {
                         RobotModelLoaded();
                     } else {
@@ -186,7 +187,7 @@ namespace Base {
                     }
                 }
             }
-            
+
             ResourcesLoaded = false;
         }
 
@@ -196,9 +197,9 @@ namespace Base {
             if (args.RobotType == Data.Type) {
                 // if so, lets ask UrdfManager for the robot model
                 RobotModel = UrdfManager.Instance.GetRobotModelInstance(Data.Type);
-               
+
                 RobotModelLoaded();
-                
+
                 // if robot is loaded, unsubscribe from UrdfManager event
                 UrdfManager.Instance.OnRobotUrdfModelLoaded -= OnRobotModelLoaded;
                 modelLoading = false;
@@ -234,7 +235,7 @@ namespace Base {
 
             SetOutlineSizeBasedOnScale();
 
-            SetVisibility(visibility, forceShaderChange: true);
+            SetVisibility(visibility, true);
 
             SetDefaultJoints();
 
@@ -251,7 +252,7 @@ namespace Base {
             }
 
             if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning || GameManager.Instance.GetGameState() != GameManager.GameStateEnum.LoadingPackage)
-                await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
+                await CommunicationManager.Instance.Client.RegisterForRobotEventAsync(new RegisterForRobotEventRequestArgs(GetId(), RegisterForRobotEventRequestArgs.WhatEnum.Joints, true));
         }
 
         private void SetOutlineSizeBasedOnScale() {
@@ -409,7 +410,7 @@ namespace Base {
 
         public async Task<List<string>> GetEndEffectorIds(string arm_id = null) {
             await LoadResources();
-            List<string> result = new List<string>();
+            List<string> result = new();
             if (string.IsNullOrEmpty(arm_id)) {
                 foreach (List<RobotEE> eeList in EndEffectors.Values) {
                     foreach (RobotEE ee in eeList) {
@@ -423,7 +424,7 @@ namespace Base {
             } else {
                 throw new KeyNotFoundException($"Robot {GetName()} does not contain arm {arm_id}");
             }
-            
+
             return result;
         }
 
@@ -437,7 +438,7 @@ namespace Base {
             return Task.Run(() => {
                 while (true) {
                     if (ResourcesLoaded) {
-                        return true; 
+                        return true;
                     } else if (!loadingEndEffectors) {
                         return false;
                     } else {
@@ -466,31 +467,54 @@ namespace Base {
             }
             GameManager.Instance.ShowLoadingScreen("Loading end effectors of robot " + Data.Name);
             try {
-                Dictionary<string, List<string>> endEffectors = new Dictionary<string, List<string>>();
-                
+                Dictionary<string, List<string>> endEffectors = new();
+
                 if (RobotMeta.MultiArm) {
-                    List<string> arms = await WebsocketManager.Instance.GetRobotArms(Data.Id);
+                    List<string> arms;
+                    var response = await CommunicationManager.Instance.Client.GetRobotArmsAsync(new GetRobotArmsRequestArgs(Data.Id));
+                    if (!response.Result) {
+                        Debug.LogError(string.Join(',', response.Messages));
+                        Notifications.Instance.ShowNotification("Failed to load end effectors", string.Join(',', response.Messages));
+                        return false;
+                    } else {
+                        arms = response.Data;
+                    }
+
                     foreach (string arm in arms) {
-                        endEffectors[arm] = await WebsocketManager.Instance.GetEndEffectors(Data.Id, arm);
+                        var responseEef = await CommunicationManager.Instance.Client.GetRobotEndEffectorsAsync(new GetEndEffectorsRequestArgs(Data.Id, arm));
+                        if (!responseEef.Result) {
+                            Debug.LogError(string.Join(',', responseEef.Messages));
+                            Notifications.Instance.ShowNotification("Failed to load end effectors", string.Join(',', responseEef.Messages));
+                            return false;
+                        } else {
+                            endEffectors[arm] = responseEef.Data;
+                        }
                     }
                 } else {
-                    endEffectors["default"] = await WebsocketManager.Instance.GetEndEffectors(Data.Id);
+                    var response = await CommunicationManager.Instance.Client.GetRobotEndEffectorsAsync(new GetEndEffectorsRequestArgs(Data.Id));
+                    if (!response.Result) {
+                        Debug.LogError(string.Join(',', response.Messages));
+                        Notifications.Instance.ShowNotification("Failed to load end effectors", string.Join(',', response.Messages));
+                        return false;
+                    } else {
+                        endEffectors["default"] = response.Data;
+                    }
                 }
                 foreach (KeyValuePair<string, List<string>> eeList in endEffectors) {
                     foreach (string eeId in eeList.Value) {
                         CreateEndEffector(eeList.Key, eeId);
                     }
                 }
-                
+
                 return true;
-            } catch (RequestFailedException ex) {
+            } catch (Arcor2ConnectionException ex) {
                 Debug.LogError(ex.Message);
                 Notifications.Instance.ShowNotification("Failed to load end effectors", ex.Message);
                 return false;
             } finally {
                 loadingEndEffectors = false;
                 GameManager.Instance.HideLoadingScreen();
-            }            
+            }
         }
 
         private RobotEE CreateEndEffector(string armId, string eeId) {
@@ -534,7 +558,7 @@ namespace Base {
         }
 
         public bool HasUrdf() {
-            if (Base.ActionsManager.Instance.RobotsMeta.TryGetValue(Data.Type, out RobotMeta robotMeta)) {
+            if (ActionsManager.Instance.RobotsMeta.TryGetValue(Data.Type, out RobotMeta robotMeta)) {
                 return !string.IsNullOrEmpty(robotMeta.UrdfPackageFilename);
             }
             return false;
@@ -576,7 +600,7 @@ namespace Base {
             ActionObjectName.text = newUserId;
         }
 
-        public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger) {
+        public override void ActionObjectUpdate(SceneObject actionObjectSwagger) {
             base.ActionObjectUpdate(actionObjectSwagger);
             ActionObjectName.text = actionObjectSwagger.Name;
             // update label on each end effector
@@ -621,10 +645,10 @@ namespace Base {
         /// <param name="joints">List of joints with new angle values.</param>
         /// <param name="angle_in_degrees">Whether the joint angle is in degrees.</param>
         /// <param name="forceJointsValidCheck">If true, check for valid joint names will be called even if previous one failed.</param>
-        public void SetJointValue(List<IO.Swagger.Model.Joint> joints, bool angle_in_degrees = false, bool forceJointsValidCheck = false) {
+        public void SetJointValue(List<Joint> joints, bool angle_in_degrees = false, bool forceJointsValidCheck = false) {
             if (RobotModel != null && (jointStateSubscribeIsValid || forceJointsValidCheck)) {
                 if (CheckJointsAreValid(joints)) {
-                    foreach (IO.Swagger.Model.Joint joint in joints) {
+                    foreach (Joint joint in joints) {
                         SetJointValue(joint.Name, (float) joint.Value);
                     }
                     jointStateSubscribeIsValid = true;
@@ -640,10 +664,10 @@ namespace Base {
         /// </summary>
         /// <param name="joints"></param>
         /// <returns>True if joints have equal names, false if not.</returns>
-        public bool CheckJointsAreValid(List<IO.Swagger.Model.Joint> joints) {
+        public bool CheckJointsAreValid(List<Joint> joints) {
             if (RobotModel != null) {
-                List<string> receivedJoints = new List<string>();
-                foreach (IO.Swagger.Model.Joint joint in joints) {
+                List<string> receivedJoints = new();
+                foreach (Joint joint in joints) {
                     receivedJoints.Add(joint.Name);
                 }
 
@@ -658,7 +682,7 @@ namespace Base {
                 } else {
                     return true;
                 }
-            } 
+            }
             return false;
         }
 
@@ -672,20 +696,19 @@ namespace Base {
             RobotModel?.SetJointAngle(name, angle, angle_in_degrees);
         }
 
-        public List<IO.Swagger.Model.Joint> GetJoints() {
+        public List<Joint> GetJoints() {
             if (RobotModel == null) {
                 // if urdf model is still loading, return empty joint list
                 if (modelLoading) {
-                    return new List<IO.Swagger.Model.Joint>();
+                    return new List<Joint>();
                 } else {
-                    throw new RequestFailedException("Model not found for this robot.");
+                    throw new Arcor2ConnectionException("Model not found for this robot.");
                 }
-            }
-            else
+            } else
                 return RobotModel.GetJoints();
         }
 
-	    public override void DeleteActionObject() {
+        public override void DeleteActionObject() {
             UnloadRobotModel();
             UrdfManager.Instance.OnRobotUrdfModelLoaded -= OnRobotModelLoaded;
             modelLoading = false;
@@ -745,7 +768,7 @@ namespace Base {
 
         public async Task<List<RobotEE>> GetAllEE() {
             await LoadResources();
-            List<RobotEE> eeList = new List<RobotEE>();
+            List<RobotEE> eeList = new();
             foreach (List<RobotEE> ee in EndEffectors.Values)
                 eeList.AddRange(ee);
             return eeList;

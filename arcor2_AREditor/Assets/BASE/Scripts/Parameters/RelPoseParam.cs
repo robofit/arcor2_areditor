@@ -1,23 +1,26 @@
+using Base;
 using Michsky.UI.ModernUIPack;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
+using Pose = Arcor2.ClientSdk.Communication.OpenApi.Models.Pose;
 
-public class PoseEvent : UnityEvent<IO.Swagger.Model.Pose> {
+public class PoseEvent : UnityEvent<Pose> {
 
 }
 
 public class RelPoseParam : MonoBehaviour, IParameter {
 
     [SerializeField]
-    private TMPro.TMP_Text label;
+    private TMP_Text label;
     private TooltipContent tooltipContent;
 
     [SerializeField]
     private LabeledInput posX, posY, posZ, orX, orY, orZ, orW;
 
-    public PoseEvent OnValueChangedEvent = new PoseEvent();
+    public PoseEvent OnValueChangedEvent = new();
 
-    private IO.Swagger.Model.Pose pose = null;
+    private Pose pose = null;
 
     private void Awake() {
         Debug.Assert(label != null);
@@ -29,8 +32,8 @@ public class RelPoseParam : MonoBehaviour, IParameter {
         Debug.Assert(orZ != null);
         Debug.Assert(orW != null);
         tooltipContent = label.GetComponent<TooltipContent>();
-        tooltipContent.tooltipRect = Base.GameManager.Instance.Tooltip;
-        tooltipContent.descriptionText = Base.GameManager.Instance.Text;
+        tooltipContent.tooltipRect = GameManager.Instance.Tooltip;
+        tooltipContent.descriptionText = GameManager.Instance.Text;
     }
 
 
@@ -42,8 +45,8 @@ public class RelPoseParam : MonoBehaviour, IParameter {
         return GetPose();
     }
 
-    public IO.Swagger.Model.Pose GetPose() {
-        return this.pose;
+    public Pose GetPose() {
+        return pose;
         /*double posXValue = (double) posX.GetValue(),
                     posYValue = (double) posY.GetValue(),
                     posZValue = (double) posZ.GetValue(),
@@ -61,7 +64,7 @@ public class RelPoseParam : MonoBehaviour, IParameter {
     }
 
     public void SetValue(object value) {
-        IO.Swagger.Model.Pose pose = (IO.Swagger.Model.Pose) value;
+        var pose = (Pose) value;
         this.pose = pose;
         posX.SetValue(pose.Position.X);
         posY.SetValue(pose.Position.Y);

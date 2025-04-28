@@ -1,25 +1,29 @@
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using System.Linq;
-using UnityEngine.UI;
-using Newtonsoft.Json;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
 using Base;
-using IO.Swagger.Model;
+using Newtonsoft.Json;
+using UnityEngine;
+using UnityEngine.UI;
+using Action = System.Action;
+using ActionPoint = Base.ActionPoint;
+using Parameter = Base.Parameter;
+using Pose = Arcor2.ClientSdk.Communication.OpenApi.Models.Pose;
 
 public class AddNewActionObjectDialog : Dialog {
     public GameObject DynamicContent, CanvasRoot;
     public VerticalLayoutGroup DynamicContentLayout;
 
-    private Base.ActionObjectMetadata actionObjectMetadata;
-    private Dictionary<string, Base.ParameterMetadata> parametersMetadata = new Dictionary<string, Base.ParameterMetadata>();
-    private List<IParameter> actionParameters = new List<IParameter>();
-    public Base.ActionPoint CurrentActionPoint;
+    private ActionObjectMetadata actionObjectMetadata;
+    private Dictionary<string, ParameterMetadata> parametersMetadata = new();
+    private List<IParameter> actionParameters = new();
+    public ActionPoint CurrentActionPoint;
     private IActionProvider actionProvider;
     [SerializeField]
     private LabeledInput nameInput;
     private GameObject overlay;
-    private System.Action callback = null;
+    private Action callback = null;
 
 
     private void Init() {
@@ -31,10 +35,10 @@ public class AddNewActionObjectDialog : Dialog {
     /// </summary>
     /// <param name="metadata"></param>
     /// <param name="callback">Function to be called if adding action object was successful</param>
-    public void InitFromMetadata(Base.ActionObjectMetadata metadata, System.Action callback = null) {
+    public void InitFromMetadata(ActionObjectMetadata metadata, Action callback = null) {
         InitDialog(metadata);
-        actionParameters = Base.Parameter.InitParameters(parametersMetadata.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, false, false, null, null);
-        nameInput.SetValue(Base.SceneManager.Instance.GetFreeAOName(metadata.Type));
+        actionParameters = Parameter.InitParameters(parametersMetadata.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, false, false, null, null);
+        nameInput.SetValue(SceneManager.Instance.GetFreeAOName(metadata.Type));
         this.callback = callback;
     }
 
@@ -42,7 +46,7 @@ public class AddNewActionObjectDialog : Dialog {
         actionObjectMetadata = metadata;
         
         parametersMetadata = new Dictionary<string, ParameterMetadata>();
-        foreach (IO.Swagger.Model.ParameterMeta meta in metadata.Settings) {
+        foreach (ParameterMeta meta in metadata.Settings) {
             parametersMetadata.Add(meta.Name, new ParameterMetadata(meta));
         }
 
@@ -62,29 +66,29 @@ public class AddNewActionObjectDialog : Dialog {
     public async void CreateActionObject() {
         string newActionObjectName = (string) nameInput.GetValue();
 
-        if (Base.Parameter.CheckIfAllValuesValid(actionParameters)) {
-            List<IO.Swagger.Model.Parameter> parameters = new List<IO.Swagger.Model.Parameter>();
+        if (Parameter.CheckIfAllValuesValid(actionParameters)) {
+            List<Arcor2.ClientSdk.Communication.OpenApi.Models.Parameter> parameters = new();
             foreach (IParameter actionParameter in actionParameters) {
-                if (!parametersMetadata.TryGetValue(actionParameter.GetName(), out Base.ParameterMetadata actionParameterMetadata)) {
-                    Base.Notifications.Instance.ShowNotification("Failed to create new action object", "Failed to get metadata for action object parameter: " + actionParameter.GetName());
+                if (!parametersMetadata.TryGetValue(actionParameter.GetName(), out ParameterMetadata actionParameterMetadata)) {
+                    Notifications.Instance.ShowNotification("Failed to create new action object", "Failed to get metadata for action object parameter: " + actionParameter.GetName());
                     return;
                 }
-                IO.Swagger.Model.ActionParameter ap = new IO.Swagger.Model.ActionParameter(name: actionParameter.GetName(), value: JsonConvert.SerializeObject(actionParameter.GetValue()), type: actionParameterMetadata.Type);
+                ActionParameter ap = new(actionParameter.GetName(), value: JsonConvert.SerializeObject(actionParameter.GetValue()), type: actionParameterMetadata.Type);
                 parameters.Add(DataHelper.ActionParameterToParameter(ap));
             }
             try {
                 Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
                 Vector3 point = TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(ray.GetPoint(0.5f)));
-                IO.Swagger.Model.Pose pose = null;
+                Pose pose = null;
                 if (actionObjectMetadata.HasPose)
-                    pose = new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(point), orientation: DataHelper.QuaternionToOrientation(Quaternion.identity));
+                    pose = new Pose(DataHelper.Vector3ToPosition(point), DataHelper.QuaternionToOrientation(Quaternion.identity));
                 SceneManager.Instance.SelectCreatedActionObject = newActionObjectName;
                 
-                await Base.WebsocketManager.Instance.AddObjectToScene(newActionObjectName, actionObjectMetadata.Type, pose, parameters);
+                await CommunicationManager.Instance.Client.AddActionObjectToSceneAsync(new AddObjectToSceneRequestArgs(newActionObjectName, actionObjectMetadata.Type, pose, parameters));
                 callback?.Invoke();
                 Close();
-            } catch (Base.RequestFailedException e) {
-                Base.Notifications.Instance.ShowNotification("Failed to add action", e.Message);
+            } catch (Arcor2ConnectionException e) {
+                Notifications.Instance.ShowNotification("Failed to add action", e.Message);
             }
         }
     }

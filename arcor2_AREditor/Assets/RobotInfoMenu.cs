@@ -1,9 +1,12 @@
+using System;
+using Arcor2.ClientSdk.Communication;
 using Base;
+using TMPro;
 using UnityEngine;
 
 public class RobotInfoMenu : Singleton<RobotInfoMenu> {
 
-    public TMPro.TMP_Text SelectedRobot, SelectedArm, SelectedEE;
+    public TMP_Text SelectedRobot, SelectedArm, SelectedEE;
 
     [SerializeField]
     private CanvasGroup canvasGroup;
@@ -17,7 +20,7 @@ public class RobotInfoMenu : Singleton<RobotInfoMenu> {
         UpdateLabels();
     }
 
-    private void OnRobotSelected(object sender, System.EventArgs e) {
+    private void OnRobotSelected(object sender, EventArgs e) {
         UpdateLabels();
     }
 

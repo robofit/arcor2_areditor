@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
 using Base;
 
 public class CalibrateRobotDialog : Dialog {
@@ -26,8 +28,13 @@ public class CalibrateRobotDialog : Dialog {
         if (SceneManager.Instance.TryGetActionObjectByName(cameraName, out ActionObject camera)) {
             try {
                 GameManager.Instance.ShowLoadingScreen("Calibrating robot...");
-                await WebsocketManager.Instance.CalibrateRobot(robotId, camera.Data.Id, (bool) Switch.GetValue());
-            } catch (RequestFailedException ex) {
+                var response = await CommunicationManager.Instance.Client.CalibrateRobotAsync(new CalibrateRobotRequestArgs(robotId, camera.Data.Id, (bool) Switch.GetValue()));
+                if (!response.Result) {
+                    GameManager.Instance.HideLoadingScreen();
+                    Notifications.Instance.ShowNotification("Failed to calibrate robot",
+                            string.Join(',', response.Messages));
+                }
+            } catch (Arcor2ConnectionException ex) {
                 GameManager.Instance.HideLoadingScreen();
                 Notifications.Instance.ShowNotification("Failed to calibrate robot", ex.Message);
             } finally {

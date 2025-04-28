@@ -1,14 +1,3 @@
-using UnityEngine;
-using System.Collections;
-using System.Diagnostics.Tracing;
-using Base;
-using TMPro;
-using RuntimeInspectorNamespace;
-using DanielLochner.Assets.SimpleSideMenu;
-using IO.Swagger.Model;
-using UnityEngine.UI;
-using System.Collections.Generic;
-
 namespace TrilleonAutomation
 {
     /*

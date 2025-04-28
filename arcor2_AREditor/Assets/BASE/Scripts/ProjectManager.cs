@@ -1,32 +1,32 @@
-using System.Collections.Generic;
-using UnityEngine;
-using System.Threading.Tasks;
 using System;
-
-using IO.Swagger.Model;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
+using UnityEngine;
 
 namespace Base {
     /// <summary>
     /// Takes care of currently opened project. Provides methods for manipuation with project.
     /// </summary>
-    public class ProjectManager : Base.Singleton<ProjectManager> {
+    public class ProjectManager : Singleton<ProjectManager> {
         /// <summary>
         /// Opened project metadata
         /// </summary>
-        public IO.Swagger.Model.Project ProjectMeta = null;
+        public Project ProjectMeta = null;
         /// <summary>
         /// All action points in scene
         /// </summary>
-        public Dictionary<string, ActionPoint> ActionPoints = new Dictionary<string, ActionPoint>();
+        public Dictionary<string, ActionPoint> ActionPoints = new();
         /// <summary>
         /// All logic items (i.e. connections of actions) in project
         /// </summary>
-        public Dictionary<string, LogicItem> LogicItems = new Dictionary<string, LogicItem>();
+        public Dictionary<string, LogicItem> LogicItems = new();
         /// <summary>
         /// All Project parameters <id, instance>
         /// </summary>
-        public List<IO.Swagger.Model.ProjectParameter> ProjectParameters = new List<ProjectParameter>();
+        public List<ProjectParameter> ProjectParameters = new();
         /// <summary>
         /// Spawn point for global action points
         /// </summary>
@@ -112,63 +112,64 @@ namespace Base {
         /// </summary>
         public bool AnyAvailableAction;
 
-        public event AREditorEventArgs.ActionPointEventHandler OnActionPointAddedToScene;
-        public event AREditorEventArgs.ActionEventHandler OnActionAddedToScene;
+        public event EventHandler<ActionPointEventArgs> OnActionPointAddedToScene;
+        public event EventHandler<ActionEventArgs> OnActionAddedToScene;
 
-        public event AREditorEventArgs.ActionPointOrientationEventHandler OnActionPointOrientationAdded;
-        public event AREditorEventArgs.ActionPointOrientationEventHandler OnActionPointOrientationUpdated;
-        public event AREditorEventArgs.ActionPointOrientationEventHandler OnActionPointOrientationBaseUpdated;
-        public event AREditorEventArgs.StringEventHandler OnActionPointOrientationRemoved;
+        public event EventHandler<OrientationEventArgs> OnActionPointOrientationAdded;
+        public event EventHandler<OrientationEventArgs> OnActionPointOrientationUpdated;
+        public event EventHandler<OrientationEventArgs> OnActionPointOrientationBaseUpdated;
+        public event EventHandler<OrientationEventArgs> OnActionPointOrientationRemoved;
 
         /// <summary>
         /// Initialization of projet manager
         /// </summary>
         private void Start() {
-            WebsocketManager.Instance.OnLogicItemAdded += OnLogicItemAdded;
-            WebsocketManager.Instance.OnLogicItemRemoved += OnLogicItemRemoved;
-            WebsocketManager.Instance.OnLogicItemUpdated += OnLogicItemUpdated;
-            WebsocketManager.Instance.OnProjectBaseUpdated += OnProjectBaseUpdated;
+            CommunicationManager.Instance.Client.LogicItemAdded += CommunicationManager.SafeEventHandler<LogicItemEventArgs>(OnLogicItemAdded);
+            CommunicationManager.Instance.Client.LogicItemRemoved += CommunicationManager.SafeEventHandler<LogicItemEventArgs>(OnLogicItemRemoved);
+            CommunicationManager.Instance.Client.LogicItemUpdated += CommunicationManager.SafeEventHandler<LogicItemEventArgs>(OnLogicItemUpdated);
+            CommunicationManager.Instance.Client.ProjectBaseUpdated +=
+                CommunicationManager.SafeEventHandler<BareProjectEventArgs>(OnProjectBaseUpdated);
 
-            WebsocketManager.Instance.OnActionPointAdded += OnActionPointAdded;
-            WebsocketManager.Instance.OnActionPointRemoved += OnActionPointRemoved;
-            WebsocketManager.Instance.OnActionPointUpdated += OnActionPointUpdated;
-            WebsocketManager.Instance.OnActionPointBaseUpdated += OnActionPointBaseUpdated;
+            CommunicationManager.Instance.Client.ActionPointAdded += CommunicationManager.SafeEventHandler<BareActionPointEventArgs>(OnActionPointAdded);
+            CommunicationManager.Instance.Client.ActionPointRemoved += CommunicationManager.SafeEventHandler<BareActionPointEventArgs>(OnActionPointRemoved);
+            CommunicationManager.Instance.Client.ActionPointUpdated += CommunicationManager.SafeEventHandler<BareActionPointEventArgs>(OnActionPointUpdated);
+            CommunicationManager.Instance.Client.ActionPointBaseUpdated += CommunicationManager.SafeEventHandler<BareActionPointEventArgs>(OnActionPointBaseUpdated);
 
-            WebsocketManager.Instance.OnActionPointOrientationAdded += OnActionPointOrientationAddedCallback;
-            WebsocketManager.Instance.OnActionPointOrientationUpdated += OnActionPointOrientationUpdatedCallback;
-            WebsocketManager.Instance.OnActionPointOrientationBaseUpdated += OnActionPointOrientationBaseUpdatedCallback;
-            WebsocketManager.Instance.OnActionPointOrientationRemoved += OnActionPointOrientationRemovedCallback;
+            CommunicationManager.Instance.Client.OrientationAdded += CommunicationManager.SafeEventHandler<OrientationEventArgs>(OnActionPointOrientationAddedCallback);
+            CommunicationManager.Instance.Client.OrientationUpdated += CommunicationManager.SafeEventHandler<OrientationEventArgs>(OnActionPointOrientationUpdatedCallback);
+            CommunicationManager.Instance.Client.OrientationBaseUpdated += CommunicationManager.SafeEventHandler<OrientationEventArgs>(OnActionPointOrientationBaseUpdatedCallback);
+            CommunicationManager.Instance.Client.OrientationRemoved += CommunicationManager.SafeEventHandler<OrientationEventArgs>(OnActionPointOrientationRemovedCallback);
 
-            WebsocketManager.Instance.OnActionPointJointsAdded += OnActionPointJointsAdded;
-            WebsocketManager.Instance.OnActionPointJointsUpdated += OnActionPointJointsUpdated;
-            WebsocketManager.Instance.OnActionPointJointsBaseUpdated += OnActionPointJointsBaseUpdated;
-            WebsocketManager.Instance.OnActionPointJointsRemoved += OnActionPointJointsRemoved;
+            CommunicationManager.Instance.Client.JointsAdded += CommunicationManager.SafeEventHandler<JointsEventArgs>(OnActionPointJointsAdded);
+            CommunicationManager.Instance.Client.JointsUpdated += CommunicationManager.SafeEventHandler<JointsEventArgs>(OnActionPointJointsUpdated);
+            CommunicationManager.Instance.Client.JointsBaseUpdated += CommunicationManager.SafeEventHandler<JointsEventArgs>(OnActionPointJointsBaseUpdated);
+            CommunicationManager.Instance.Client.JointsRemoved += CommunicationManager.SafeEventHandler<JointsEventArgs>(OnActionPointJointsRemoved);
 
-            WebsocketManager.Instance.OnProjectParameterAdded += OnProjectParameterAdded;
-            WebsocketManager.Instance.OnProjectParameterUpdated += OnProjectParameterUpdated;
-            WebsocketManager.Instance.OnProjectParameterRemoved += OnProjectParameterRemoved;
+            CommunicationManager.Instance.Client.ProjectParameterAdded += CommunicationManager.SafeEventHandler<ProjectParameterEventArgs>(OnProjectParameterAdded);
+            CommunicationManager.Instance.Client.ProjectParameterUpdated += CommunicationManager.SafeEventHandler<ProjectParameterEventArgs>(OnProjectParameterUpdated);
+            CommunicationManager.Instance.Client.ProjectParameterRemoved += CommunicationManager.SafeEventHandler<ProjectParameterEventArgs>(OnProjectParameterRemoved);
         }
 
         private void OnProjectParameterRemoved(object sender, ProjectParameterEventArgs args) {
-            ProjectParameters.Remove(args.ProjectParameter);
+            ProjectParameters.Remove(args.Data);
             ProjectChanged = true;
         }
 
         private void OnProjectParameterUpdated(object sender, ProjectParameterEventArgs args) {
-            ProjectParameters.RemoveAll(c => c.Id == args.ProjectParameter.Id);
-            ProjectParameters.Add(args.ProjectParameter);
+            ProjectParameters.RemoveAll(c => c.Id == args.Data.Id);
+            ProjectParameters.Add(args.Data);
             ProjectChanged = true;
         }
 
         private void OnProjectParameterAdded(object sender, ProjectParameterEventArgs args) {
-            ProjectParameters.Add(args.ProjectParameter);
+            ProjectParameters.Add(args.Data);
             ProjectChanged = true;
         }
 
-        private void OnActionPointJointsRemoved(object sender, StringEventArgs args) {
+        private void OnActionPointJointsRemoved(object sender, JointsEventArgs args) {
             try {
-                ActionPoint actionPoint = GetActionPointWithJoints(args.Data);
-                actionPoint.RemoveJoints(args.Data);
+                ActionPoint actionPoint = GetActionPointWithJoints(args.Data.Id);
+                actionPoint.RemoveJoints(args.Data.Id);
                 updateProject = true;
                 OnProjectChanged?.Invoke(this, EventArgs.Empty);
             } catch (KeyNotFoundException ex) {
@@ -178,7 +179,7 @@ namespace Base {
             }
         }
 
-        private void OnActionPointJointsBaseUpdated(object sender, RobotJointsEventArgs args) {
+        private void OnActionPointJointsBaseUpdated(object sender, JointsEventArgs args) {
             try {
                 ActionPoint actionPoint = GetActionPointWithJoints(args.Data.Id);
                 actionPoint.BaseUpdateJoints(args.Data);
@@ -190,7 +191,7 @@ namespace Base {
             }
         }
 
-        private void OnActionPointJointsUpdated(object sender, RobotJointsEventArgs args) {
+        private void OnActionPointJointsUpdated(object sender, JointsEventArgs args) {
             try {
                 ActionPoint actionPoint = GetActionPointWithJoints(args.Data.Id);
                 actionPoint.UpdateJoints(args.Data);
@@ -202,9 +203,9 @@ namespace Base {
             }
         }
 
-        private void OnActionPointJointsAdded(object sender, RobotJointsEventArgs args) {
+        private void OnActionPointJointsAdded(object sender, JointsEventArgs args) {
             try {
-                ActionPoint actionPoint = GetActionPoint(args.ActionPointId);
+                ActionPoint actionPoint = GetActionPoint(args.ParentId); // ActionPoint ID
                 actionPoint.AddJoints(args.Data);
                 updateProject = true;
             } catch (KeyNotFoundException ex) {
@@ -216,19 +217,19 @@ namespace Base {
 
         private void OnActionPointBaseUpdated(object sender, BareActionPointEventArgs args) {
             try {
-                ActionPoint actionPoint = GetActionPoint(args.ActionPoint.Id);
-                actionPoint.ActionPointBaseUpdate(args.ActionPoint);
+                ActionPoint actionPoint = GetActionPoint(args.Data.Id);
+                actionPoint.ActionPointBaseUpdate(args.Data);
                 updateProject = true;
             } catch (KeyNotFoundException ex) {
-                Debug.Log("Action point " + args.ActionPoint.Id + " not found!");
-                Notifications.Instance.ShowNotification("", "Action point " + args.ActionPoint.Id + " not found!");
+                Debug.Log("Action point " + args.Data.Id + " not found!");
+                Notifications.Instance.ShowNotification("", "Action point " + args.Data.Id + " not found!");
                 return;
             }
         }
 
-        private void OnActionPointOrientationBaseUpdatedCallback(object sender, ActionPointOrientationEventArgs args) {
+        private void OnActionPointOrientationBaseUpdatedCallback(object sender, OrientationEventArgs args) {
             try {
-                ActionPoint actionPoint = ProjectManager.Instance.GetActionPointWithOrientation(args.Data.Id);
+                ActionPoint actionPoint = Instance.GetActionPointWithOrientation(args.Data.Id);
                 actionPoint.BaseUpdateOrientation(args.Data);
 
                 updateProject = true;
@@ -240,10 +241,10 @@ namespace Base {
             }
         }
 
-        private void OnActionPointOrientationRemovedCallback(object sender, StringEventArgs args) {
+        private void OnActionPointOrientationRemovedCallback(object sender, OrientationEventArgs args) {
             try {
-                ActionPoint actionPoint = GetActionPointWithOrientation(args.Data);
-                actionPoint.RemoveOrientation(args.Data);
+                ActionPoint actionPoint = GetActionPointWithOrientation(args.Data.Id);
+                actionPoint.RemoveOrientation(args.Data.Id);
                 updateProject = true;
                 OnActionPointOrientationRemoved?.Invoke(this, args);
             } catch (KeyNotFoundException ex) {
@@ -253,9 +254,9 @@ namespace Base {
             }
         }
 
-        private void OnActionPointOrientationUpdatedCallback(object sender, ActionPointOrientationEventArgs args) {
+        private void OnActionPointOrientationUpdatedCallback(object sender, OrientationEventArgs args) {
             try {
-                ActionPoint actionPoint = ProjectManager.Instance.GetActionPointWithOrientation(args.Data.Id);
+                ActionPoint actionPoint = Instance.GetActionPointWithOrientation(args.Data.Id);
                 actionPoint.UpdateOrientation(args.Data);
                 updateProject = true;
                 OnActionPointOrientationUpdated?.Invoke(this, args);
@@ -266,9 +267,9 @@ namespace Base {
             }
         }
 
-        private void OnActionPointOrientationAddedCallback(object sender, ActionPointOrientationEventArgs args) {
+        private void OnActionPointOrientationAddedCallback(object sender, OrientationEventArgs args) {
             try {
-                ActionPoint actionPoint = GetActionPoint(args.ActionPointId);
+                ActionPoint actionPoint = GetActionPoint(args.ParentId);
                 actionPoint.AddOrientation(args.Data);
                 updateProject = true;
                 OnActionPointOrientationAdded?.Invoke(this, args);
@@ -279,33 +280,33 @@ namespace Base {
             }
         }
 
-        private void OnActionPointRemoved(object sender, StringEventArgs args) {
-            RemoveActionPoint(args.Data);
+        private void OnActionPointRemoved(object sender, BareActionPointEventArgs args) {
+            RemoveActionPoint(args.Data.Id);
             updateProject = true;
         }
 
-        private void OnActionPointUpdated(object sender, ProjectActionPointEventArgs args) {
+        private void OnActionPointUpdated(object sender, BareActionPointEventArgs args) {
             try {
-                ActionPoint actionPoint = GetActionPoint(args.ActionPoint.Id);
-                actionPoint.UpdateActionPoint(args.ActionPoint);
+                ActionPoint actionPoint = GetActionPoint(args.Data.Id);
+                actionPoint.UpdateActionPoint(DataHelper.BareActionPointToActionPoint(args.Data));
                 updateProject = true;
                 // TODO - update orientations, joints etc.
             } catch (KeyNotFoundException ex) {
-                Debug.LogError("Action point " + args.ActionPoint.Id + " not found!");
-                Notifications.Instance.ShowNotification("", "Action point " + args.ActionPoint.Id + " not found!");
+                Debug.LogError("Action point " + args.Data.Id + " not found!");
+                Notifications.Instance.ShowNotification("", "Action point " + args.Data.Id + " not found!");
                 return;
             }
         }
 
 
-        private void OnActionPointAdded(object sender, ProjectActionPointEventArgs data) {
+        private void OnActionPointAdded(object sender, BareActionPointEventArgs data) {
             ActionPoint ap = null;
-            if (data.ActionPoint.Parent == null || data.ActionPoint.Parent == "") {
-                ap = SpawnActionPoint(data.ActionPoint, null);
+            if (data.Data.Parent == null || data.Data.Parent == "") {
+                ap = SpawnActionPoint(DataHelper.BareActionPointToActionPoint(data.Data), null);
             } else {
                 try {
-                    IActionPointParent actionPointParent = GetActionPointParent(data.ActionPoint.Parent);
-                    ap = SpawnActionPoint(data.ActionPoint, actionPointParent);
+                    IActionPointParent actionPointParent = GetActionPointParent(data.Data.Parent);
+                    ap = SpawnActionPoint(DataHelper.BareActionPointToActionPoint(data.Data), actionPointParent);
                 } catch (KeyNotFoundException ex) {
                     Debug.LogError(ex);
                 }
@@ -317,7 +318,7 @@ namespace Base {
 
         private void OnProjectBaseUpdated(object sender, BareProjectEventArgs args) {
             if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor) {
-                SetProjectMeta(args.Project);
+                SetProjectMeta(args.Data);
                 updateProject = true;
             }
         }
@@ -328,7 +329,7 @@ namespace Base {
         /// <param name="project">Project descriptoin in json</param>
         /// <param name="allowEdit">Sets if project is editable</param>
         /// <returns>True if project sucessfully created</returns>
-        public async Task<bool> CreateProject(IO.Swagger.Model.Project project, bool allowEdit) {
+        public async Task<bool> CreateProject(Project project, bool allowEdit) {
             Debug.Assert(ActionsManager.Instance.ActionsReady);
             if (ProjectMeta != null)
                 return false;
@@ -350,9 +351,9 @@ namespace Base {
 
             foreach (SceneObjectOverride objectOverrides in project.ObjectOverrides) {
                 ActionObject actionObject = SceneManager.Instance.GetActionObject(objectOverrides.Id);
-                foreach (IO.Swagger.Model.Parameter p in objectOverrides.Parameters) {
+                foreach (var p in objectOverrides.Parameters) {
                     if (actionObject.TryGetParameterMetadata(p.Name, out ParameterMeta meta)) {
-                        Parameter parameter = new Parameter(meta, p.Value);
+                        Parameter parameter = new(meta, p.Value);
                         actionObject.Overrides[p.Name] = parameter;
                     }
 
@@ -362,11 +363,11 @@ namespace Base {
             UpdateActionPoints(project);
             UpdateProjectParameters(project.Parameters);
             if (project.HasLogic) {
-                UpdateLogicItems(project.Logic);
+                UpdateLogicItems(project.LogicItems);
             }
-            if (project.Modified == System.DateTime.MinValue) { //new project, never saved
+            if (project.Modified == DateTime.MinValue) { //new project, never saved
                 projectChanged = true;
-            } else if (project.IntModified == System.DateTime.MinValue) {
+            } else if (project.IntModified == DateTime.MinValue) {
                 ProjectChanged = false;
             } else {
                 ProjectChanged = project.IntModified > project.Modified;
@@ -413,8 +414,8 @@ namespace Base {
         /// Updates logic items
         /// </summary>
         /// <param name="logic">List of logic items</param>
-        private void UpdateLogicItems(List<IO.Swagger.Model.LogicItem> logic) {
-            foreach (IO.Swagger.Model.LogicItem projectLogicItem in logic) {
+        private void UpdateLogicItems(List<Arcor2.ClientSdk.Communication.OpenApi.Models.LogicItem> logic) {
+            foreach (Arcor2.ClientSdk.Communication.OpenApi.Models.LogicItem projectLogicItem in logic) {
                 if (!LogicItems.TryGetValue(projectLogicItem.Id, out LogicItem logicItem)) {
                     logicItem = new LogicItem(projectLogicItem);
                     LogicItems.Add(logicItem.Data.Id, logicItem);
@@ -429,7 +430,7 @@ namespace Base {
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private void OnLogicItemUpdated(object sender, LogicItemChangedEventArgs args) {
+        private void OnLogicItemUpdated(object sender, LogicItemEventArgs args) {
             if (LogicItems.TryGetValue(args.Data.Id, out LogicItem logicItem)) {
                 logicItem.Data = args.Data;
                 logicItem.UpdateConnection(args.Data);
@@ -443,10 +444,10 @@ namespace Base {
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private void OnLogicItemRemoved(object sender, StringEventArgs args) {
-            if (LogicItems.TryGetValue(args.Data, out LogicItem logicItem)) {
+        private void OnLogicItemRemoved(object sender, LogicItemEventArgs args) {
+            if (LogicItems.TryGetValue(args.Data.Id, out LogicItem logicItem)) {
                 logicItem.Remove();
-                LogicItems.Remove(args.Data);
+                LogicItems.Remove(args.Data.Id);
             } else {
                 Debug.LogError("Server tries to remove logic item that does not exists (id: " + args.Data + ")");
             }
@@ -457,8 +458,8 @@ namespace Base {
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private void OnLogicItemAdded(object sender, LogicItemChangedEventArgs args) {
-            LogicItem logicItem = new LogicItem(args.Data);
+        private void OnLogicItemAdded(object sender, LogicItemEventArgs args) {
+            LogicItem logicItem = new(args.Data);
             LogicItems.Add(args.Data.Id, logicItem);
         }
 
@@ -488,13 +489,13 @@ namespace Base {
             if (ProjectMeta == null)
                 return null;
             Project project = ProjectMeta;
-            project.ActionPoints = new List<IO.Swagger.Model.ActionPoint>();
+            project.ActionPoints = new List<Arcor2.ClientSdk.Communication.OpenApi.Models.ActionPoint>();
             foreach (ActionPoint ap in ActionPoints.Values) {
-                IO.Swagger.Model.ActionPoint projectActionPoint = ap.Data;
+                Arcor2.ClientSdk.Communication.OpenApi.Models.ActionPoint projectActionPoint = ap.Data;
                 foreach (Action action in ap.Actions.Values) {
-                    IO.Swagger.Model.Action projectAction = new IO.Swagger.Model.Action(id: action.Data.Id,
+                    Arcor2.ClientSdk.Communication.OpenApi.Models.Action projectAction = new (id: action.Data.Id,
                         name: action.Data.Name, type: action.Data.Type) {
-                        Parameters = new List<IO.Swagger.Model.ActionParameter>()
+                        Parameters = new List<ActionParameter>()
                     };
                     foreach (Parameter param in action.Parameters.Values) {
                         projectAction.Parameters.Add(param);
@@ -506,7 +507,7 @@ namespace Base {
         }
 
         public List<Action> GetActionsWithReturnType(string type) {
-            List<Action> actions = new List<Action>();
+            List<Action> actions = new();
             foreach (Action action in GetAllActions()) {
                 if (action.Metadata.Returns.Contains(type)) {
                     actions.Add(action);
@@ -557,7 +558,7 @@ namespace Base {
         /// <param name="apData">Json describing action point</param>
         /// <param name="actionPointParent">Parent of action point. If null, AP is spawned as global.</param>
         /// <returns></returns>
-        public ActionPoint SpawnActionPoint(IO.Swagger.Model.ActionPoint apData, IActionPointParent actionPointParent) {
+        public ActionPoint SpawnActionPoint(Arcor2.ClientSdk.Communication.OpenApi.Models.ActionPoint apData, IActionPointParent actionPointParent) {
             Debug.Assert(apData != null);
             GameObject AP;
             if (actionPointParent == null) {
@@ -605,7 +606,7 @@ namespace Base {
                     GameManager.Instance.GetProjectId(freeName);
                     hasFreeName = false;
                     freeName = projectName + "_" + i++.ToString();
-                } catch (RequestFailedException) {
+                } catch (Arcor2ConnectionException) {
                     // there is no project called "freeName" -> that is our new name
                 }
 
@@ -655,23 +656,23 @@ namespace Base {
         /// </summary>
         /// <param name="project"></param>
         public void UpdateActionPoints(Project project) {
-            List<string> currentAP = new List<string>();
-            List<string> currentActions = new List<string>();
-            Dictionary<string, List<IO.Swagger.Model.ActionPoint>> actionPointsWithParents = new Dictionary<string, List<IO.Swagger.Model.ActionPoint>>();
+            List<string> currentAP = new();
+            List<string> currentActions = new();
+            Dictionary<string, List<Arcor2.ClientSdk.Communication.OpenApi.Models.ActionPoint>> actionPointsWithParents = new();
             // ordered list of already processed parents. This ensure that global APs are processed first,
             // then APs with action objects as a parents and then APs with already processed AP parents
-            List<string> processedParents = new List<string> {
+            List<string> processedParents = new() {
                 "global"
             };
-            foreach (IO.Swagger.Model.ActionPoint projectActionPoint in project.ActionPoints) {
+            foreach (var projectActionPoint in project.ActionPoints) {
                 string parent = projectActionPoint.Parent;
                 if (string.IsNullOrEmpty(parent)) {
                     parent = "global";
                 }
-                if (actionPointsWithParents.TryGetValue(parent, out List<IO.Swagger.Model.ActionPoint> projectActionPoints)) {
+                if (actionPointsWithParents.TryGetValue(parent, out List<Arcor2.ClientSdk.Communication.OpenApi.Models.ActionPoint> projectActionPoints)) {
                     projectActionPoints.Add(projectActionPoint);
                 } else {
-                    List<IO.Swagger.Model.ActionPoint> aps = new List<IO.Swagger.Model.ActionPoint> {
+                    List<Arcor2.ClientSdk.Communication.OpenApi.Models.ActionPoint> aps = new() {
                         projectActionPoint
                     };
                     actionPointsWithParents[parent] = aps;
@@ -683,8 +684,8 @@ namespace Base {
             }
 
             for (int i = 0; i < processedParents.Count; ++i) {
-                if (actionPointsWithParents.TryGetValue(processedParents[i], out List<IO.Swagger.Model.ActionPoint> projectActionPoints)) {
-                    foreach (IO.Swagger.Model.ActionPoint projectActionPoint in projectActionPoints) {
+                if (actionPointsWithParents.TryGetValue(processedParents[i], out List<Arcor2.ClientSdk.Communication.OpenApi.Models.ActionPoint> projectActionPoints)) {
+                    foreach (Arcor2.ClientSdk.Communication.OpenApi.Models.ActionPoint projectActionPoint in projectActionPoints) {
                         // if action point exist, just update it
                         if (ActionPoints.TryGetValue(projectActionPoint.Id, out ActionPoint actionPoint)) {
                             actionPoint.ActionPointBaseUpdate(DataHelper.ActionPointToBareActionPoint(projectActionPoint));
@@ -693,7 +694,7 @@ namespace Base {
                         else {
                             IActionPointParent parent = null;
                             if (!string.IsNullOrEmpty(projectActionPoint.Parent)) {
-                                parent = ProjectManager.Instance.GetActionPointParent(projectActionPoint.Parent);
+                                parent = Instance.GetActionPointParent(projectActionPoint.Parent);
                             }
 
 
@@ -751,7 +752,7 @@ namespace Base {
             if (SceneManager.Instance.ActionObjects.TryGetValue(parentId, out ActionObject actionObject)) {
                 return actionObject;
             }
-            if (ProjectManager.Instance.ActionPoints.TryGetValue(parentId, out ActionPoint actionPoint)) {
+            if (Instance.ActionPoints.TryGetValue(parentId, out ActionPoint actionPoint)) {
                 return actionPoint;
             }
 
@@ -837,7 +838,7 @@ namespace Base {
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public IO.Swagger.Model.ProjectRobotJoints GetJoints(string id) {
+        public ProjectRobotJoints GetJoints(string id) {
             foreach (ActionPoint actionPoint in ActionPoints.Values) {
                 try {
                     return actionPoint.GetJoints(id);
@@ -846,7 +847,7 @@ namespace Base {
             throw new KeyNotFoundException("Joints with id " + id + " not found");
         }
 
-        public IO.Swagger.Model.ProjectRobotJoints GetAnyJoints() {
+        public ProjectRobotJoints GetAnyJoints() {
             foreach (ActionPoint actionPoint in ActionPoints.Values) {
                 if (actionPoint.Data.RobotJoints.Count > 0)
                     return actionPoint.Data.RobotJoints[0];
@@ -860,7 +861,7 @@ namespace Base {
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public IO.Swagger.Model.NamedOrientation GetNamedOrientation(string id) {
+        public NamedOrientation GetNamedOrientation(string id) {
             foreach (ActionPoint actionPoint in ActionPoints.Values) {
                 try {
                     return actionPoint.GetOrientation(id);
@@ -869,7 +870,7 @@ namespace Base {
             throw new KeyNotFoundException("Orientations with id " + id + " not found");
         }
 
-        public IO.Swagger.Model.NamedOrientation GetAnyNamedOrientation() {
+        public NamedOrientation GetAnyNamedOrientation() {
             foreach (ActionPoint actionPoint in ActionPoints.Values) {
                 if (actionPoint.Data.Orientations.Count > 0)
                     return actionPoint.Data.Orientations[0];
@@ -985,7 +986,7 @@ namespace Base {
 
         #region ACTIONS
 
-        public Action SpawnAction(IO.Swagger.Model.Action projectAction, ActionPoint ap) {
+        public Action SpawnAction(Arcor2.ClientSdk.Communication.OpenApi.Models.Action projectAction, ActionPoint ap) {
             Debug.Assert(!ActionsContainsName(projectAction.Name));
             ActionMetadata actionMetadata;
             string providerName = projectAction.Type.Split('/').First();
@@ -994,7 +995,7 @@ namespace Base {
             try {
                 actionProvider = SceneManager.Instance.GetActionObject(providerName);
             } catch (KeyNotFoundException ex) {
-                throw new RequestFailedException("PROVIDER NOT FOUND EXCEPTION: " + providerName + " " + actionType);
+                throw new Arcor2ConnectionException("PROVIDER NOT FOUND EXCEPTION: " + providerName + " " + actionType);
             }
 
             try {
@@ -1103,7 +1104,7 @@ namespace Base {
         /// </summary>
         /// <returns></returns>
         public List<Action> GetAllActions() {
-            List<Action> actions = new List<Action>();
+            List<Action> actions = new();
             foreach (ActionPoint actionPoint in ActionPoints.Values) {
                 foreach (Action action in actionPoint.Actions.Values) {
                     actions.Add(action);
@@ -1118,7 +1119,7 @@ namespace Base {
         /// </summary>
         /// <returns></returns>
         public Dictionary<string, Action> GetAllActionsDict() {
-            Dictionary<string, Action> actions = new Dictionary<string, Action>();
+            Dictionary<string, Action> actions = new();
             foreach (ActionPoint actionPoint in ActionPoints.Values) {
                 foreach (Action action in actionPoint.Actions.Values) {
                     actions.Add(action.Data.Id, action);
@@ -1134,8 +1135,8 @@ namespace Base {
         /// Updates action 
         /// </summary>
         /// <param name="projectAction">Action description</param>
-        public void ActionUpdated(IO.Swagger.Model.Action projectAction) {
-            Base.Action action = GetAction(projectAction.Id);
+        public void ActionUpdated(Arcor2.ClientSdk.Communication.OpenApi.Models.Action projectAction) {
+            Action action = GetAction(projectAction.Id);
             if (action == null) {
                 Debug.LogError("Trying to update non-existing action!");
                 return;
@@ -1148,8 +1149,8 @@ namespace Base {
         /// Updates metadata of action
         /// </summary>
         /// <param name="projectAction">Action description</param>
-        public void ActionBaseUpdated(IO.Swagger.Model.BareAction projectAction) {
-            Base.Action action = GetAction(projectAction.Id);
+        public void ActionBaseUpdated(BareAction projectAction) {
+            Action action = GetAction(projectAction.Id);
             if (action == null) {
                 Debug.LogError("Trying to update non-existing action!");
                 return;
@@ -1163,18 +1164,18 @@ namespace Base {
         /// </summary>
         /// <param name="projectAction">Action description</param>
         /// <param name="parentId">UUID of action point to which the action should be added</param>
-        public void ActionAdded(IO.Swagger.Model.Action projectAction, string parentId) {
+        public void ActionAdded(Arcor2.ClientSdk.Communication.OpenApi.Models.Action projectAction, string parentId) {
             ActionPoint actionPoint = GetActionPoint(parentId);
             try {
-                Base.Action action = SpawnAction(projectAction, actionPoint);
+                var action = SpawnAction(projectAction, actionPoint);
                 // updates name of the action
                 action.ActionUpdateBaseData(DataHelper.ActionToBareAction(projectAction));
                 // updates parameters of the action
                 action.ActionUpdate(projectAction);
                 //action.EnableInputOutput(MainSettingsMenu.Instance.ConnectionsSwitch.IsOn());
                 updateProject = true;
-                OnActionAddedToScene.Invoke(this, new ActionEventArgs(action));
-            } catch (RequestFailedException ex) {
+                OnActionAddedToScene?.Invoke(this, new ActionEventArgs(action));
+            } catch (Arcor2ConnectionException ex) {
                 Debug.LogError(ex);
             }
         }
@@ -1183,8 +1184,8 @@ namespace Base {
         /// Removes actino from project
         /// </summary>
         /// <param name="action"></param>
-        public void ActionRemoved(IO.Swagger.Model.BareAction action) {
-            ProjectManager.Instance.RemoveAction(action.Id);
+        public void ActionRemoved(BareAction action) {
+            Instance.RemoveAction(action.Id);
             updateProject = true;
         }
 
@@ -1234,7 +1235,7 @@ namespace Base {
         }
 
         public List<string> GetAllBreakpoints() {
-            List<string> breakPoints = new List<string>();
+            List<string> breakPoints = new();
             foreach (ActionPoint actionPoint in ActionPoints.Values) {
                 if (actionPoint.BreakPoint)
                     breakPoints.Add(actionPoint.GetId());

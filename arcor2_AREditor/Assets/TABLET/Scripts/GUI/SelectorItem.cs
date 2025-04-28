@@ -1,14 +1,12 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using Base;
-using IO.Swagger.Model;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class SelectorItem : MonoBehaviour
 {
-    public TMPro.TMP_Text Label;
+    public TMP_Text Label;
     public Image Icon;
     public InteractiveObject InteractiveObject;
     public Button Button;
@@ -28,7 +26,7 @@ public class SelectorItem : MonoBehaviour
 
     public bool Removed; // TODO: set to true when removed from selectoraimmenu, 
 
-    private List<SelectorItem> childs = new List<SelectorItem>();
+    private List<SelectorItem> childs = new();
 
     public SelectorItem ParentItem;
 
@@ -85,9 +83,9 @@ public class SelectorItem : MonoBehaviour
             Icon.sprite = AREditorResources.Instance.ActionInput;
         } else if (interactiveObject.GetType() == typeof(PuckOutput)) {
             Icon.sprite = AREditorResources.Instance.ActionOutput;
-        } else if (interactiveObject.GetType().IsSubclassOf(typeof(Base.Action))) {
+        } else if (interactiveObject.GetType().IsSubclassOf(typeof(Action))) {
             Icon.sprite = AREditorResources.Instance.Action;
-        } else if (interactiveObject.GetType().IsSubclassOf(typeof(Base.ActionPoint))) {
+        } else if (interactiveObject.GetType().IsSubclassOf(typeof(ActionPoint))) {
             Collapsable = true;
             Icon.sprite = AREditorResources.Instance.ActionPoint;
         } else if (interactiveObject.GetType() == typeof(RobotEE)) {

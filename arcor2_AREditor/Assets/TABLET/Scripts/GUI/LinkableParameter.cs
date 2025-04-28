@@ -1,11 +1,13 @@
-using UnityEngine;
-using Base;
 using System.Collections.Generic;
-using static Base.Parameter;
-using UnityEngine.UI;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
+using Base;
 using Newtonsoft.Json;
+using UnityEngine;
+using UnityEngine.UI;
+using static Base.Parameter;
+using Action = Base.Action;
 
 public abstract class LinkableParameter : MonoBehaviour, IParameter {
     public NStateToggle ParameterTypeToggle;
@@ -70,8 +72,8 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
     }
 
     private void SetupDropdownForActions(object newValue) {
-        List<string> actions = new List<string>();
-        foreach (Base.Action action in Base.ProjectManager.Instance.GetActionsWithReturnType(ParameterMetadata.Type)) {
+        List<string> actions = new();
+        foreach (Action action in ProjectManager.Instance.GetActionsWithReturnType(ParameterMetadata.Type)) {
             actions.Add(action.GetName());
         }
 
@@ -80,10 +82,10 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
 
     private void SetupDropdownForProjectParameters(string type, object newValue) {
         if (ProjectParametersHelper.TypeSupported(type)) {
-            List<string> projectParameters = new List<string>();
-            List<string> labels = new List<string>();
+            List<string> projectParameters = new();
+            List<string> labels = new();
             string selectedLabel = null;
-            foreach (IO.Swagger.Model.ProjectParameter pp in ProjectManager.Instance.ProjectParameters.Where(c => c.Type == type).OrderBy(p => p.Name)) {
+            foreach (ProjectParameter pp in ProjectManager.Instance.ProjectParameters.Where(c => c.Type == type).OrderBy(p => p.Name)) {
                 projectParameters.Add(pp.Name);
                 labels.Add($"{pp.Name}: {ProjectParameterHelper.GetValue(pp)}");
                 if (newValue != null && pp.Id == JsonConvert.DeserializeObject<string>(newValue.ToString())) {
@@ -189,7 +191,7 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
 
     protected string EncodeLinkValue(string dropdownValue) {
         try {
-            Base.Action action = Base.ProjectManager.Instance.GetActionByName(dropdownValue);
+            Action action = ProjectManager.Instance.GetActionByName(dropdownValue);
             return action.GetId() + "/default/0";
         } catch (ItemNotFoundException ex) {
             return "";
@@ -206,7 +208,7 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
             return null;
         string actionId = linkValue.Substring(0, linkValue.IndexOf('/'));
         try {
-            Base.Action action = ProjectManager.Instance.GetAction(actionId);
+            Action action = ProjectManager.Instance.GetAction(actionId);
             return action.GetName();
         } catch (ItemNotFoundException) { }
         return null;
@@ -216,13 +218,13 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
         if (string.IsNullOrEmpty(newValue))
             return null;
 
-        Regex r = new Regex(@"[a-z_0-9]+", RegexOptions.IgnoreCase);
+        Regex r = new(@"[a-z_0-9]+", RegexOptions.IgnoreCase);
         MatchCollection matches = r.Matches(newValue);
         if (matches.Count == 0)
             return null;
 
         string projectParameterId = matches[0].Value;
-        IO.Swagger.Model.ProjectParameter pp = ProjectManager.Instance.ProjectParameters.Find(p => p.Id == projectParameterId);
+        ProjectParameter pp = ProjectManager.Instance.ProjectParameters.Find(p => p.Id == projectParameterId);
         return pp?.Name;
     }
     public virtual void Init(ParameterMetadata parameterMetadata, string type, object newValue, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, bool linkable = true) {

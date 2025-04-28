@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
 using Base;
-using IO.Swagger.Model;
-using Newtonsoft.Json;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using static Base.GameManager;
 
@@ -21,7 +21,7 @@ public abstract class LeftMenu : MonoBehaviour {
     public GameObject FavoritesButtons, HomeButtons, UtilityButtons, AddButtons, RobotButtons;
     public RenameDialog RenameDialog;
     public RobotSelectorDialog RobotSelector;
-    public TMPro.TMP_Text EditorInfo, SelectedObjectText;
+    public TMP_Text EditorInfo, SelectedObjectText;
 
     private bool isVisibilityForced = false;
     protected ActionPoint3D selectedActionPoint;
@@ -84,7 +84,7 @@ public abstract class LeftMenu : MonoBehaviour {
     }
 
     protected virtual void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
-        if (args.Event.State == SceneStateData.StateEnum.Stopping) {
+        if (args.Data.State == SceneStateData.StateEnum.Stopping) {
 
             if (TransformMenu.Instance.CanvasGroup.alpha == 1 && TransformMenu.Instance.RobotTabletBtn.CurrentState == TwoStatesToggleNew.States.Left) {
                 MoveButton.GetComponent<Image>().enabled = false;
@@ -104,7 +104,7 @@ public abstract class LeftMenu : MonoBehaviour {
                 RobotSelectorButton.GetComponent<Image>().enabled = false;
             }
             UpdateVisibility();
-        } else if (args.Event.State == SceneStateData.StateEnum.Started || args.Event.State == SceneStateData.StateEnum.Stopped) {
+        } else if (args.Data.State == SceneStateData.StateEnum.Started || args.Data.State == SceneStateData.StateEnum.Stopped) {
             UpdateBuildAndSaveBtns();
             UpdateRobotSelectorAndSteppingButtons();
         }
@@ -217,14 +217,14 @@ public abstract class LeftMenu : MonoBehaviour {
 
     protected void OnEditorStateChanged(object sender, EditorStateEventArgs args) {
         switch (args.Data) {
-            case GameManager.EditorStateEnum.Normal:
+            case EditorStateEnum.Normal:
                 requestingObject = false;
                 updateButtonsInteractivity = true;
                 break;
-            case GameManager.EditorStateEnum.InteractionDisabled:
+            case EditorStateEnum.InteractionDisabled:
                 updateButtonsInteractivity = false;
                 break;
-            case GameManager.EditorStateEnum.Closed:
+            case EditorStateEnum.Closed:
                 updateButtonsInteractivity = false;
                 break;
             case EditorStateEnum.SelectingAction:
@@ -350,7 +350,7 @@ public abstract class LeftMenu : MonoBehaviour {
                 }
             };
         }
-        System.Collections.Generic.List<RobotEE> EEs = await SceneManager.Instance.GetAllRobotsEEs();
+        List<RobotEE> EEs = await SceneManager.Instance.GetAllRobotsEEs();
         if (EEs.Count == 0) {
             Notifications.Instance.ShowNotification("Failed to open EE selector", "There is no robot with EE in the scene");
             return;
@@ -467,7 +467,7 @@ public abstract class LeftMenu : MonoBehaviour {
         selectedActionPoint = (ActionPoint3D) selectedObject;
         Action<object> action = AssignToParent;
         await selectedActionPoint.WriteLock(false);
-        GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionPointParent, action,
+        GameManager.Instance.RequestObject(EditorStateEnum.SelectingActionPointParent, action,
             "Select new parent (action object)", ValidateParent, UntieActionPointParent);
     }
 
@@ -656,9 +656,9 @@ public abstract class LeftMenu : MonoBehaviour {
             } else {
                 try {
                     GameManager.Instance.ShowLoadingScreen("Checking hierarchy...");
-                    await WebsocketManager.Instance.UpdateActionPointParent(selectedActionPoint.GetId(), parent.GetId(), true);
+                    await CommunicationManager.Instance.Client.UpdateActionPointParentAsync(new UpdateActionPointParentRequestArgs(selectedActionPoint.GetId(), parent.GetId()), true);
                     GameManager.Instance.HideLoadingScreen();
-                } catch (RequestFailedException ex) {
+                } catch (Arcor2ConnectionException ex) {
                     result.Success = false;
                     result.Message = ex.Message;
                 }
@@ -677,7 +677,7 @@ public abstract class LeftMenu : MonoBehaviour {
             return;
         string id = "";
         id = parent.GetId();
-        bool result = await Base.GameManager.Instance.UpdateActionPointParent(selectedActionPoint, id);
+        bool result = await GameManager.Instance.UpdateActionPointParent(selectedActionPoint, id);
         if (!result) {
             selectedActionPoint.WriteUnlock();
         }
@@ -690,7 +690,7 @@ public abstract class LeftMenu : MonoBehaviour {
             return;
         }
 
-        if (await Base.GameManager.Instance.UpdateActionPointParent(selectedActionPoint, "")) {
+        if (await GameManager.Instance.UpdateActionPointParent(selectedActionPoint, "")) {
             Notifications.Instance.ShowToastMessage("Parent of action point untied");
         } else {
             selectedActionPoint.WriteUnlock();

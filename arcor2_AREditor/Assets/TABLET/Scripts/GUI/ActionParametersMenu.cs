@@ -1,20 +1,24 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
 using Base;
 using Newtonsoft.Json;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Parameter = Base.Parameter;
 
 public class ActionParametersMenu : RightMenu<ActionParametersMenu> {
     public GameObject Content;
     private Action3D currentAction;
-    private List<IParameter> actionParameters = new List<IParameter>();
+    private List<IParameter> actionParameters = new();
     public VerticalLayoutGroup DynamicContentLayout;
     public GameObject CanvasRoot;
 
 
-    public TMPro.TMP_Text ActionName, ActionType, ActionPointName;
+    public TMP_Text ActionName, ActionType, ActionPointName;
 
     public override async Task<bool> Show(InteractiveObject interactiveObject, bool lockTree) {
         if (!await base.Show(interactiveObject, lockTree))
@@ -77,18 +81,22 @@ public class ActionParametersMenu : RightMenu<ActionParametersMenu> {
 
     public async void SaveParameters() {
         if (Parameter.CheckIfAllValuesValid(actionParameters)) {
-            List<IO.Swagger.Model.ActionParameter> parameters = new List<IO.Swagger.Model.ActionParameter>();
+            List<ActionParameter> parameters = new();
             foreach (IParameter actionParameter in actionParameters) {
-                IO.Swagger.Model.ParameterMeta metadata = currentAction.Metadata.GetParamMetadata(actionParameter.GetName());
+                ParameterMeta metadata = currentAction.Metadata.GetParamMetadata(actionParameter.GetName());
                 string value = JsonConvert.SerializeObject(actionParameter.GetValue());
-                IO.Swagger.Model.ActionParameter ap = new IO.Swagger.Model.ActionParameter(name: actionParameter.GetName(), value: value, type: actionParameter.GetCurrentType());
+                ActionParameter ap = new(actionParameter.GetName(), value: value, type: actionParameter.GetCurrentType());
                 parameters.Add(ap);
             }
             Debug.Assert(ProjectManager.Instance.AllowEdit);
             try {
-                await WebsocketManager.Instance.UpdateAction(currentAction.Data.Id, parameters, currentAction.GetFlows());
+                var response = await CommunicationManager.Instance.Client.UpdateActionAsync(new UpdateActionRequestArgs(currentAction.Data.Id, parameters, currentAction.GetFlows()));
+                if (!response.Result) {
+                    Notifications.Instance.ShowNotification("Failed to save parameters", string.Join(",", response.Messages));
+                    return;
+                }
                 Notifications.Instance.ShowToastMessage("Parameters saved");
-            } catch (RequestFailedException e) {
+            } catch (Arcor2ConnectionException e) {
                 Notifications.Instance.ShowNotification("Failed to save parameters", e.Message);
             }
         }

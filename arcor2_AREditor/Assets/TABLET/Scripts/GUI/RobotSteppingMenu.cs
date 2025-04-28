@@ -1,8 +1,10 @@
-using UnityEngine;
-using Base;
-using UnityEngine.UI;
 using System.Threading.Tasks;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
+using Base;
+using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.UI;
 
 public class RobotSteppingMenu : RightMenu<RobotSteppingMenu> {
     public ButtonWithTooltip StepuUpButton, StepDownButton, SetEEfPerpendicular, HandTeachingModeButton;
@@ -34,25 +36,25 @@ public class RobotSteppingMenu : RightMenu<RobotSteppingMenu> {
     }
 
     private void Start() {
-        WebsocketManager.Instance.OnRobotMoveToPoseEvent += OnRobotMoveToPoseEvent;
-        WebsocketManager.Instance.OnRobotMoveToJointsEvent += OnRobotMoveToJointsEvent;
+        CommunicationManager.Instance.Client.RobotMoveToPose += CommunicationManager.SafeEventHandler<RobotMoveToPoseEventArgs>(OnRobotMoveToPoseEvent);
+        CommunicationManager.Instance.Client.RobotMoveToJoints += CommunicationManager.SafeEventHandler<RobotMoveToJointsEventArgs>(OnRobotMoveToJointsEvent);
         closeCallback = null;
     }
 
     private void OnRobotMoveToJointsEvent(object sender, RobotMoveToJointsEventArgs args) {
-        if (args.Event.Data.MoveEventType == IO.Swagger.Model.RobotMoveToJointsData.MoveEventTypeEnum.End ||
-            args.Event.Data.MoveEventType == IO.Swagger.Model.RobotMoveToJointsData.MoveEventTypeEnum.Failed) {
+        if (args.Data.MoveEventType == RobotMoveToJointsData.MoveEventTypeEnum.End ||
+            args.Data.MoveEventType == RobotMoveToJointsData.MoveEventTypeEnum.Failed) {
             SetInteractivityOfRobotBtns(true);
-        } else if (args.Event.Data.MoveEventType == IO.Swagger.Model.RobotMoveToJointsData.MoveEventTypeEnum.Start) {
+        } else if (args.Data.MoveEventType == RobotMoveToJointsData.MoveEventTypeEnum.Start) {
             SetInteractivityOfRobotBtns(false, "Robot is already moving");
         }
     }
 
     private void OnRobotMoveToPoseEvent(object sender, RobotMoveToPoseEventArgs args) {
-        if (args.Event.Data.MoveEventType == IO.Swagger.Model.RobotMoveToPoseData.MoveEventTypeEnum.End ||
-            args.Event.Data.MoveEventType == IO.Swagger.Model.RobotMoveToPoseData.MoveEventTypeEnum.Failed) {
+        if (args.Data.MoveEventType == RobotMoveToPoseData.MoveEventTypeEnum.End ||
+            args.Data.MoveEventType == RobotMoveToPoseData.MoveEventTypeEnum.Failed) {
             SetInteractivityOfRobotBtns(true);
-        } else if (args.Event.Data.MoveEventType == IO.Swagger.Model.RobotMoveToPoseData.MoveEventTypeEnum.Start) {
+        } else if (args.Data.MoveEventType == RobotMoveToPoseData.MoveEventTypeEnum.Start) {
             SetInteractivityOfRobotBtns(false, "Robot is already moving");
         }
     }
@@ -105,8 +107,12 @@ public class RobotSteppingMenu : RightMenu<RobotSteppingMenu> {
             if (SceneManager.Instance.SelectedRobot.MultiArm())
                 armId = SceneManager.Instance.SelectedArmId;
 
-            await WebsocketManager.Instance.SetEefPerpendicularToWorld(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), GetSpeedSliderValue(), safe, armId);
-        } catch (RequestFailedException ex) {
+            var response = await CommunicationManager.Instance.Client.SetEndEffectorPerpendicularToWorldAsync(new SetEefPerpendicularToWorldRequestArgs(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), safe, GetSpeedSliderValue(), true, armId));
+            if (!response.Result) {
+                SetInteractivityOfRobotBtns(true);
+                Notifications.Instance.ShowNotification("Failed to set robot perpendicular", string.Join(',', response.Messages));
+            }
+        } catch (Arcor2ConnectionException ex) {
             SetInteractivityOfRobotBtns(true);
             Notifications.Instance.ShowNotification("Failed to set robot perpendicular", ex.Message);
         }
@@ -121,7 +127,7 @@ public class RobotSteppingMenu : RightMenu<RobotSteppingMenu> {
         if (value > halfSliderMax)
             return (decimal) ((value - halfSliderMax) * (1 - halfLogValue) / (sliderMax - halfSliderMax) + halfLogValue); // maps interval <0.5;1> to <0.1;1> (https://stackoverflow.com/questions/14353485/how-do-i-map-numbers-in-c-sharp-like-with-map-in-arduino)
         else
-            return (decimal) ((value) * (halfLogValue) / (halfSliderMax - 0.001) + 0.001); // maps interval <0.5;1> to <0.1;1> (https://stackoverflow.com/questions/14353485/how-do-i-map-numbers-in-c-sharp-like-with-map-in-arduino)
+            return (decimal) (value * halfLogValue / (halfSliderMax - 0.001) + 0.001); // maps interval <0.5;1> to <0.1;1> (https://stackoverflow.com/questions/14353485/how-do-i-map-numbers-in-c-sharp-like-with-map-in-arduino)
         /*double minp = sliderMin;
         double maxp = halfSliderMax;
 
@@ -173,8 +179,11 @@ public class RobotSteppingMenu : RightMenu<RobotSteppingMenu> {
             string armId = null;
             if (SceneManager.Instance.SelectedRobot.MultiArm())
                 armId = SceneManager.Instance.SelectedArmId;
-            await WebsocketManager.Instance.HandTeachingMode(robotId: SceneManager.Instance.SelectedRobot.GetId(), enable: true, armId);
-        } catch (RequestFailedException ex) {
+            var response = await CommunicationManager.Instance.Client.SetHandTeachingModeAsync(new HandTeachingModeRequestArgs(SceneManager.Instance.SelectedRobot.GetId(), true, armId));
+            if (!response.Result) {
+                Notifications.Instance.ShowNotification("Failed to enable hand teaching mode", string.Join(',', response.Messages));
+            }
+        } catch (Arcor2ConnectionException ex) {
             Notifications.Instance.ShowNotification("Failed to enable hand teaching mode", ex.Message);
         }
     }
@@ -187,8 +196,11 @@ public class RobotSteppingMenu : RightMenu<RobotSteppingMenu> {
             string armId = null;
             if (SceneManager.Instance.SelectedRobot.MultiArm())
                 armId = SceneManager.Instance.SelectedArmId;
-            await WebsocketManager.Instance.HandTeachingMode(robotId: SceneManager.Instance.SelectedRobot.GetId(), enable: false, armId);
-        } catch (RequestFailedException ex) {
+            var response = await CommunicationManager.Instance.Client.SetHandTeachingModeAsync(new HandTeachingModeRequestArgs(SceneManager.Instance.SelectedRobot.GetId(), false, armId));
+            if (!response.Result) {
+                Notifications.Instance.ShowNotification("Failed to disable hand teaching mode", string.Join(',', response.Messages));
+            }
+        } catch (Arcor2ConnectionException ex) {
             Notifications.Instance.ShowNotification("Failed to disable hand teaching mode", ex.Message);
         }
     }
@@ -226,7 +238,7 @@ public class RobotSteppingMenu : RightMenu<RobotSteppingMenu> {
 
     private void SetHandTeachingButtonInteractivity() {
         ActionObject ao = SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId());
-        bool success = ActionsManager.Instance.RobotsMeta.TryGetValue(ao.ActionObjectMetadata.Type, out IO.Swagger.Model.RobotMeta robotMeta);
+        bool success = ActionsManager.Instance.RobotsMeta.TryGetValue(ao.ActionObjectMetadata.Type, out RobotMeta robotMeta);
         if (success)
             HandTeachingModeButton.SetInteractivity(robotMeta.Features.HandTeaching, "Robot does not support hand teaching mode");
         else
@@ -250,16 +262,16 @@ public class RobotSteppingMenu : RightMenu<RobotSteppingMenu> {
 
     public async void RobotStep(float step) {
         SetInteractivityOfRobotBtns(false, "Robot is already moving");
-        IO.Swagger.Model.StepRobotEefRequestArgs.AxisEnum axis = IO.Swagger.Model.StepRobotEefRequestArgs.AxisEnum.X;
+        StepRobotEefRequestArgs.AxisEnum axis = StepRobotEefRequestArgs.AxisEnum.X;
         switch (selectedAxis) {
             case Gizmo.Axis.X:
-                axis = IO.Swagger.Model.StepRobotEefRequestArgs.AxisEnum.X;
+                axis = StepRobotEefRequestArgs.AxisEnum.X;
                 break;
             case Gizmo.Axis.Y:
-                axis = IO.Swagger.Model.StepRobotEefRequestArgs.AxisEnum.Y;
+                axis = StepRobotEefRequestArgs.AxisEnum.Y;
                 break;
             case Gizmo.Axis.Z:
-                axis = IO.Swagger.Model.StepRobotEefRequestArgs.AxisEnum.Z;
+                axis = StepRobotEefRequestArgs.AxisEnum.Z;
                 break;
         }
         try {
@@ -267,10 +279,24 @@ public class RobotSteppingMenu : RightMenu<RobotSteppingMenu> {
             string armId = null;
             if (SceneManager.Instance.SelectedRobot.MultiArm())
                 armId = SceneManager.Instance.SelectedArmId;
-            await WebsocketManager.Instance.StepRobotEef(axis, SceneManager.Instance.SelectedEndEffector.GetName(), safe, SceneManager.Instance.SelectedRobot.GetId(), GetSpeedSliderValue(),
-            (decimal) step, translate ? IO.Swagger.Model.StepRobotEefRequestArgs.WhatEnum.Position : IO.Swagger.Model.StepRobotEefRequestArgs.WhatEnum.Orientation,
-            world ? IO.Swagger.Model.StepRobotEefRequestArgs.ModeEnum.World : IO.Swagger.Model.StepRobotEefRequestArgs.ModeEnum.Robot, armId);
-        } catch (RequestFailedException ex) {
+
+            var response = await CommunicationManager.Instance.Client.StepRobotEndEffectorAsync(new StepRobotEefRequestArgs(SceneManager.Instance.SelectedRobot.GetId(),
+                SceneManager.Instance.SelectedEndEffector.GetName(),
+                axis,
+                translate ? StepRobotEefRequestArgs.WhatEnum.Position : StepRobotEefRequestArgs.WhatEnum.Orientation,
+                world ? StepRobotEefRequestArgs.ModeEnum.World : StepRobotEefRequestArgs.ModeEnum.Robot,
+                (decimal) step,
+                safe,
+                null!,
+                GetSpeedSliderValue(),
+                true,
+                armId
+                ));
+            if (!response.Result) {
+                Notifications.Instance.ShowNotification("Failed to move robot", string.Join(',', response.Messages));
+                SetInteractivityOfRobotBtns(true);
+            }
+        } catch (Arcor2ConnectionException ex) {
             Notifications.Instance.ShowNotification("Failed to move robot", ex.Message);
             SetInteractivityOfRobotBtns(true);
         }

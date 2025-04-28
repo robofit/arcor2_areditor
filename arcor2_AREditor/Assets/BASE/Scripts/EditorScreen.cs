@@ -1,12 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using System;
-using Base;
-using UnityEngine.UI;
-using IO.Swagger.Model;
-using Newtonsoft.Json;
 using System.Linq;
+using System.Threading.Tasks;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
+using Base;
+using UnityEngine;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(CanvasGroup))]
 public class EditorScreen : MonoBehaviour {
@@ -22,12 +21,12 @@ public class EditorScreen : MonoBehaviour {
 
     private void Start() {
         CanvasGroup = GetComponent<CanvasGroup>();
-        Base.GameManager.Instance.OnOpenProjectEditor += ShowEditorWindow;
-        Base.GameManager.Instance.OnRunPackage += ShowEditorWindow;
-        Base.GameManager.Instance.OnOpenSceneEditor += ShowEditorWindow;
-        Base.GameManager.Instance.OnOpenMainScreen += HideEditorWindow;
-        Base.GameManager.Instance.OnDisconnectedFromServer += HideEditorWindow;
-        Base.SceneManager.Instance.OnSceneStateEvent += OnSceneStateEvent;
+        GameManager.Instance.OnOpenProjectEditor += ShowEditorWindow;
+        GameManager.Instance.OnRunPackage += ShowEditorWindow;
+        GameManager.Instance.OnOpenSceneEditor += ShowEditorWindow;
+        GameManager.Instance.OnOpenMainScreen += HideEditorWindow;
+        GameManager.Instance.OnDisconnectedFromServer += HideEditorWindow;
+        SceneManager.Instance.OnSceneStateEvent += OnSceneStateEvent;
     }
 
     private void ShowEditorWindow(object sender, EventArgs args) {
@@ -41,7 +40,7 @@ public class EditorScreen : MonoBehaviour {
     }
 
     private void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
-        if (args.Event.State == IO.Swagger.Model.SceneStateData.StateEnum.Started) {
+        if (args.Data.State == SceneStateData.StateEnum.Started) {
             StartStopSceneIcon.sprite = AREditorResources.Instance.SceneOnline;
             StartStopSceneBtn.SetDescription("Go offline");
         } else {
@@ -59,19 +58,21 @@ public class EditorScreen : MonoBehaviour {
 
     public async void StartScene() {
         try {
-            await WebsocketManager.Instance.StartScene(false);
-        } catch (RequestFailedException e) {
+            var response = await CommunicationManager.Instance.Client.StartSceneAsync();
+            if (!response.Result) {
+                Notifications.Instance.ShowNotification("Going online failed", string.Join(",", response.Messages));
+            }
+        } catch (Arcor2ConnectionException e) {
             Notifications.Instance.ShowNotification("Going online failed", e.Message);
         }
     }
 
-    private void StopSceneCallback(string _, string data) {
-        CloseProjectResponse response = JsonConvert.DeserializeObject<CloseProjectResponse>(data);
-        if (!response.Result)
-            Notifications.Instance.ShowNotification("Going offline failed", response.Messages.FirstOrDefault());
+    private void StopSceneCallback(Task<StopSceneResponse> response) {
+        if (!response.Result.Result)
+            Notifications.Instance.ShowNotification("Going offline failed", response.Result.Messages.FirstOrDefault());
     }
 
     public void StopScene() {
-        WebsocketManager.Instance.StopScene(false, StopSceneCallback);
+        CommunicationManager.Instance.Client.StopSceneAsync().ContinueWith(StopSceneCallback, TaskScheduler.FromCurrentSynchronizationContext());
     }
 }

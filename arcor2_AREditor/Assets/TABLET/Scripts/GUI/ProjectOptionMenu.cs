@@ -1,7 +1,8 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Arcor2.ClientSdk.Communication;
+using Arcor2.ClientSdk.Communication.OpenApi.Models;
 using Base;
 using UnityEngine;
 
@@ -43,25 +44,34 @@ public class ProjectOptionMenu : TileOptionMenu
 
     public async Task<RequestResult> ValidateProjectNameAsync(string newName) {
         try {
-            await WebsocketManager.Instance.RenameProject(projectTile.ProjectId, newName, true);
+            var response =
+                await CommunicationManager.Instance.Client.RenameProjectAsync(new RenameProjectRequestArgs(projectTile.ProjectId, newName), true);
+            if (!response.Result) {
+                return (false, response.Messages.FirstOrDefault());
+            }
             return (true, "");
-        } catch (RequestFailedException e) {
+        } catch (Arcor2ConnectionException e) {
             return (false, e.Message);
         }
     }
 
     public async void RenameProject(string newUserId) {
-        Base.GameManager.Instance.ShowLoadingScreen();
+        GameManager.Instance.ShowLoadingScreen();
         try {
-            await WebsocketManager.Instance.RenameProject(projectTile.ProjectId, newUserId, false);
+            var response =
+                await CommunicationManager.Instance.Client.RenameProjectAsync(new RenameProjectRequestArgs(projectTile.ProjectId, newUserId));
+            if (!response.Result) {
+                Notifications.Instance.ShowNotification("Failed to rename project", string.Join(",", response.Messages));
+                return;
+            }
             inputDialog.Close();
             projectTile.SetLabel(newUserId);
             SetLabel(newUserId);
             Close();
-        } catch (RequestFailedException e) {
+        } catch (Arcor2ConnectionException e) {
             Notifications.Instance.ShowNotification("Failed to rename project", e.Message);
         } finally {
-            Base.GameManager.Instance.HideLoadingScreen();
+            GameManager.Instance.HideLoadingScreen();
         }        
     }
 
@@ -73,15 +83,20 @@ public class ProjectOptionMenu : TileOptionMenu
     }
 
     public async void RemoveProject() {
-        Base.GameManager.Instance.ShowLoadingScreen();
+        GameManager.Instance.ShowLoadingScreen();
         try {
-            await WebsocketManager.Instance.RemoveProject(projectTile.ProjectId);
+            var response =
+                await CommunicationManager.Instance.Client.RemoveProjectAsync(new IdArgs(projectTile.ProjectId));
+            if (!response.Result) {
+                Notifications.Instance.ShowNotification("Failed to remove project", string.Join(",", response.Messages));
+                return;
+            }
             confirmationDialog.Close();
             Close();
-        } catch (RequestFailedException e) {
+        } catch (Arcor2ConnectionException e) {
             Notifications.Instance.ShowNotification("Failed to remove project", e.Message);
         } finally {
-            Base.GameManager.Instance.HideLoadingScreen();
+            GameManager.Instance.HideLoadingScreen();
         }        
     }
 
@@ -92,14 +107,14 @@ public class ProjectOptionMenu : TileOptionMenu
 
 
     public async void ChangeImage() {
-        Base.GameManager.Instance.ShowLoadingScreen();
-        System.Tuple<Sprite, string> image = await ImageHelper.LoadSpriteAndSaveToDb();
+        GameManager.Instance.ShowLoadingScreen();
+        Tuple<Sprite, string> image = await ImageHelper.LoadSpriteAndSaveToDb();
         if (image != null) {
             PlayerPrefsHelper.SaveString(projectTile.ProjectId + "/image", image.Item2);
             projectTile.TopImage.sprite = image.Item1;
         }
         Close();
-        Base.GameManager.Instance.HideLoadingScreen();
+        GameManager.Instance.HideLoadingScreen();
     }
 
 
@@ -107,10 +122,15 @@ public class ProjectOptionMenu : TileOptionMenu
         try {
             string name = ProjectManager.Instance.GetFreeProjectName($"{projectTile.GetLabel()}_copy");
             GameManager.Instance.ShowLoadingScreen($"Creating {name} project...");
-            await WebsocketManager.Instance.DuplicateProject(projectTile.ProjectId, name, false);
+            var response = await CommunicationManager.Instance.Client.DuplicateProjectAsync(new CopyProjectRequestArgs(projectTile.ProjectId, name), false);
+            if (!response.Result) {
+                Notifications.Instance.ShowNotification("Failed to duplicate project",
+                                    string.Join(',', response.Messages));
+                return;
+            }
             Close();
             MainScreen.Instance.SwitchToProjects();
-        } catch (RequestFailedException ex) {
+        } catch (Arcor2ConnectionException ex) {
             Notifications.Instance.ShowNotification("Failed to duplicate project", ex.Message);
         } finally {
             GameManager.Instance.HideLoadingScreen();
